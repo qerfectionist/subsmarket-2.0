@@ -1,0 +1,39 @@
+import { NavLink } from 'react-router-dom';
+import { useHaptic } from '@/hooks/useHaptic';
+
+const navItems = [
+    { path: '/', label: 'Главная', icon: '🏠' },
+    { path: '/clubs', label: 'Клубы', icon: '👥' },
+    { path: '/gb-market', label: 'GB', icon: '📊' },
+    { path: '/profile', label: 'Профиль', icon: '👤' },
+];
+
+export function BottomNav() {
+    const haptic = useHaptic();
+
+    return (
+        <nav
+            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-secondary)] border-t border-[var(--color-border-default)]"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+            <div className="flex justify-around items-center h-16">
+                {navItems.map((item) => (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => haptic.impact('light')}
+                        className={({ isActive }) =>
+                            `flex flex-col items-center gap-1 px-4 py-2 transition-colors duration-150 ${isActive
+                                ? 'text-[var(--color-accent)]'
+                                : 'text-[var(--color-text-tertiary)]'
+                            }`
+                        }
+                    >
+                        <span className="text-xl">{item.icon}</span>
+                        <span className="text-xs font-medium">{item.label}</span>
+                    </NavLink>
+                ))}
+            </div>
+        </nav>
+    );
+}
