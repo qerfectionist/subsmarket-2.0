@@ -141,9 +141,7 @@ async def get_club(
         payment_day=club.payment_day,
         rules=club.rules,
         telegram_group_link=club.telegram_group_link if (is_host or is_active_member) else None,
-        # Credentials only for active members
-        login=club.login_encrypted if is_active_member else None,  # TODO: decrypt
-        password=club.password_encrypted if is_active_member else None,  # TODO: decrypt
+        # Credentials removed - No Escrow policy
     )
     
     return response
@@ -181,8 +179,7 @@ async def create_club(
         price_per_member=price_per_member,
         max_members=data.max_members,
         status="open",
-        login_encrypted=data.login,  # TODO: encrypt
-        password_encrypted=data.password,  # TODO: encrypt
+        # Credentials removed - No Escrow policy
         payment_method=data.payment_method,
         payment_details=data.payment_details,
         payment_day=data.payment_day,

@@ -9,8 +9,12 @@ from src.config import get_settings
 settings = get_settings()
 
 # Create async engine
+# Fix for asyncpg: replace sslmode=require with nothing or pass ssl context explicitly if needed
+# Neon usually handles SSL by default, but asyncpg doesn't like sslmode in the URL query params
+db_url = settings.database_url.replace("?sslmode=require", "")
+
 engine = create_async_engine(
-    settings.database_url,
+    db_url,
     echo=settings.debug,
     pool_pre_ping=True,
     pool_size=5,

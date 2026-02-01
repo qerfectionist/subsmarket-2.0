@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # ============================================
@@ -67,8 +67,7 @@ class ClubBase(BaseModel):
 
 class ClubCreate(ClubBase):
     """Create club request."""
-    login: Optional[str] = Field(default=None, max_length=255)
-    password: Optional[str] = Field(default=None, max_length=255)
+    pass
 
 
 class ClubUpdate(BaseModel):
@@ -101,8 +100,7 @@ class ClubListItem(BaseModel):
 class ClubDetails(ClubListItem):
     """Full club details (for members only)."""
     host: UserResponse
-    login: Optional[str] = None  # Only shown to paid members
-    password: Optional[str] = None  # Only shown to paid members
+    # Credentials removed - No Escrow policy
     payment_method: str
     payment_details: Optional[str] = None
     payment_day: Optional[int] = None
@@ -143,3 +141,21 @@ class PaginatedResponse(BaseModel):
     page: int
     per_page: int
     pages: int
+
+# ============================================================================
+# GIGABYTE MARKET SCHEMAS
+# ============================================================================
+
+class GigabyteOfferBase(BaseModel):
+    operator: str
+    amount_gb: int
+    price: Decimal
+    description: Optional[str] = None
+
+class GigabyteOfferResponse(GigabyteOfferBase):
+    offer_id: UUID
+    seller_id: int
+    created_at: datetime
+    is_active: bool
+    
+    model_config = ConfigDict(from_attributes=True)

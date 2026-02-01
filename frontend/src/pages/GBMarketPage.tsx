@@ -1,16 +1,10 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { t } from '@/i18n';
 import { useHaptic } from '@/hooks/useHaptic';
+import api, { GigabyteOffer } from '@/api/client';
 
 type Tab = 'buy' | 'sell' | 'my';
-
-// Mock data for demonstration
-const mockOffers = [
-    { id: '1', operator: 'beeline', gb: 10, price: 500, seller: 'Асхат', rating: 4.8 },
-    { id: '2', operator: 'tele2', gb: 5, price: 200, seller: 'Дамир', rating: 4.5 },
-    { id: '3', operator: 'altel', gb: 20, price: 900, seller: 'Айгерим', rating: 5.0 },
-    { id: '4', operator: 'beeline', gb: 15, price: 700, seller: 'Нурсултан', rating: 4.9 },
-];
 
 const operators = [
     { id: 'beeline', name: 'Beeline', color: '#FFB800' },
@@ -25,14 +19,15 @@ export function GBMarketPage() {
     const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
     const haptic = useHaptic();
 
+    const { data: offers = [], isLoading, error } = useQuery({
+        queryKey: ['gb-offers', selectedOperator],
+        queryFn: () => api.getGigabyteOffers(selectedOperator ? { operator: selectedOperator } : undefined),
+    });
+
     const handleTabChange = (newTab: Tab) => {
         haptic.selection();
         setTab(newTab);
     };
-
-    const filteredOffers = selectedOperator
-        ? mockOffers.filter(o => o.operator === selectedOperator)
-        : mockOffers;
 
     return (
         <div className="p-4 pb-24">
@@ -72,8 +67,8 @@ export function GBMarketPage() {
                         setSelectedOperator(null);
                     }}
                     className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedOperator
-                            ? 'bg-[var(--color-accent)] text-white'
-                            : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]'
+                        ? 'bg-[var(--color-accent)] text-white'
+                        : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]'
                         }`}
                 >
                     Все
@@ -86,8 +81,8 @@ export function GBMarketPage() {
                             setSelectedOperator(op.id);
                         }}
                         className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedOperator === op.id
-                                ? 'text-white'
-                                : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]'
+                            ? 'text-white'
+                            : 'bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)]'
                             }`}
                         style={selectedOperator === op.id ? { backgroundColor: op.color } : {}}
                     >
@@ -99,19 +94,27 @@ export function GBMarketPage() {
             {/* Content */}
             {tab === 'buy' && (
                 <div className="space-y-3">
-                    {filteredOffers.length === 0 ? (
+                    {isLoading ? (
+                        <div className="text-center py-12 text-secondary">
+                            Загрузка...
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12 text-red-500">
+                            Ошибка загрузки
+                        </div>
+                    ) : offers.length === 0 ? (
                         <div className="text-center py-12 text-secondary">
                             Предложений не найдено
                         </div>
                     ) : (
-                        filteredOffers.map(offer => (
+                        offers.map(offer => (
                             <OfferCard
-                                key={offer.id}
+                                key={offer.offer_id}
                                 offer={offer}
                                 type="buy"
                                 onAction={() => {
                                     haptic.impact('medium');
-                                    alert(`Покупка ${offer.gb} GB у ${offer.seller}`);
+                                    alert(`Покупка ${offer.amount_gb} GB`);
                                 }}
                             />
                         ))
@@ -149,8 +152,8 @@ function TabButton({
         <button
             onClick={onClick}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${active
-                    ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                    : 'text-[var(--color-text-secondary)]'
+                ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                : 'text-[var(--color-text-secondary)]'
                 }`}
         >
             {children}
@@ -158,25 +161,18 @@ function TabButton({
     );
 }
 
-interface Offer {
-    id: string;
-    operator: string;
-    gb: number;
-    price: number;
-    seller: string;
-    rating: number;
+interface OfferProps {
+    offer: GigabyteOffer;
+    type: 'buy' | 'sell';
+    onAction: () => void;
 }
 
 function OfferCard({
     offer,
     type,
     onAction
-}: {
-    offer: Offer;
-    type: 'buy' | 'sell';
-    onAction: () => void;
-}) {
-    const op = operators.find(o => o.id === offer.operator);
+}: OfferProps) {
+    const op = operators.find(o => o.id === offer.operator.toLowerCase());
 
     return (
         <div className="card flex items-center gap-4">
@@ -185,19 +181,19 @@ function OfferCard({
                 className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
                 style={{ backgroundColor: op?.color || '#666' }}
             >
-                {offer.gb}
+                {offer.amount_gb}
             </div>
 
             {/* Info */}
             <div className="flex-1">
                 <div className="flex items-center gap-2">
-                    <span className="font-semibold">{offer.gb} GB</span>
+                    <span className="font-semibold">{offer.amount_gb} GB</span>
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: op?.color + '20', color: op?.color }}>
-                        {op?.name}
+                        {op?.name || offer.operator}
                     </span>
                 </div>
                 <div className="text-sm text-secondary mt-0.5">
-                    {offer.seller} • ⭐ {offer.rating}
+                    User #{offer.seller_id}
                 </div>
             </div>
 
@@ -245,8 +241,8 @@ function SellForm({ onSubmit }: { onSubmit: () => void }) {
                                 setOperator(op.id);
                             }}
                             className={`py-3 rounded-xl font-medium transition-colors ${operator === op.id
-                                    ? 'text-white'
-                                    : 'bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]'
+                                ? 'text-white'
+                                : 'bg-[var(--color-bg-tertiary)] border border-[var(--color-border-default)]'
                                 }`}
                             style={operator === op.id ? { backgroundColor: op.color } : {}}
                         >

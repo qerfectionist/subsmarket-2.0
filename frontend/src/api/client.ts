@@ -108,6 +108,25 @@ export interface CreateClubRequest {
     rules?: string;
 }
 
+export interface GigabyteOffer {
+    offer_id: string;
+    seller_id: number;
+    operator: string;
+    amount_gb: number;
+    price: number;
+    description: string | null;
+    created_at: string;
+    is_active: boolean;
+    // seller info might be expanded or separate
+}
+
+export interface CreateGigabyteOfferRequest {
+    operator: string;
+    amount_gb: number;
+    price: number;
+    description?: string;
+}
+
 // ============================================
 // API Methods
 // ============================================
@@ -162,6 +181,31 @@ export const api = {
     // My clubs
     async getMyClubs(): Promise<Club[]> {
         return apiFetch<Club[]>('/users/me/clubs');
+    },
+
+    // ============================================
+    // GB Market
+    // ============================================
+
+    async getGigabyteOffers(params?: { operator?: string }): Promise<GigabyteOffer[]> {
+        const searchParams = new URLSearchParams();
+        if (params?.operator) searchParams.set('operator', params.operator);
+
+        const query = searchParams.toString();
+        return apiFetch<GigabyteOffer[]>(`/gigabytes${query ? `?${query}` : ''}`);
+    },
+
+    async createGigabyteOffer(data: CreateGigabyteOfferRequest): Promise<GigabyteOffer> {
+        return apiFetch<GigabyteOffer>('/gigabytes', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    async buyGigabyteOffer(offerId: string): Promise<void> {
+        return apiFetch<void>(`/gigabytes/${offerId}/buy`, {
+            method: 'POST',
+        });
     },
 };
 

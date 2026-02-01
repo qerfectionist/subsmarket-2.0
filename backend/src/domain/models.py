@@ -122,9 +122,8 @@ class Club(Base, SoftDeleteMixin):
     # Status
     status: Mapped[str] = mapped_column(String(20), default="open")
     
-    # Credentials (encrypted, only for digital clubs)
-    login_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    password_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Credentials (removed for security - "No Escrow" policy)
+    # Passwords are NOT stored in DB. They are passed via ephemeral messages or handled off-platform.
     
     # Payment
     payment_method: Mapped[str] = mapped_column(String(50), default="kaspi")
@@ -180,3 +179,78 @@ class ClubMember(Base):
     # Relationships
     club: Mapped["Club"] = relationship(back_populates="members")
     user: Mapped["User"] = relationship(back_populates="memberships")
+
+
+# ============================================================================
+# GIGABYTE MARKET (P2P Data Sharing)
+# ============================================================================
+
+class GigabyteOffer(Base, SoftDeleteMixin):
+    """Offer to sell mobile data (GB)."""
+    __tablename__ = "gigabyte_offers"
+    
+    offer_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    
+    seller_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    
+    operator: Mapped[str] = mapped_column(String(50), nullable=False)  # Beeline, Tele2, etc.
+    amount_gb: Mapped[int] = mapped_column(Integer, nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    seller: Mapped["User"] = relationship()
+
+
+# ============================================================================
+# P2P DEALS (Transaction Workflow)
+# ============================================================================
+
+class Deal(Base):
+    """P2P transaction for Clubs or GBs."""
+    __tablename__ = "deals"
+    
+    deal_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    
+    buyer_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    seller_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    
+    # Type of deal
+    offer_type: Mapped[str] = mapped_column(String(20), nullable=False)  # 'gigabyte' | 'club'
+    
+    # Links to specific offers (only one SHOULD be set)
+    gb_offer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("gigabyte_offers.offer_id"), nullable=True
+    )
+    club_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        ForeignKey("clubs.club_id"), nullable=True
+    )
+    
+    # Status Workflow
+    # CREATED -> WAITING_PAYMENT -> PAID_BY_BUYER -> COMPLETED
+    #                                            -> DISPUTED
+    #         -> CANCELLED
+    status: Mapped[str] = mapped_column(String(20), default="CREATED")
+    
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    
+    # Evidence
+    proof_screenshot_id: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    buyer: Mapped["User"] = relationship(foreign_keys=[buyer_id])
+    seller: Mapped["User"] = relationship(foreign_keys=[seller_id])
+    gb_offer: Mapped["GigabyteOffer"] = relationship()
+    club: Mapped["Club"] = relationship()

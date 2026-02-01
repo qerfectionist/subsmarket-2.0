@@ -11,6 +11,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",  # Ignore extra .env vars
     )
     
     # App
@@ -21,17 +22,22 @@ class Settings(BaseSettings):
     # Database (Neon PostgreSQL)
     database_url: str = "postgresql+asyncpg://user:pass@host/dbname"
     
-    # Redis
+    # Redis (optional)
     redis_url: str = "redis://localhost:6379/0"
     
     # Telegram
     telegram_bot_token: str = ""
     
     # Security
-    encryption_key: str = ""  # 32-byte key for Fernet
+    secret_key: str = "dev-secret-key"
     
     # CORS
-    cors_origins: list[str] = ["*"]
+    cors_origins: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "https://subsmarket.vercel.app"  # Future production URL
+    ]
 
 
 @lru_cache
