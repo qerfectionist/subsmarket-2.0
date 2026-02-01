@@ -6,6 +6,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.api import api_router
 from src.config import get_settings
 
 
@@ -46,8 +47,8 @@ def create_app() -> FastAPI:
     async def health_check() -> dict[str, str]:
         return {"status": "ok", "version": settings.app_version}
     
-    # API routes will be added here
-    # app.include_router(clubs_router, prefix="/api/v1")
+    # API routes
+    app.include_router(api_router)
     
     return app
 

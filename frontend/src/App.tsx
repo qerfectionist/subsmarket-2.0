@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { ClubsPage } from './pages/ClubsPage';
+import { CreateClubPage } from './pages/CreateClubPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { GBMarketPage } from './pages/GBMarketPage';
 import { Layout } from './components/Layout';
 
 function App() {
@@ -11,11 +13,11 @@ function App() {
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
                     <Route path="clubs" element={<ClubsPage />} />
+                    <Route path="clubs/create" element={<CreateClubPage />} />
+                    <Route path="gb-market" element={<GBMarketPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                     {/* Future routes */}
                     {/* <Route path="clubs/:id" element={<ClubDetailsPage />} /> */}
-                    {/* <Route path="clubs/create" element={<CreateClubPage />} /> */}
-                    {/* <Route path="gb-market" element={<GBMarketPage />} /> */}
                 </Route>
             </Routes>
         </BrowserRouter>
