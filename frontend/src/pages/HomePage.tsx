@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 export function HomePage() {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
@@ -6,10 +8,10 @@ export function HomePage() {
             {/* Header */}
             <header className="mb-6">
                 <h1 className="text-2xl font-bold">
-                    Привет{user?.first_name ? `, ${user.first_name}` : ''}! 👋
+                    {t('home', 'greeting')}{user?.first_name ? `, ${user.first_name}` : ''}! 👋
                 </h1>
                 <p className="text-secondary mt-1">
-                    Твоя площадка для подписок и гигабайтов
+                    {t('home', 'subtitle')}
                 </p>
             </header>
 
@@ -17,37 +19,37 @@ export function HomePage() {
             <section className="grid grid-cols-2 gap-3 mb-6">
                 <ActionCard
                     emoji="📺"
-                    title="Подписки"
-                    subtitle="Netflix, Spotify, YouTube"
+                    title={t('home', 'subscriptions')}
+                    subtitle={t('home', 'subscriptions_desc')}
                     href="/clubs?type=digital"
                 />
                 <ActionCard
                     emoji="📱"
-                    title="Связь"
-                    subtitle="Beeline, Tele2, Altel"
+                    title={t('home', 'telecom')}
+                    subtitle={t('home', 'telecom_desc')}
                     href="/clubs?type=telecom"
                 />
                 <ActionCard
                     emoji="📊"
-                    title="GB Маркет"
-                    subtitle="Купить и продать ГБ"
+                    title={t('home', 'gb_market')}
+                    subtitle={t('home', 'gb_market_desc')}
                     href="/gb-market"
                 />
                 <ActionCard
                     emoji="🔐"
-                    title="Аккаунты"
-                    subtitle="Скоро"
+                    title={t('home', 'accounts')}
+                    subtitle={t('home', 'accounts_desc')}
                     disabled
                 />
             </section>
 
-            {/* Stats placeholder */}
+            {/* Stats */}
             <section className="card">
-                <h2 className="text-lg font-semibold mb-3">Твоя статистика</h2>
+                <h2 className="text-lg font-semibold mb-3">{t('home', 'stats_title')}</h2>
                 <div className="grid grid-cols-3 gap-4 text-center">
-                    <StatItem value="0" label="Клубов" />
-                    <StatItem value="5.0" label="Рейтинг" />
-                    <StatItem value="0" label="Сделок" />
+                    <StatItem value="0" label={t('home', 'stats_clubs')} />
+                    <StatItem value="5.0" label={t('home', 'stats_rating')} />
+                    <StatItem value="0" label={t('home', 'stats_deals')} />
                 </div>
             </section>
         </div>
@@ -96,7 +98,7 @@ function ActionCard({
 function StatItem({ value, label }: { value: string; label: string }) {
     return (
         <div>
-            <div className="text-xl font-bold text-accent">{value}</div>
+            <div className="text-xl font-bold text-[var(--color-accent)]">{value}</div>
             <div className="text-xs text-tertiary">{label}</div>
         </div>
     );

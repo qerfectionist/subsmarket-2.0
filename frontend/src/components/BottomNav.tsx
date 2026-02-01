@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { useHaptic } from '@/hooks/useHaptic';
+import { t } from '@/i18n';
 
 const navItems = [
-    { path: '/', label: 'Главная', icon: '🏠' },
-    { path: '/clubs', label: 'Клубы', icon: '👥' },
-    { path: '/gb-market', label: 'GB', icon: '📊' },
-    { path: '/profile', label: 'Профиль', icon: '👤' },
+    { path: '/', label: () => t('nav', 'home'), icon: '🏠' },
+    { path: '/clubs', label: () => t('nav', 'clubs'), icon: '👥' },
+    { path: '/gb-market', label: () => t('nav', 'gb_market'), icon: '📊' },
+    { path: '/profile', label: () => t('nav', 'profile'), icon: '👤' },
 ];
 
 export function BottomNav() {
@@ -30,7 +31,7 @@ export function BottomNav() {
                         }
                     >
                         <span className="text-xl">{item.icon}</span>
-                        <span className="text-xs font-medium">{item.label}</span>
+                        <span className="text-xs font-medium">{item.label()}</span>
                     </NavLink>
                 ))}
             </div>
