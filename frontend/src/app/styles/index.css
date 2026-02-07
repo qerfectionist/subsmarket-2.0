@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-white antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  }
+}
+
+/* Glass Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  /* Increased for iOS feel */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+  /* Subtle depth */
+}
+
+/* iOS Typography Smoothing */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Telegram Overrides */
+:root {
+  --tg-theme-bg-color: #000000;
+  --tg-theme-secondary-bg-color: #000000;
+  --tg-theme-text-color: #ffffff;
+}
+
+/* Colors - Custom Variables for HeroUI v2 Overrides (if needed) */
+:root {
+  --color-bg-base: #000000;
+  --color-bg-layer-1: rgba(255, 255, 255, 0.05);
+  --color-bg-layer-2: rgba(255, 255, 255, 0.1);
+  --color-separator: rgba(255, 255, 255, 0.1);
+  --color-bg-secondary: #09090b;
+  /* Zinc 950 */
+  --color-bg-primary: #000000;
+  --color-bg-content: rgba(255, 255, 255, 0.05);
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-tertiary: rgba(255, 255, 255, 0.4);
+
+  --color-button: #3b82f6;
+  /* Blue 500 */
+}
