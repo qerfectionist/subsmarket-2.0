@@ -1,7 +1,7 @@
 """Infrastructure layer exports."""
 
-from src.infrastructure.auth import TelegramUser, get_current_user, validate_init_data
-from src.infrastructure.database import async_session_maker, engine, get_db
+from src.infrastructure.telegram.auth import TelegramUser, get_current_user, validate_init_data
+from src.infrastructure.persistence.database import async_session_maker, engine, get_db
 
 __all__ = [
     # Database

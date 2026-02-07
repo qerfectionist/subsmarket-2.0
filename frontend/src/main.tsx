@@ -1,11 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import App from './App';
-import './index.css';
+import App from '@/app/App';
+import '@/app/styles/index.css';
 
 // Initialize Telegram WebApp
-const tg = window.Telegram?.WebApp;
+const tg = (window as any).Telegram?.WebApp as any;
 if (tg) {
     tg.ready();
     tg.expand();
@@ -13,21 +12,9 @@ if (tg) {
     tg.setBackgroundColor('#000000');
 }
 
-// TanStack Query client
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
-            retry: 2,
-            refetchOnWindowFocus: false,
-        },
-    },
-});
-
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <App />
-        </QueryClientProvider>
+        <App />
     </StrictMode>
 );
+

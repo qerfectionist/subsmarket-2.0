@@ -7,28 +7,20 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain import Subscription
-from src.infrastructure.database import async_session_maker, engine
+from src.domain.entities.subscription import Subscription
+from src.infrastructure.persistence.database import async_session_maker, engine
 
 
-# Subscription seed data
+# Subscription seed data based on Market Intelligence analysis
 SUBSCRIPTIONS = [
-    # Digital subscriptions
+    # --- Digital subscriptions ---
     {
-        "service_name": "Netflix Premium",
-        "service_name_kk": "Netflix Premium",
+        "service_name": "Yandex Plus",
+        "service_name_kk": "Yandex Plus",
         "category": "digital",
-        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-        "max_members": 5,
-        "official_price": Decimal("5990"),
-    },
-    {
-        "service_name": "Spotify Family",
-        "service_name_kk": "Spotify Family",
-        "category": "digital",
-        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
-        "max_members": 6,
-        "official_price": Decimal("4290"),
+        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Yandex_Plus_logo.svg/1200px-Yandex_Plus_logo.svg.png",
+        "max_members": 4,
+        "official_price": Decimal("3800"), # Market anchor price (yearly usually, but used as base reference)
     },
     {
         "service_name": "YouTube Premium",
@@ -36,7 +28,39 @@ SUBSCRIPTIONS = [
         "category": "digital",
         "icon_url": "https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg",
         "max_members": 6,
-        "official_price": Decimal("5290"),
+        "official_price": Decimal("5400"), # 900 * 6 members approx
+    },
+    {
+        "service_name": "Spotify Premium",
+        "service_name_kk": "Spotify Premium",
+        "category": "digital",
+        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
+        "max_members": 6,
+        "official_price": Decimal("4200"), # 700 * 6 members approx
+    },
+    {
+        "service_name": "Netflix Premium",
+        "service_name_kk": "Netflix Premium",
+        "category": "digital",
+        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+        "max_members": 4, # Usually 4 screens
+        "official_price": Decimal("4800"), # ~1200 * 4
+    },
+    {
+        "service_name": "Duolingo Super",
+        "service_name_kk": "Duolingo Super",
+        "category": "digital",
+        "icon_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Duolingo_Owl.svg/1200px-Duolingo_Owl.svg.png",
+        "max_members": 6,
+        "official_price": Decimal("4200"), # Market anchor price (yearly)
+    },
+    {
+        "service_name": "Duolingo Max",
+        "service_name_kk": "Duolingo Max",
+        "category": "digital",
+        "icon_url": None, # Using placeholder in UI
+        "max_members": 6,
+        "official_price": Decimal("8400"), # Market anchor price (yearly)
     },
     {
         "service_name": "Apple Music",
@@ -44,86 +68,58 @@ SUBSCRIPTIONS = [
         "category": "digital",
         "icon_url": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Apple_Music_icon.svg",
         "max_members": 6,
-        "official_price": Decimal("4490"),
-    },
-    {
-        "service_name": "Яндекс Плюс",
-        "service_name_kk": "Яндекс Плюс",
-        "category": "digital",
-        "icon_url": None,
-        "max_members": 4,
-        "official_price": Decimal("2990"),
-    },
-    {
-        "service_name": "iCloud+ 2TB",
-        "service_name_kk": "iCloud+ 2TB",
-        "category": "digital",
-        "icon_url": None,
-        "max_members": 6,
-        "official_price": Decimal("4290"),
+        "official_price": Decimal("4500"),
     },
     {
         "service_name": "ChatGPT Plus",
         "service_name_kk": "ChatGPT Plus",
         "category": "digital",
         "icon_url": "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
-        "max_members": 1,
-        "official_price": Decimal("8900"),
+        "max_members": 1, # Usually shared account, not family
+        "official_price": Decimal("9000"),
     },
+    
+    # --- Telecom family plans ---
     {
-        "service_name": "Canva Pro",
-        "service_name_kk": "Canva Pro",
-        "category": "digital",
+        "service_name": "Tele2 (Выгодно вместе)",
+        "service_name_kk": "Tele2 (Тиімді бірге)",
+        "category": "telecom",
         "icon_url": None,
-        "max_members": 5,
-        "official_price": Decimal("5990"),
+        "max_members": 4, # Approx slots
+        "official_price": Decimal("10000"), # Base for sharing, usually ~2500 per person
     },
     {
-        "service_name": "Disney+",
-        "service_name_kk": "Disney+",
-        "category": "digital",
+        "service_name": "Altel 5G",
+        "service_name_kk": "Altel 5G",
+        "category": "telecom",
         "icon_url": None,
         "max_members": 4,
-        "official_price": Decimal("4490"),
+        "official_price": Decimal("10800"), # ~2700 per person
     },
-    # Telecom family plans
     {
         "service_name": "Beeline Семья",
         "service_name_kk": "Beeline Отбасы",
         "category": "telecom",
         "icon_url": None,
         "max_members": 5,
-        "official_price": Decimal("7990"),
+        "official_price": Decimal("18000"), # ~3600 per person
     },
     {
-        "service_name": "Tele2 Семья",
-        "service_name_kk": "Tele2 Отбасы",
+        "service_name": "Activ/Kcell",
+        "service_name_kk": "Activ/Kcell",
         "category": "telecom",
         "icon_url": None,
         "max_members": 4,
-        "official_price": Decimal("6990"),
-    },
-    {
-        "service_name": "Altel Семья",
-        "service_name_kk": "Altel Отбасы",
-        "category": "telecom",
-        "icon_url": None,
-        "max_members": 5,
-        "official_price": Decimal("8990"),
-    },
-    {
-        "service_name": "Kcell Семья",
-        "service_name_kk": "Kcell Отбасы",
-        "category": "telecom",
-        "icon_url": None,
-        "max_members": 4,
-        "official_price": Decimal("5990"),
+        "official_price": Decimal("8000"),
     },
 ]
 
 
 async def seed_subscriptions(db: AsyncSession) -> None:
     """Seed subscriptions table with initial data."""
+    
+    # Clear existing to ensure fresh market data
+    await db.execute(text("TRUNCATE TABLE subscriptions CASCADE"))
     
     for sub_data in SUBSCRIPTIONS:
         sub = Subscription(
@@ -134,25 +130,18 @@ async def seed_subscriptions(db: AsyncSession) -> None:
         db.add(sub)
     
     await db.commit()
-    print(f"✅ Seeded {len(SUBSCRIPTIONS)} subscriptions")
+    print(f"Seeded {len(SUBSCRIPTIONS)} subscriptions with Market Intelligence data")
 
 
 async def run_seed():
     """Run the seed script."""
-    print("🌱 Starting seed...")
+    # Force UTF-8 for Windows console if needed, or just remove emojis for safety
+    print("Starting seed...") 
     
     async with async_session_maker() as db:
-        # Check if already seeded
-        result = await db.execute(text("SELECT COUNT(*) FROM subscriptions"))
-        count = result.scalar()
-        
-        if count and count > 0:
-            print(f"⚠️  Database already has {count} subscriptions. Skipping seed.")
-            return
-        
         await seed_subscriptions(db)
     
-    print("✅ Seed complete!")
+    print("Seed complete!")
 
 
 if __name__ == "__main__":

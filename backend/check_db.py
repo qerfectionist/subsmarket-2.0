@@ -25,15 +25,15 @@ async def check_db():
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT version()"))
             version = result.scalar()
-            print(f"✅ Connection successful! DB Version: {version}")
+            print(f"Connection successful! DB Version: {version}")
             
             # Check tables
             result = await conn.execute(text("SELECT count(*) FROM subscriptions"))
             count = result.scalar()
-            print(f"✅ Subscriptions count: {count}")
+            print(f"Subscriptions count: {count}")
             
     except Exception as e:
-        print(f"❌ Connection failed: {e}")
+        print(f"Connection failed: {e}")
 
 if __name__ == "__main__":
     asyncio.run(check_db())

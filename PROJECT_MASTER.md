@@ -14,10 +14,119 @@
 ### Ключевые принципы (ЖЕЛЕЗНЫЕ ПРАВИЛА)
 
 | Правило | Описание | Нарушение = REJECT |
-|---------|----------|-------------------|
+| --------- | ---------- | ------------------- |
 | **No Escrow** | Платформа НИКОГДА не принимает деньги | 🔴 |
 | **No Warranty** | Мы не гарантируем работу товара | 🔴 |
 | **Passive Platform** | Мы — доска объявлений, не магазин | 🔴 |
+
+### 1.1 Бизнес-правила
+
+#### Модерация и Споры
+
+- **Жалобы** обрабатываются через поддержку + ИИ-модерацию
+- **Бан** при подтверждённом обмане (кидалово, мошенничество)
+- **Репорт-система** — пользователи могут жаловаться, ИИ принимает решение
+
+#### Семейные подписки (Clubs)
+
+- Оплата участников → на банк хоста (Kaspi по умолчанию, другие банки опционально)
+- Неплатёж → хост связывается с участником, решает сам
+- Хост может исключить участника **только если тот не платит**
+- **Нет статуса frozen** — только закрытие клуба
+- Автоматические напоминания: за 3 дня до платежа + в день платежа
+
+#### GB Маркетплейс & Аккаунты
+
+- **P2P модель**: продавец получает деньги → отправляет товар → обе стороны подтверждают сделку
+- Общение и передача происходят **вне платформы** (через Telegram DM)
+- Мы — только доска объявлений
+
+#### Платёжные методы
+
+- Банковский перевод по номеру телефона (Kaspi, Halyk, Jusan и др.)
+- **Номер телефона обязателен** при создании объявления/клуба
+- Никаких Telegram Stars / Payments
+
+---
+
+### 1.2 Trust System (Система репутации)
+
+#### Рейтинг доверия
+
+| Параметр | Значение |
+| --- | --- |
+| Начальный рейтинг | **5.0** |
+| Минимум | 1.0 |
+| Максимум | 5.0 |
+
+**Отображение:** `Елдос ⭐ 4.8 (103)` — рейтинг + количество сделок
+
+#### Изменение рейтинга
+
+| Событие | Влияние |
+| --- | --- |
+| Успешная сделка | **+0.1** (макс. до 5.0) |
+| Жалоба подтверждена (первая) | -0.5 |
+| Жалоба подтверждена (повторная) | -1.0 |
+| Отмена сделки продавцом | -0.2 |
+| Бан за мошенничество | → 0.0 + удаление аккаунта |
+
+#### Ограничения
+
+| Рейтинг | Последствие |
+| --- | --- |
+| < 3.0 | ⚠️ Пометка "Низкий рейтинг" |
+| < 2.0 | 🚫 Нельзя создавать объявления |
+| < 1.0 | 🚫 Бан |
+
+#### Бейджи
+
+| Бейдж | Условие | Иконка |
+| --- | --- | --- |
+| Новичок | 0 сделок | 🆕 |
+| Проверенный | 10+ сделок, рейтинг ≥ 4.5 | ✅ |
+| Опытный продавец | 50+ сделок, рейтинг ≥ 4.5 | 🥉 |
+| Золотой продавец | 100+ сделок, рейтинг ≥ 4.8 | 🥇 |
+| Платиновый продавец | 500+ сделок, рейтинг = 5.0 | 💎 |
+| Быстро отвечает | Среднее время ответа < 1 час | ⚡ |
+| Топ недели | Больше всего сделок за неделю | 🔥 |
+
+#### Anti-Abuse защита
+
+| Защита | Описание |
+| --- | --- |
+| Минимальная сумма | Сделки < 500₸ не влияют на рейтинг |
+| Уникальные пары | Сделки между одними юзерами засчитываются max 3 раза |
+| Возраст аккаунта | Аккаунт < 7 дней — сделки не влияют на рейтинг |
+| AI-детекция | Подозрительные паттерны → ручная проверка |
+| Штраф за накрутку | рейтинг = 0.0 + бан |
+
+---
+
+### 1.3 Тарифы и Лимиты
+
+#### Бесплатные лимиты
+
+| Функция | Лимит |
+| --- | --- |
+| Клубы (владение) | 3 бесплатно, далее платно |
+| Клубы (участие) | Без ограничений |
+| GB объявления | 3 активных бесплатно |
+| Account объявления | 3 активных бесплатно |
+| Срок объявления | 7 дней (Free) |
+
+#### Платные тарифы (для продавцов)
+
+| Тариф | Цена | Объявлений | Срок |
+| --- | --- | --- | --- |
+| Free | 0₸ | 3 | 7 дней |
+| Basic | 500₸/мес | 10 | 30 дней |
+| Pro | 1500₸/мес | ∞ | 30 дней + приоритет |
+
+#### Anti-spam
+
+- Cooldown между объявлениями: **1 минута**
+- Авто-удаление неактивных объявлений: **30 дней**
 
 ---
 
@@ -25,7 +134,7 @@
 
 ### 2.1 Общая архитектура
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────┐
 │                    Telegram Mini App (TWA)                   │
 ├─────────────────────────────────────────────────────────────┤
@@ -42,7 +151,7 @@
 
 ### 2.2 Backend (DDD Architecture)
 
-```
+```bash
 backend/
 ├── src/
 │   ├── domain/           # 🧠 Бизнес-логика (NO FRAMEWORKS)
@@ -78,7 +187,7 @@ backend/
 
 ### 2.3 Frontend Architecture
 
-```
+```bash
 frontend/
 ├── src/
 │   ├── app/              # 🎯 App shell
@@ -125,7 +234,7 @@ frontend/
 ### 3.1 Кеширование
 
 | Уровень | Технология | TTL | Что кешируем |
-|---------|------------|-----|--------------|
+| --------- | ------------ | ----- | -------------- |
 | **Browser** | Service Worker | 1h | Static assets |
 | **API** | TanStack Query | 5m | Listings, Clubs |
 | **Backend** | Redis | 10m | User profiles, Trust scores |
@@ -179,7 +288,7 @@ export default defineConfig({
 ### 3.3 Безопасность
 
 | Угроза | Защита | Реализация |
-|--------|--------|------------|
+| -------- | -------- | ------------ |
 | **XSS** | Content Security Policy | `<meta>` + headers |
 | **CSRF** | Telegram InitData validation | Backend middleware |
 | **SQL Injection** | SQLAlchemy ORM | Parameterized queries |
@@ -213,182 +322,11 @@ def validate_init_data(init_data: str, bot_token: str) -> bool:
 
 ---
 
-## 4. 🎨 UX/UI Стандарты
+## 4. 📐 Правила разработки
 
-### 4.1 Design System (iOS 2026 Style)
+### 4.1 Структура проекта
 
-#### Цветовая палитра
-
-```css
-:root {
-  /* Semantic colors */
-  --color-primary: #007AFF;
-  --color-success: #34C759;
-  --color-warning: #FF9500;
-  --color-error: #FF3B30;
-  
-  /* Neutral (Light mode) */
-  --color-bg-primary: #FFFFFF;
-  --color-bg-secondary: #F2F2F7;
-  --color-text-primary: #000000;
-  --color-text-secondary: #8E8E93;
-  --color-separator: rgba(60, 60, 67, 0.12);
-  
-  /* Dark mode */
-  .dark {
-    --color-bg-primary: #000000;
-    --color-bg-secondary: #1C1C1E;
-    --color-text-primary: #FFFFFF;
-    --color-text-secondary: #8E8E93;
-    --color-separator: rgba(84, 84, 88, 0.36);
-  }
-}
-```
-
-#### Типографика
-
-```css
-:root {
-  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
-  
-  /* Scale */
-  --text-xs: 0.6875rem;    /* 11px */
-  --text-sm: 0.8125rem;    /* 13px */
-  --text-base: 0.9375rem;  /* 15px */
-  --text-lg: 1.0625rem;    /* 17px */
-  --text-xl: 1.25rem;      /* 20px */
-  --text-2xl: 1.5rem;      /* 24px */
-  --text-3xl: 2rem;        /* 32px */
-}
-```
-
-#### Spacing (4px grid)
-
-```css
---space-1: 0.25rem;  /* 4px */
---space-2: 0.5rem;   /* 8px */
---space-3: 0.75rem;  /* 12px */
---space-4: 1rem;     /* 16px */
---space-5: 1.25rem;  /* 20px */
---space-6: 1.5rem;   /* 24px */
---space-8: 2rem;     /* 32px */
-```
-
-### 4.2 Адаптивность
-
-```typescript
-// Breakpoints (mobile-first for TWA)
-const breakpoints = {
-  sm: '375px',   // iPhone SE
-  md: '390px',   // iPhone 14
-  lg: '428px',   // iPhone 14 Pro Max
-  xl: '768px',   // Tablet (редко в TWA)
-};
-
-// Safe Areas для Dynamic Island
-const safeAreas = {
-  top: 'env(safe-area-inset-top)',
-  bottom: 'env(safe-area-inset-bottom)',
-  left: 'env(safe-area-inset-left)',
-  right: 'env(safe-area-inset-right)',
-};
-```
-
-### 4.3 Доступность (a11y)
-
-| Требование | Реализация |
-|------------|------------|
-| **Contrast** | WCAG AA (4.5:1 для текста) |
-| **Touch targets** | min 44x44px |
-| **Focus states** | Visible focus ring |
-| **Screen readers** | aria-labels, roles |
-| **Reduced motion** | `prefers-reduced-motion` |
-
-```typescript
-// Haptic feedback hook
-function useHaptic() {
-  const haptic = useTelegramWebApp().HapticFeedback;
-  
-  return {
-    impact: (style: 'light' | 'medium' | 'heavy') => 
-      haptic?.impactOccurred(style),
-    notification: (type: 'success' | 'warning' | 'error') => 
-      haptic?.notificationOccurred(type),
-    selection: () => haptic?.selectionChanged(),
-  };
-}
-
-// Использование
-const { impact } = useHaptic();
-<Button onClick={() => { impact('light'); handleClick(); }}>
-```
-
-### 4.4 Обработка ошибок
-
-```typescript
-// Error Boundary
-class ErrorBoundary extends Component {
-  state = { hasError: false, error: null };
-  
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-  
-  render() {
-    if (this.state.hasError) {
-      return <ErrorFallback error={this.state.error} />;
-    }
-    return this.props.children;
-  }
-}
-
-// API Error handling
-const useApiMutation = () => {
-  const { notification } = useHaptic();
-  
-  return useMutation({
-    onError: (error) => {
-      notification('error');
-      toast.error(getErrorMessage(error));
-    },
-    onSuccess: () => {
-      notification('success');
-    },
-  });
-};
-```
-
-### 4.5 Валидация форм
-
-```typescript
-// Zod schemas
-const createListingSchema = z.object({
-  operator: z.enum(['beeline', 'activ', 'tele2', 'altel']),
-  amount: z.number().min(1).max(100),
-  price: z.number().min(50).max(500),
-  description: z.string().max(200).optional(),
-});
-
-// React Hook Form integration
-const { register, handleSubmit, formState: { errors } } = useForm({
-  resolver: zodResolver(createListingSchema),
-});
-
-// Inline validation feedback
-<Input 
-  {...register('price')}
-  error={errors.price?.message}
-  hint="Рекомендуемая цена: 100-150₸ за ГБ"
-/>
-```
-
----
-
-## 5. 📐 Правила разработки
-
-### 5.1 Структура проекта
-
-```
+```bash
 subsmarket-2.0/
 ├── backend/              # Python FastAPI
 ├── frontend/             # React + Vite
@@ -402,7 +340,7 @@ subsmarket-2.0/
 └── PROJECT_MASTER.md     # ЭТО ФАЙЛ
 ```
 
-### 5.2 Стиль кода
+### 4.2 Стиль кода
 
 #### Python (Backend)
 
@@ -450,7 +388,7 @@ const MAX_RETRY_COUNT = 3;    // SCREAMING_SNAKE для констант
 const ClubCard: FC<ClubCardProps> = () => {}  // PascalCase
 ```
 
-### 5.3 Git Conventions
+### 4.3 Git Conventions
 
 ```bash
 # Branch naming
@@ -468,10 +406,10 @@ docs: update PROJECT_MASTER.md
 chore: update dependencies
 ```
 
-### 5.4 Тестирование
+### 4.4 Тестирование
 
 | Уровень | Покрытие | Инструменты |
-|---------|----------|-------------|
+| --------- | ---------- | ------------- |
 | **Unit** | 80%+ | pytest / vitest |
 | **Integration** | 60%+ | pytest + httpx |
 | **E2E** | Critical paths | Playwright |
@@ -500,7 +438,7 @@ src/
 │           └── useClubs.test.ts
 ```
 
-### 5.5 CI/CD Pipeline
+### 4.5 CI/CD Pipeline
 
 ```yaml
 # .github/workflows/ci.yml
@@ -539,12 +477,12 @@ jobs:
 
 ---
 
-## 6. 🤖 API Reference
+## 5. 🤖 API Reference
 
-### 6.1 Endpoints Overview
+### 5.1 Endpoints Overview
 
 | Module | Endpoint | Method | Description |
-|--------|----------|--------|-------------|
+| -------- | ---------- | -------- | ------------- |
 | **Auth** | `/api/auth/telegram` | POST | Validate Telegram InitData |
 | **Clubs** | `/api/clubs` | GET | List all clubs |
 | | `/api/clubs` | POST | Create new club |
@@ -555,7 +493,7 @@ jobs:
 | **Profile** | `/api/users/me` | GET | Get current user |
 | | `/api/users/{id}/trust` | GET | Get trust score |
 
-### 6.2 Response Format
+### 5.2 Response Format
 
 ```typescript
 // Success
@@ -582,7 +520,7 @@ jobs:
 
 ---
 
-## 7. 📋 Чеклист для ИИ-агентов
+## 6. 📋 Чеклист для ИИ-агентов
 
 ### @DIRECTOR
 
@@ -602,13 +540,6 @@ jobs:
 - [ ] 100% async/await
 - [ ] Pydantic v2 schemas
 
-### @PICASSO
-
-- [ ] iOS HIG 2026 соблюдён
-- [ ] Haptic на каждое действие
-- [ ] Нет glassmorphism/blur
-- [ ] Safe Areas учтены
-
 ### @REACTOR
 
 - [ ] Lazy loading для роутов
@@ -626,4 +557,86 @@ jobs:
 
 ---
 
-*Последнее обновление: 2026-02-01*
+## 7. 🛠 Инфраструктура и Деплой
+
+### 7.1 Production Stack
+
+| Компонент | Сервис | Причина |
+| ----------- | -------- | --------- |
+| Frontend | **Vercel** | Бесплатно, автодеплой, CDN |
+| Backend | **Railway** | Простой деплой, $5/mo достаточно |
+| Database | **Neon PostgreSQL** | Serverless, бесплатный tier |
+| Cache | **Upstash Redis** | Serverless, 10k req/day бесплатно |
+| Automation | **n8n** | Self-hosted, workflow автоматизация |
+
+### 7.2 Уведомления
+
+**Канал:** Telegram Bot API (напрямую в ЛС пользователю)
+
+| Событие | Уведомление |
+| --------- | ------------- |
+| Новая заявка на вступление | → Хосту клуба |
+| Заявка одобрена | → Участнику |
+| Напоминание об оплате | За 3 дня + в день платежа |
+| Сделка подтверждена | Обеим сторонам |
+| Жалоба подана | Администратору |
+
+### 7.3 Локализация (i18n)
+
+| Язык | Код |
+| ------ | ----- |
+| Русский   | `ru` |
+| Казахский | `kk` |
+
+- Автоопределение по `language_code` из Telegram
+- JSON файлы: `frontend/src/shared/i18n/{ru,kk}.json`
+
+### 7.4 Аналитика
+
+**Сервис:** PostHog (self-hosted или cloud, 1M events/month бесплатно)
+
+**Ключевые метрики:**
+
+- DAU / WAU / MAU
+- Сделок в день
+- Конверсия: посещение → создание объявления
+- Retention (возвращаемость на 1/7/30 день)
+
+### 7.5 Дополнительные функции
+
+| Функция | Статус | Описание |
+| --------- | -------- | ---------- |
+| Избранное | ✅ Да | Сохранение объявлений в закладки |
+| Фильтры | ✅ Да | По оператору, цене, объёму ГБ |
+| Полнотекстовый поиск | ✅ Да | Поиск по названию/описанию |
+| In-app чат | ❌ Нет | Только Telegram DM |
+| Реферальная система | ❌ Нет | Не планируется |
+| Telegram Stars | ❌ Нет | Не планируется |
+
+---
+
+## 8. 📚 Дополнительная документация
+
+> Документы сгенерированы на основе анализа 7.5 МБ чат-логов сообщества
+
+| Документ | Описание |
+| -------- | -------- |
+| [Market Intelligence](data/market_intelligence.md) | Ценовые бенчмарки, персоны пользователей, pain points, anti-fraud |
+| [Pricing Database](data/pricing_database.json) | JSON-база цен для интеграции в приложение |
+| [User Stories](docs/user_stories.md) | Пользовательские истории с acceptance criteria |
+| [Implementation Roadmap](docs/implementation_roadmap.md) | План реализации, схема БД, API endpoints |
+| [UI/UX Specs](docs/ui_ux_specs.md) | Wireframes, цветовая система, компоненты |
+| [Strings (RU)](docs/strings_ru.md) | Все текстовые строки для i18n |
+| [Chat Analysis](data/chat_analysis.md) | Полный анализ 100 частей чат-логов |
+
+### Ключевые инсайты из анализа
+
+- **Рыночные цены:** YouTube Premium 800-1200₸, Netflix 1200-2000₸, Яндекс Плюс 2000-4000₸/год
+- **Главная боль:** Мошенничество и неплатежи → Trust Score критически важен
+- **Правило сообщества:** "Сначала вступи, потом плати" — золотой стандарт
+- **Рекомендация:** Месячная оплата вместо годовой снижает риски
+- **Растущий тренд:** AI-подписки (Gemini, Copilot) набирают популярность
+
+---
+
+*Последнее обновление: 2026-02-06*
