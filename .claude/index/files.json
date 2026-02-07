@@ -1,0 +1,2618 @@
+[
+  {
+    "path": "AGENTS.md",
+    "size": 10026,
+    "hash": "bd89a228f66887a2c2e0d9a90f312436",
+    "mtime": "2026-02-06T23:44:51.782Z",
+    "lines": 374,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/check_db.py",
+    "size": 1321,
+    "hash": "1b2415637fe5c480a327fe846371328c",
+    "mtime": "2026-02-01T21:26:14.265Z",
+    "lines": 40,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/migrations/env.py",
+    "size": 2963,
+    "hash": "5e20edfabb43d250b9e8ebef31193f1e",
+    "mtime": "2026-02-01T20:38:55.079Z",
+    "lines": 108,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/migrations/versions/14ba96a62466_add_dispute_and_club_approval_settings.py",
+    "size": 7822,
+    "hash": "195d352f94417d50a65c2edc069677fc",
+    "mtime": "2026-02-06T21:58:24.461Z",
+    "lines": 159,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/migrations/versions/29b8fdcd9e75_initial_schema.py",
+    "size": 7682,
+    "hash": "07cc7682648b17197783839b33ac2e5f",
+    "mtime": "2026-02-01T22:08:56.016Z",
+    "lines": 155,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/migrations/versions/7e69231183c1_add_account_offers_v2.py",
+    "size": 17127,
+    "hash": "86502ee39c8831a773b48e0cb2cf1480",
+    "mtime": "2026-02-01T20:23:02.548Z",
+    "lines": 368,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/migrations/versions/8f72a1b3c4d5_add_pricing_and_trust.py",
+    "size": 8694,
+    "hash": "2f93a251c21b316bb05354be6f9a533a",
+    "mtime": "2026-02-06T15:09:35.844Z",
+    "lines": 161,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/pyproject.toml",
+    "size": 1026,
+    "hash": "1046bc1efd58eaccff1290f138e4f95f",
+    "mtime": "2026-02-01T17:38:13.584Z",
+    "lines": 46,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/src/application/services/club_service.py",
+    "size": 11574,
+    "hash": "3401d0986fd82c2fb5dc0fbdd5455e24",
+    "mtime": "2026-02-06T21:59:57.039Z",
+    "lines": 274,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/config.py",
+    "size": 1261,
+    "hash": "6b3825424a6e02224728955ac51ee190",
+    "mtime": "2026-02-06T21:47:57.231Z",
+    "lines": 50,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/base.py",
+    "size": 463,
+    "hash": "689f197a9ae9ab903b17f111745650bf",
+    "mtime": "2026-02-01T20:28:40.606Z",
+    "lines": 14,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/club.py",
+    "size": 3941,
+    "hash": "c19dd71673738b71fe1ac89f4d023a08",
+    "mtime": "2026-02-06T21:57:55.603Z",
+    "lines": 102,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/deal.py",
+    "size": 2907,
+    "hash": "c960ccf1250f866559e4741a962e2514",
+    "mtime": "2026-02-06T22:17:36.556Z",
+    "lines": 70,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/market.py",
+    "size": 2243,
+    "hash": "c5586fbe7d0da6ea4afecc5a75788be5",
+    "mtime": "2026-02-01T20:29:09.357Z",
+    "lines": 58,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/pricing.py",
+    "size": 3482,
+    "hash": "24c23c01d7ff221e3b447621fa3d1ba6",
+    "mtime": "2026-02-06T14:42:40.902Z",
+    "lines": 78,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/subscription.py",
+    "size": 1314,
+    "hash": "b52a80a7f93370c3882bf664f07b2aa8",
+    "mtime": "2026-02-01T20:28:47.466Z",
+    "lines": 33,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/trust.py",
+    "size": 4710,
+    "hash": "9f85afe9e5c19a9e8905a37050a4b7bf",
+    "mtime": "2026-02-06T14:42:43.384Z",
+    "lines": 117,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/entities/user.py",
+    "size": 1546,
+    "hash": "18d7a84ec13f38af9d8db19376437f85",
+    "mtime": "2026-02-01T20:28:44.328Z",
+    "lines": 37,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/enums.py",
+    "size": 1891,
+    "hash": "6363bccddf9c7acf34aef9e6bacfeaac",
+    "mtime": "2026-02-01T16:16:46.988Z",
+    "lines": 63,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/services/trust_service.py",
+    "size": 2621,
+    "hash": "a98c413fc6256c9f15fca9932b69f104",
+    "mtime": "2026-02-06T15:15:08.295Z",
+    "lines": 85,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/domain/services/__init__.py",
+    "size": 124,
+    "hash": "fe9ae9dd72224d7b4e680a1d039c627a",
+    "mtime": "2026-02-06T15:15:14.163Z",
+    "lines": 6,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/src/domain/__init__.py",
+    "size": 1085,
+    "hash": "912455edb6f02f1cb8976ab46be21d3c",
+    "mtime": "2026-02-06T14:43:45.594Z",
+    "lines": 47,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/src/infrastructure/persistence/database.py",
+    "size": 1153,
+    "hash": "a0ac0ccea75766018ea78337a934174d",
+    "mtime": "2026-02-01T20:29:30.785Z",
+    "lines": 43,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/infrastructure/telegram/auth.py",
+    "size": 4252,
+    "hash": "774cb54f14945861452e2681e5e0b4f0",
+    "mtime": "2026-02-01T20:29:39.795Z",
+    "lines": 137,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/infrastructure/__init__.py",
+    "size": 387,
+    "hash": "3f8f31d3c44220fcac8262db6ada384a",
+    "mtime": "2026-02-01T20:32:44.957Z",
+    "lines": 16,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/src/interface/api/accounts.py",
+    "size": 1754,
+    "hash": "a3922241b56e8814cc12df9716f3709b",
+    "mtime": "2026-02-01T20:31:21.465Z",
+    "lines": 50,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/clubs.py",
+    "size": 6093,
+    "hash": "08b87acd50a23af859f1bd40352670f4",
+    "mtime": "2026-02-01T20:30:57.007Z",
+    "lines": 183,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/deals.py",
+    "size": 7859,
+    "hash": "de7e03595639f7e0acb8543815e87528",
+    "mtime": "2026-02-06T22:35:20.676Z",
+    "lines": 240,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/gigabytes.py",
+    "size": 3611,
+    "hash": "68d1d48865a13fcb74f2d9d9b9a12d37",
+    "mtime": "2026-02-01T22:31:35.500Z",
+    "lines": 115,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/pricing.py",
+    "size": 8475,
+    "hash": "8464c6a799286145b0f2f2b5a34dcb32",
+    "mtime": "2026-02-06T15:15:59.893Z",
+    "lines": 253,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/subscriptions.py",
+    "size": 1152,
+    "hash": "8c5105acda67dd2c3cdeb418e222caac",
+    "mtime": "2026-02-01T20:31:17.419Z",
+    "lines": 34,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/trust.py",
+    "size": 14042,
+    "hash": "b8d4b6c58b3f17de9ad8bcd84d7ca73c",
+    "mtime": "2026-02-06T22:35:51.636Z",
+    "lines": 429,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/users.py",
+    "size": 2059,
+    "hash": "06c359aaa876f459e742261efb9f61b3",
+    "mtime": "2026-02-01T20:31:01.701Z",
+    "lines": 71,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/interface/api/__init__.py",
+    "size": 1010,
+    "hash": "65af9527fbd32522fe4a69eaf7058705",
+    "mtime": "2026-02-06T23:20:53.860Z",
+    "lines": 28,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/src/interface/schemas/schemas.py",
+    "size": 5499,
+    "hash": "9579a52b61d0e16d4b1fe56bba050db7",
+    "mtime": "2026-02-06T23:36:03.661Z",
+    "lines": 202,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/main.py",
+    "size": 1855,
+    "hash": "72bfa99904bcf96e75fde38ae9fb6f91",
+    "mtime": "2026-02-06T11:46:35.859Z",
+    "lines": 68,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/parsing/check_subs.py",
+    "size": 871,
+    "hash": "d1be5f2c9b1884ed86c7e91a8f8c8239",
+    "mtime": "2026-02-01T19:40:25.964Z",
+    "lines": 29,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/parsing/cleanup_clubs.py",
+    "size": 653,
+    "hash": "0db867a08dd2eef27b5ebaa755222d6f",
+    "mtime": "2026-02-01T19:31:37.269Z",
+    "lines": 22,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/parsing/cleanup_gb.py",
+    "size": 673,
+    "hash": "4b48a57d6597b6e387a5c868596f4a5d",
+    "mtime": "2026-02-01T19:33:14.287Z",
+    "lines": 22,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/parsing/parse_offers.py",
+    "size": 6074,
+    "hash": "966ae81f4d6ec3f3af81570ec40999c3",
+    "mtime": "2026-02-01T18:01:20.120Z",
+    "lines": 149,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/seed.py",
+    "size": 5058,
+    "hash": "16ddda05fd7a11f3ca7acd3ceb6705ab",
+    "mtime": "2026-02-01T20:58:47.884Z",
+    "lines": 149,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/seed_pricing.py",
+    "size": 7099,
+    "hash": "3e70a32bfa25366776f912aef0582ac9",
+    "mtime": "2026-02-06T15:12:28.727Z",
+    "lines": 180,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/src/__init__.py",
+    "size": 22,
+    "hash": "fb09906d0343ed1ae674cc1d49e53752",
+    "mtime": "2026-02-01T16:15:56.032Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/tests/conftest.py",
+    "size": 1919,
+    "hash": "fa5c3e6a48ac3c882d11ffdcd2a87823",
+    "mtime": "2026-02-06T11:44:27.654Z",
+    "lines": 61,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/tests/integration/test_health.py",
+    "size": 709,
+    "hash": "1a4cfafb0e0662614b791a1741607c86",
+    "mtime": "2026-02-06T11:44:40.228Z",
+    "lines": 24,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/tests/integration/__init__.py",
+    "size": 29,
+    "hash": "bb199d21f95dcf6f75cf6dd474a8c380",
+    "mtime": "2026-02-06T11:44:38.294Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/tests/unit/test_telegram_auth.py",
+    "size": 2175,
+    "hash": "d3b7c1083f07f0d4cc6524d97cd67844",
+    "mtime": "2026-02-06T11:44:35.825Z",
+    "lines": 62,
+    "hasSymbols": true
+  },
+  {
+    "path": "backend/tests/unit/__init__.py",
+    "size": 22,
+    "hash": "f8d2348cbf88190700c88e672f755069",
+    "mtime": "2026-02-06T11:44:33.670Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "backend/tests/__init__.py",
+    "size": 17,
+    "hash": "8e404d3e72161bcff5658eb1fd9f725f",
+    "mtime": "2026-02-06T11:44:24.658Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "data/analyze_remaining_chats.py",
+    "size": 3807,
+    "hash": "441092c34860ea6c770e43b8f3c16a09",
+    "mtime": "2026-02-06T13:23:23.152Z",
+    "lines": 109,
+    "hasSymbols": true
+  },
+  {
+    "path": "data/chat_analysis.md",
+    "size": 211077,
+    "hash": "c31725fb610abd596f706da9c4b29372",
+    "mtime": "2026-02-06T14:15:36.340Z",
+    "lines": 2534,
+    "hasSymbols": false
+  },
+  {
+    "path": "data/market_intelligence.md",
+    "size": 15050,
+    "hash": "84aae0364c0d195dfabe616e93173fa6",
+    "mtime": "2026-02-06T14:22:48.346Z",
+    "lines": 281,
+    "hasSymbols": false
+  },
+  {
+    "path": "data/pricing_database.json",
+    "size": 18499,
+    "hash": "8f87a4b7fbe447e13384afb7b784a52a",
+    "mtime": "2026-02-06T14:23:54.533Z",
+    "lines": 489,
+    "hasSymbols": false
+  },
+  {
+    "path": "DESIGN_SYSTEM.md",
+    "size": 4209,
+    "hash": "d4a051c463c8498acda3d03c934b6491",
+    "mtime": "2026-02-01T22:52:31.133Z",
+    "lines": 95,
+    "hasSymbols": false
+  },
+  {
+    "path": "docker-compose.yml",
+    "size": 774,
+    "hash": "f66f251006f347e51c27dae1bac385e4",
+    "mtime": "2026-02-01T16:57:31.569Z",
+    "lines": 39,
+    "hasSymbols": false
+  },
+  {
+    "path": "docs/implementation_roadmap.md",
+    "size": 13001,
+    "hash": "f34bab31343cc827a4cf16d305af8270",
+    "mtime": "2026-02-06T14:26:32.450Z",
+    "lines": 453,
+    "hasSymbols": false
+  },
+  {
+    "path": "docs/strings_ru.md",
+    "size": 11100,
+    "hash": "70f44274f5ea809876a62d12f9284595",
+    "mtime": "2026-02-06T14:27:27.376Z",
+    "lines": 378,
+    "hasSymbols": false
+  },
+  {
+    "path": "docs/ui_ux_specs.md",
+    "size": 24272,
+    "hash": "fd4fa54baec6a4ab92ee868a5a8bbd33",
+    "mtime": "2026-02-06T14:27:25.127Z",
+    "lines": 503,
+    "hasSymbols": false
+  },
+  {
+    "path": "docs/user_stories.md",
+    "size": 14588,
+    "hash": "0ddd0c2ef0ef47e2a5db1687c33e08ae",
+    "mtime": "2026-02-06T14:23:56.882Z",
+    "lines": 371,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/eslint.config.js",
+    "size": 995,
+    "hash": "1966cec2b79beb6779f7e26369f3bb43",
+    "mtime": "2026-02-05T22:27:26.287Z",
+    "lines": 31,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/index.html",
+    "size": 723,
+    "hash": "eed7a9bc4b4ead3be19df6a4ee1641d0",
+    "mtime": "2026-02-01T19:44:59.754Z",
+    "lines": 20,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/package-lock.json",
+    "size": 358927,
+    "hash": "8a0748a701dacbaa5640f5087f2231ae",
+    "mtime": "2026-02-05T23:31:23.491Z",
+    "lines": 7906,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/package.json",
+    "size": 1094,
+    "hash": "5b46004078509f9c8390bc48abfe6245",
+    "mtime": "2026-02-05T23:31:23.273Z",
+    "lines": 38,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/postcss.config.js",
+    "size": 98,
+    "hash": "df8f19c6d8328a505ac7470ecdfb6186",
+    "mtime": "2026-02-05T23:31:33.236Z",
+    "lines": 7,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/149.situImport.bundle.js",
+    "size": 2288,
+    "hash": "4ef027f025fc7bc608ad615e22a06273",
+    "mtime": "2025-12-31T00:52:26.275Z",
+    "lines": 1,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/35.situImport.bundle.js",
+    "size": 56054,
+    "hash": "4346a1305e6900c6d02bc81db62cdba4",
+    "mtime": "2025-12-31T00:52:26.275Z",
+    "lines": 1,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/717.situImport.bundle.js",
+    "size": 318007,
+    "hash": "3b68863dd78ab89e0d810d2653970477",
+    "mtime": "2025-12-31T00:52:26.272Z",
+    "lines": 1,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/situ-babel-plugin.cjs",
+    "size": 1678,
+    "hash": "18da202aed014beb3b409044fb12bae6",
+    "mtime": "2025-12-31T00:52:26.263Z",
+    "lines": 1,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/situ-mcp-plugin.cjs",
+    "size": 5008,
+    "hash": "296849a097cf550d50b2eb4df849fc87",
+    "mtime": "2025-12-31T00:52:26.263Z",
+    "lines": 1,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/public/plugins/situ-design/situImport.bundle.js",
+    "size": 796505,
+    "hash": "eb1dc052196015f64d8d07f2428bf7d6",
+    "mtime": "2025-12-31T00:52:26.269Z",
+    "lines": 1,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/app/App.tsx",
+    "size": 3404,
+    "hash": "c77fb5fa5e8a6c81c5193ea45eb27918",
+    "mtime": "2026-02-06T21:49:37.544Z",
+    "lines": 67,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/app/providers/TelegramProvider.tsx",
+    "size": 3935,
+    "hash": "5924ccdfcef5acc7fb279cb6bc878180",
+    "mtime": "2026-02-01T22:36:59.519Z",
+    "lines": 120,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/app/providers/UIProvider.tsx",
+    "size": 336,
+    "hash": "96e5d862ecc47ac7d2ad75418c1af676",
+    "mtime": "2026-02-02T10:53:53.547Z",
+    "lines": 14,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/app/styles/index.css",
+    "size": 1566,
+    "hash": "f6af57b2fcee12aff80ba670b61c1b71",
+    "mtime": "2026-02-06T22:56:57.332Z",
+    "lines": 66,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/features/clubs/pages/ClubDetailsPage.tsx",
+    "size": 15021,
+    "hash": "216fdca47d8a0bcf8ea3e51be8fb6a9b",
+    "mtime": "2026-02-06T23:03:02.322Z",
+    "lines": 288,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/clubs/pages/ClubsPage.tsx",
+    "size": 7459,
+    "hash": "8e58cf14883ff2715a8b48704ff01227",
+    "mtime": "2026-02-06T23:03:34.384Z",
+    "lines": 182,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/clubs/pages/CreateClubPage.tsx",
+    "size": 17556,
+    "hash": "0cf48715e89b0afef2f3f8e3861aea58",
+    "mtime": "2026-02-06T23:21:53.920Z",
+    "lines": 355,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/home/pages/DemoPage.tsx",
+    "size": 7312,
+    "hash": "c24b171e0a7c2e7f33b0ce2d44b68cd9",
+    "mtime": "2026-02-05T18:08:51.753Z",
+    "lines": 161,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/home/pages/HomePage.tsx",
+    "size": 6039,
+    "hash": "6a7332c4991a6145ed2d131757c78729",
+    "mtime": "2026-02-06T22:57:17.026Z",
+    "lines": 99,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/market/pages/AccountsPage.tsx",
+    "size": 8895,
+    "hash": "3ed9ce644e8a99d9e133762952ebf6c1",
+    "mtime": "2026-02-05T17:53:34.302Z",
+    "lines": 249,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/market/pages/GBMarketPage.tsx",
+    "size": 19588,
+    "hash": "5efee4ebaf004ca67d66f9c7d5c61787",
+    "mtime": "2026-02-06T23:01:51.981Z",
+    "lines": 430,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/features/profile/pages/ProfilePage.tsx",
+    "size": 8401,
+    "hash": "ae7d2da225b6bad72759791ae93d05b1",
+    "mtime": "2026-02-06T22:57:56.349Z",
+    "lines": 190,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/main.tsx",
+    "size": 474,
+    "hash": "c0256a174938db849babe86cf2763add",
+    "mtime": "2026-02-05T22:27:19.891Z",
+    "lines": 21,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/pages/Admin/ComplaintsPage.tsx",
+    "size": 4060,
+    "hash": "77915fd76bc4294ffb7f294e6ab2501e",
+    "mtime": "2026-02-06T21:49:23.793Z",
+    "lines": 113,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/api/client.ts",
+    "size": 8382,
+    "hash": "1d32a09aeece1309b4942ee0aca9519b",
+    "mtime": "2026-02-06T22:08:39.703Z",
+    "lines": 308,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/api/index.ts",
+    "size": 506,
+    "hash": "cfe829f411cb8188e345b3d1f4ecc8a7",
+    "mtime": "2026-02-06T23:16:08.562Z",
+    "lines": 19,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/api/trust.ts",
+    "size": 1422,
+    "hash": "f42fe590bc72c7ac252114fbb08a01e3",
+    "mtime": "2026-02-06T22:00:51.580Z",
+    "lines": 50,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/hooks/index.ts",
+    "size": 88,
+    "hash": "bfd88bb000f0918a3f18eb5b90d02bac",
+    "mtime": "2026-02-01T16:57:18.139Z",
+    "lines": 3,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/hooks/useHaptic.ts",
+    "size": 980,
+    "hash": "de8740f62606012e13e82b4b149e1679",
+    "mtime": "2026-02-01T16:20:07.886Z",
+    "lines": 33,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/hooks/useTelegram.ts",
+    "size": 5738,
+    "hash": "1825c3de9971f148c1cb14a749ef8452",
+    "mtime": "2026-02-05T17:57:42.174Z",
+    "lines": 199,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/i18n/index.ts",
+    "size": 11162,
+    "hash": "5dd7b733c82bc724c03c0f17a354784f",
+    "mtime": "2026-02-01T16:31:49.901Z",
+    "lines": 331,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/lib/utils.ts",
+    "size": 1272,
+    "hash": "8958d05cdaa8cb5a5f629b22df540e89",
+    "mtime": "2026-02-02T10:29:13.244Z",
+    "lines": 43,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/types/telegram.d.ts",
+    "size": 3149,
+    "hash": "4eb9cb58b2cad61eee69a4593353b562",
+    "mtime": "2026-02-01T16:20:22.708Z",
+    "lines": 110,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Accordion.tsx",
+    "size": 2260,
+    "hash": "19d484efa1158f41883ba9c47b531c2e",
+    "mtime": "2026-02-05T23:20:24.325Z",
+    "lines": 77,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/ActionRow.tsx",
+    "size": 2576,
+    "hash": "5fcfed0cb0361cd95038720c04d36507",
+    "mtime": "2026-02-01T23:20:30.788Z",
+    "lines": 97,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/ActionSheet.tsx",
+    "size": 4378,
+    "hash": "f1612e238ff297cd2ebd01fdeed58945",
+    "mtime": "2026-02-01T23:20:39.391Z",
+    "lines": 127,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/AnimatedCounter.tsx",
+    "size": 1230,
+    "hash": "db2fe9d2f74f200696adfe57544eaf74",
+    "mtime": "2026-02-01T23:20:42.050Z",
+    "lines": 49,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Autocomplete.tsx",
+    "size": 2430,
+    "hash": "abcec460e321f980e3583417a7d91260",
+    "mtime": "2026-02-06T23:16:56.154Z",
+    "lines": 72,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Avatar.tsx",
+    "size": 406,
+    "hash": "b2983935cdff8deb9d776fa25ff154e5",
+    "mtime": "2026-02-05T23:20:14.930Z",
+    "lines": 19,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/AvatarGroup.tsx",
+    "size": 936,
+    "hash": "6547d9138c8ca5a604d784fb3ad1cbce",
+    "mtime": "2026-02-05T22:43:21.964Z",
+    "lines": 36,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Badge.tsx",
+    "size": 968,
+    "hash": "5d27bb1f5fbd1ef94b69f8491b583e9b",
+    "mtime": "2026-02-05T17:46:57.890Z",
+    "lines": 36,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/BankCard.tsx",
+    "size": 3540,
+    "hash": "c73d9c6d722114252a9b9fa7ed4fec7f",
+    "mtime": "2026-02-02T10:14:53.384Z",
+    "lines": 104,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/BottomNav.tsx",
+    "size": 3866,
+    "hash": "2d2399638e717acfe9548dd0b6bce34c",
+    "mtime": "2026-02-06T23:02:20.800Z",
+    "lines": 78,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/BottomSheet.tsx",
+    "size": 2868,
+    "hash": "3fbc41418ebe4786aa26195a277e6ac4",
+    "mtime": "2026-02-02T10:24:07.805Z",
+    "lines": 72,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Breadcrumbs.tsx",
+    "size": 1066,
+    "hash": "754da4eccbdd88ac9c9d81080c49bda6",
+    "mtime": "2026-02-05T22:53:43.845Z",
+    "lines": 39,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Button.tsx",
+    "size": 2377,
+    "hash": "7c55ccaf80d1b42cc1fdda64a7608578",
+    "mtime": "2026-02-05T23:20:29.426Z",
+    "lines": 72,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Calendar.tsx",
+    "size": 8959,
+    "hash": "65a17ed4ec5ae8661c777ec96c37596b",
+    "mtime": "2026-02-01T23:21:30.254Z",
+    "lines": 212,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Card.tsx",
+    "size": 1337,
+    "hash": "18eb527296adc1a04e71f9b9e8e3fd10",
+    "mtime": "2026-02-05T23:20:41.617Z",
+    "lines": 42,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/CountdownTimer.tsx",
+    "size": 4055,
+    "hash": "a53e82d50bfa640444f62238d43e3076",
+    "mtime": "2026-02-01T23:21:38.059Z",
+    "lines": 132,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/DatePicker.tsx",
+    "size": 2936,
+    "hash": "811e92e9e6d1e1d5c42646934300ab60",
+    "mtime": "2026-02-05T22:54:17.030Z",
+    "lines": 103,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Divider.tsx",
+    "size": 1061,
+    "hash": "40d39e72e80c0ef98527549c2825b579",
+    "mtime": "2026-02-05T22:59:19.621Z",
+    "lines": 34,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Dropdown.tsx",
+    "size": 1906,
+    "hash": "c5ddaee83a18fc9398a35930456aa585",
+    "mtime": "2026-02-05T22:53:30.076Z",
+    "lines": 59,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/EmptyState.tsx",
+    "size": 2798,
+    "hash": "843581132f8322f01a6e6e50c1a67ed0",
+    "mtime": "2026-02-01T23:21:44.183Z",
+    "lines": 72,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/ErrorBoundary.tsx",
+    "size": 3074,
+    "hash": "c0fd7543b2895b24cc9d926a83bbeb27",
+    "mtime": "2026-02-06T11:45:24.261Z",
+    "lines": 80,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/FAB.tsx",
+    "size": 1606,
+    "hash": "0c23ed3baef55b9c80a17eaab5baa0ab",
+    "mtime": "2026-02-02T10:39:11.264Z",
+    "lines": 54,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Feedback.tsx",
+    "size": 5405,
+    "hash": "c9311b1ce8deb812cd9bbff281691f2b",
+    "mtime": "2026-02-02T09:51:46.641Z",
+    "lines": 172,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/FileUpload.tsx",
+    "size": 6001,
+    "hash": "d6dba18feaf0802f8e43d0aff1795510",
+    "mtime": "2026-02-02T09:51:56.803Z",
+    "lines": 134,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/FilterChips.tsx",
+    "size": 3091,
+    "hash": "dcb7d528216ac071eff9f968ee203817",
+    "mtime": "2026-02-02T09:52:01.369Z",
+    "lines": 94,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/index.ts",
+    "size": 2615,
+    "hash": "d8192702b978e6d3bbdf857b8a1cb7b3",
+    "mtime": "2026-02-05T22:52:44.615Z",
+    "lines": 55,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/InlineNotification.tsx",
+    "size": 3536,
+    "hash": "8477a9cc30006d00af94e7945f9786c6",
+    "mtime": "2026-02-02T09:52:07.981Z",
+    "lines": 99,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Input.tsx",
+    "size": 932,
+    "hash": "f8cae2ec47ca61ace938a9728e600cd7",
+    "mtime": "2026-02-05T23:20:34.751Z",
+    "lines": 34,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Layout.tsx",
+    "size": 506,
+    "hash": "f90a0be3808fcd6d2029a649a4c44c3a",
+    "mtime": "2026-02-02T10:12:48.896Z",
+    "lines": 17,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/List.tsx",
+    "size": 4766,
+    "hash": "14d310cc081c61d86328c1617d7b26cc",
+    "mtime": "2026-02-05T17:55:35.706Z",
+    "lines": 126,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/MarketChart.tsx",
+    "size": 2633,
+    "hash": "b6089ccbc6d989aeca9726ad0557f3e9",
+    "mtime": "2026-02-02T10:04:33.767Z",
+    "lines": 81,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Modal.tsx",
+    "size": 2540,
+    "hash": "6cd57cc1ed400acb0f028d39baaa984f",
+    "mtime": "2026-02-05T22:54:16.024Z",
+    "lines": 98,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/NotificationDot.tsx",
+    "size": 1737,
+    "hash": "b841078a880f77017b78a5233c83a201",
+    "mtime": "2026-02-02T09:52:45.360Z",
+    "lines": 65,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/NumberInput.tsx",
+    "size": 1355,
+    "hash": "b2049bc1cf87781a2eddd6b5b00515e0",
+    "mtime": "2026-02-05T22:51:54.638Z",
+    "lines": 52,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/NumPad.tsx",
+    "size": 2652,
+    "hash": "6e98a95653d683c0b28d7636ef338da1",
+    "mtime": "2026-02-02T09:52:50.447Z",
+    "lines": 64,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/OperatorSelect.tsx",
+    "size": 3677,
+    "hash": "4dd8f1abe8889d79e65b5b9c2b7efe72",
+    "mtime": "2026-02-02T09:53:45.905Z",
+    "lines": 91,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/OTPInput.tsx",
+    "size": 2626,
+    "hash": "2fce640ff8d74581cd2177dab82574ef",
+    "mtime": "2026-02-05T17:55:00.249Z",
+    "lines": 80,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/PageIndicator.tsx",
+    "size": 3189,
+    "hash": "93b7a6dee1860405958fbf1cd39fec62",
+    "mtime": "2026-02-02T09:53:50.942Z",
+    "lines": 85,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Pagination.tsx",
+    "size": 1188,
+    "hash": "405bf154123bd00df190ff1a8eb58c7b",
+    "mtime": "2026-02-05T22:53:38.693Z",
+    "lines": 48,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Popover.tsx",
+    "size": 1543,
+    "hash": "b8b2aaa451e459ed28cb89a3d7de7bf0",
+    "mtime": "2026-02-05T22:51:20.273Z",
+    "lines": 58,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/PriceTag.tsx",
+    "size": 4717,
+    "hash": "b149c70128a0a5a38acbffefe825772f",
+    "mtime": "2026-02-02T09:53:58.674Z",
+    "lines": 134,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Progress.tsx",
+    "size": 1886,
+    "hash": "6611e4747d5a60fdd45a7ca2adbd6c85",
+    "mtime": "2026-02-05T22:53:25.200Z",
+    "lines": 74,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/ProgressRing.tsx",
+    "size": 2060,
+    "hash": "850771718be5a489f01220006888cb0b",
+    "mtime": "2026-02-02T09:54:01.966Z",
+    "lines": 60,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/PullToRefresh.tsx",
+    "size": 1380,
+    "hash": "a50906342cdcaa8006ddd526d96983ba",
+    "mtime": "2026-02-02T09:54:04.274Z",
+    "lines": 42,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/RatingStars.tsx",
+    "size": 3005,
+    "hash": "44cf49b5f74bc6bb10c52530352a24d7",
+    "mtime": "2026-02-02T09:54:41.755Z",
+    "lines": 91,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/SearchBar.tsx",
+    "size": 1717,
+    "hash": "7746e2b726d77e6656501d6d942a92d2",
+    "mtime": "2026-02-05T17:54:31.359Z",
+    "lines": 46,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/SegmentControl.tsx",
+    "size": 2984,
+    "hash": "ec6c6777b7ae80ed332f92a0d8cc28a8",
+    "mtime": "2026-02-02T09:54:46.692Z",
+    "lines": 94,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Select.tsx",
+    "size": 1321,
+    "hash": "28a4c0cbc11ae087b8f130825a58a62d",
+    "mtime": "2026-02-05T17:54:29.186Z",
+    "lines": 49,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/SelectionControls.tsx",
+    "size": 3452,
+    "hash": "448d33f4031c1a17a46ae6c8eef22a14",
+    "mtime": "2026-02-05T22:45:18.416Z",
+    "lines": 136,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Skeleton.tsx",
+    "size": 515,
+    "hash": "f4600d991c7358b2a2261e6b6364d014",
+    "mtime": "2026-02-05T22:43:27.115Z",
+    "lines": 25,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/Spinner.tsx",
+    "size": 840,
+    "hash": "fa8cd3c6691829b24884b3894cb204cb",
+    "mtime": "2026-02-05T22:53:19.596Z",
+    "lines": 29,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/shared/ui/StatusIndicator.tsx",
+    "size": 1807,
+    "hash": "ea4adbdd910c779b26d16d6bc2b1c705",
+    "mtime": "2026-02-02T09:54:57.873Z",
+    "lines": 66,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Stepper.tsx",
+    "size": 3558,
+    "hash": "ebfd15afc4a591d1c86c9cb9fa7c74b3",
+    "mtime": "2026-02-02T09:55:02.806Z",
+    "lines": 81,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Table.tsx",
+    "size": 2316,
+    "hash": "94401984c274f7a267121cdcb31cef2f",
+    "mtime": "2026-02-05T22:53:34.366Z",
+    "lines": 78,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Textarea.tsx",
+    "size": 1220,
+    "hash": "dd46e91e4a372ba13380e4a1dfaf9e82",
+    "mtime": "2026-02-05T17:48:05.153Z",
+    "lines": 35,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Timeline.tsx",
+    "size": 3586,
+    "hash": "ab106465df40db31d8c9ce2f0fd5b698",
+    "mtime": "2026-02-05T17:54:56.624Z",
+    "lines": 77,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/src/shared/ui/Toast.tsx",
+    "size": 1155,
+    "hash": "dd22e5d3eef65b5f88bb7ef9859c527a",
+    "mtime": "2026-02-01T23:17:09.084Z",
+    "lines": 35,
+    "hasSymbols": true
+  },
+  {
+    "path": "frontend/src/vite-env.d.ts",
+    "size": 38,
+    "hash": "0352474ba2918efe13895edbc3780d94",
+    "mtime": "2026-02-01T20:37:15.331Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/tailwind.config.js",
+    "size": 1305,
+    "hash": "4cd97da310c9c7bf853c9fe856c6fd45",
+    "mtime": "2026-02-05T23:25:10.934Z",
+    "lines": 41,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/tsconfig.json",
+    "size": 774,
+    "hash": "1c8676307e5fbcc75aa7eb4023e5c443",
+    "mtime": "2026-02-01T20:36:44.518Z",
+    "lines": 32,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/tsconfig.node.json",
+    "size": 549,
+    "hash": "180d4c06174a5e94a2aa50492e84a5a3",
+    "mtime": "2026-02-01T16:18:57.147Z",
+    "lines": 22,
+    "hasSymbols": false
+  },
+  {
+    "path": "frontend/vite.config.ts",
+    "size": 748,
+    "hash": "be0f2db0616716862c3968b74e00b8f4",
+    "mtime": "2026-02-06T11:46:17.987Z",
+    "lines": 33,
+    "hasSymbols": false
+  },
+  {
+    "path": "PROJECT_MASTER.md",
+    "size": 23622,
+    "hash": "f1e59265e6c75e4458eaccdd6d520959",
+    "mtime": "2026-02-06T14:27:49.625Z",
+    "lines": 643,
+    "hasSymbols": false
+  },
+  {
+    "path": "PROJECT_MEMORY.md",
+    "size": 5021,
+    "hash": "e269df19d737aff832441f2e9af02a92",
+    "mtime": "2026-02-06T23:49:08.175Z",
+    "lines": 59,
+    "hasSymbols": false
+  },
+  {
+    "path": "README.md",
+    "size": 4186,
+    "hash": "04b8af58c80f4329e8ea7bfadf55ffd2",
+    "mtime": "2026-02-01T16:58:04.958Z",
+    "lines": 174,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/adding-libraries.mdx",
+    "size": 6038,
+    "hash": "daa0f3b028aefbd364261cc8473ccc07",
+    "mtime": "2026-02-01T21:52:00.891Z",
+    "lines": 138,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/agentic-tools/ai-sdk/agents/context7-agent.mdx",
+    "size": 6060,
+    "hash": "7d21adc324c529e075fc37811ca5454e",
+    "mtime": "2026-02-01T21:52:00.893Z",
+    "lines": 203,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/agentic-tools/ai-sdk/getting-started.mdx",
+    "size": 4772,
+    "hash": "428dab3aa2f045814e6d9f3e62689603",
+    "mtime": "2026-02-01T21:52:00.895Z",
+    "lines": 163,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/agentic-tools/ai-sdk/tools/query-docs.mdx",
+    "size": 5593,
+    "hash": "3634720e744241df37a57a2e86f6cf8d",
+    "mtime": "2026-02-01T21:52:00.896Z",
+    "lines": 197,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/agentic-tools/ai-sdk/tools/resolve-library-id.mdx",
+    "size": 5090,
+    "hash": "27ff7fcff16d7b980697e57351314787",
+    "mtime": "2026-02-01T21:52:00.896Z",
+    "lines": 175,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/agentic-tools/overview.mdx",
+    "size": 4321,
+    "hash": "f202a5d37f41238166eb6dbe5e91f37f",
+    "mtime": "2026-02-01T21:52:00.897Z",
+    "lines": 134,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/api-guide.mdx",
+    "size": 7321,
+    "hash": "d6b9e3045d7172b68efd1cc42415c444",
+    "mtime": "2026-02-01T21:52:00.897Z",
+    "lines": 226,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/clients/claude-code.mdx",
+    "size": 7186,
+    "hash": "8f23308179de3ffbfbf07408be784650",
+    "mtime": "2026-02-01T21:52:00.899Z",
+    "lines": 244,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/clients/cli.mdx",
+    "size": 89,
+    "hash": "9a4a134c93e48ee06ce1b11a54ff0282",
+    "mtime": "2026-02-01T21:52:00.899Z",
+    "lines": 5,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/clients/cursor.mdx",
+    "size": 9355,
+    "hash": "98ee586bb347daae7682713e238722c0",
+    "mtime": "2026-02-01T21:52:00.900Z",
+    "lines": 314,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/clients/opencode.mdx",
+    "size": 5375,
+    "hash": "5c88af38d9a78f4bb3446778e9b7d0db",
+    "mtime": "2026-02-01T21:52:00.900Z",
+    "lines": 222,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/contact.mdx",
+    "size": 61,
+    "hash": "4917eb17ed676b9accf9fb63cc4384aa",
+    "mtime": "2026-02-01T21:52:00.901Z",
+    "lines": 5,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/docs.json",
+    "size": 4518,
+    "hash": "802a1bc3d4edb126d863eaa780553666",
+    "mtime": "2026-02-01T21:52:00.901Z",
+    "lines": 194,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/api-keys.mdx",
+    "size": 1362,
+    "hash": "77dea3047f28503358afc0b3957c21ba",
+    "mtime": "2026-02-01T21:52:00.903Z",
+    "lines": 44,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/claiming-libraries.mdx",
+    "size": 10678,
+    "hash": "f294fef5058425a472e762e3b8ac1530",
+    "mtime": "2026-02-01T21:52:00.903Z",
+    "lines": 265,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/oauth.mdx",
+    "size": 1794,
+    "hash": "0a3943c1be0c37af184f1972308f2556",
+    "mtime": "2026-02-01T21:52:00.903Z",
+    "lines": 44,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/private-repositories.mdx",
+    "size": 2536,
+    "hash": "77a316f3919f05dba8fd2b4d81fcb77a",
+    "mtime": "2026-02-01T21:52:00.905Z",
+    "lines": 78,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/team.mdx",
+    "size": 1888,
+    "hash": "bfb76fc5f3b48aa3d05cf4c99cdf05e4",
+    "mtime": "2026-02-01T21:52:00.905Z",
+    "lines": 56,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/usage.mdx",
+    "size": 1714,
+    "hash": "67ab742a301853515a985b1341682a87",
+    "mtime": "2026-02-01T21:52:00.906Z",
+    "lines": 65,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/howto/verification.mdx",
+    "size": 6268,
+    "hash": "302a03eccdc9c597f9ba12ec73176d96",
+    "mtime": "2026-02-01T21:52:00.907Z",
+    "lines": 156,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/installation.mdx",
+    "size": 88,
+    "hash": "ad25158c0f243ac29612ef640f92bb64",
+    "mtime": "2026-02-01T21:52:00.992Z",
+    "lines": 6,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/integrations/code-rabbit.mdx",
+    "size": 2406,
+    "hash": "a736e0b454d46fae6c11e6f26709afe0",
+    "mtime": "2026-02-01T21:52:00.992Z",
+    "lines": 63,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/openapi.json",
+    "size": 23105,
+    "hash": "bb49010f2d7571cb830b16bedcd97c35",
+    "mtime": "2026-02-01T21:52:00.994Z",
+    "lines": 704,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/overview.mdx",
+    "size": 1809,
+    "hash": "65d36753f811dd0797be6a7d829a958c",
+    "mtime": "2026-02-01T21:52:00.994Z",
+    "lines": 51,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/plans-pricing.mdx",
+    "size": 69,
+    "hash": "9f8f909ba7a120e24e6c8a5324fc4c26",
+    "mtime": "2026-02-01T21:52:00.994Z",
+    "lines": 6,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/resources/all-clients.mdx",
+    "size": 25366,
+    "hash": "a08ff3b9a655b9033aa6a8f661c7006f",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 1104,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/resources/developer.mdx",
+    "size": 2603,
+    "hash": "b07df06ff735203b1bc227491444da50",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 117,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/resources/security.mdx",
+    "size": 7121,
+    "hash": "4c278e608ee4ae557fb7aae4156fbbdd",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 229,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/resources/troubleshooting.mdx",
+    "size": 8753,
+    "hash": "2facc936146923457cf3b27cb8bcbdb5",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 363,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/sdks/ts/commands/get-context.mdx",
+    "size": 3656,
+    "hash": "6988313ad1dcf3dfc569234bf58d33b2",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 155,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/sdks/ts/commands/search-library.mdx",
+    "size": 3904,
+    "hash": "5de375669d1badaa68ee1d7a539edb50",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 153,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/sdks/ts/getting-started.mdx",
+    "size": 3521,
+    "hash": "0bff071647560fc82b00d1d51d54700e",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 137,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/skills.mdx",
+    "size": 2732,
+    "hash": "89a3da4f91101ae10d0797a2e91e7018",
+    "mtime": "2026-02-01T21:52:00.997Z",
+    "lines": 106,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/docs/tips.mdx",
+    "size": 1228,
+    "hash": "4f027584c4b2d6b5a8c0a95e882b33a6",
+    "mtime": "2026-02-01T21:52:01.003Z",
+    "lines": 39,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/eslint.config.js",
+    "size": 1095,
+    "hash": "e9ab2af7951d5c3e1a605e5c7ac7f353",
+    "mtime": "2026-02-01T21:52:01.003Z",
+    "lines": 38,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/gemini-extension.json",
+    "size": 267,
+    "hash": "92d3a84445c97e3aee86192a407d2eb9",
+    "mtime": "2026-02-01T21:52:01.004Z",
+    "lines": 12,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.ar.md",
+    "size": 8694,
+    "hash": "6cf3aed07330eb55b2fb4e0fc06ba807",
+    "mtime": "2026-02-01T21:52:01.005Z",
+    "lines": 319,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.de.md",
+    "size": 13118,
+    "hash": "9a55a62a40a6beb9130c7a18323f58ae",
+    "mtime": "2026-02-01T21:52:01.005Z",
+    "lines": 331,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.es.md",
+    "size": 9556,
+    "hash": "ca583dff3fd8682ca770f4140fc9fea9",
+    "mtime": "2026-02-01T21:52:01.006Z",
+    "lines": 258,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.fr.md",
+    "size": 13636,
+    "hash": "b78041a3e2712b548fe0a2f17a3cb72f",
+    "mtime": "2026-02-01T21:52:01.006Z",
+    "lines": 360,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.id-ID.md",
+    "size": 30884,
+    "hash": "c406ef0d9817f2568deb7adc53980b5b",
+    "mtime": "2026-02-01T21:52:01.006Z",
+    "lines": 919,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.it.md",
+    "size": 13334,
+    "hash": "3f70f207745293bd0d56c5dcd6f0716b",
+    "mtime": "2026-02-01T21:52:01.006Z",
+    "lines": 332,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.ja.md",
+    "size": 26555,
+    "hash": "ee97e412b9f69a72f3a29e7bba396d6b",
+    "mtime": "2026-02-01T21:52:01.008Z",
+    "lines": 674,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.ko.md",
+    "size": 11708,
+    "hash": "52e4307518776df70b005470b85ad10d",
+    "mtime": "2026-02-01T21:52:01.009Z",
+    "lines": 228,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.pt-BR.md",
+    "size": 33654,
+    "hash": "c0497678a0fca95e95666c7dbfc9effd",
+    "mtime": "2026-02-01T21:52:01.009Z",
+    "lines": 1033,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.ru.md",
+    "size": 19499,
+    "hash": "a770a141c12f1c55c10e4b51b9e53b6e",
+    "mtime": "2026-02-01T21:52:01.010Z",
+    "lines": 382,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.tr.md",
+    "size": 13456,
+    "hash": "fd5ed520cc0f298e99db89454b12ab51",
+    "mtime": "2026-02-01T21:52:01.010Z",
+    "lines": 302,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.uk.md",
+    "size": 36004,
+    "hash": "cbc75f0fa35ca712328c5adf3b63807b",
+    "mtime": "2026-02-01T21:52:01.011Z",
+    "lines": 826,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.vi.md",
+    "size": 32760,
+    "hash": "2614070b4f5f023b3337ba32fb5c427d",
+    "mtime": "2026-02-01T21:52:01.011Z",
+    "lines": 910,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.zh-CN.md",
+    "size": 10779,
+    "hash": "8414523a3c7f00ee64c764aa8f5f8d4b",
+    "mtime": "2026-02-01T21:52:01.012Z",
+    "lines": 246,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/i18n/README.zh-TW.md",
+    "size": 11080,
+    "hash": "47061e3355ac00e1a32aa7671aea818e",
+    "mtime": "2026-02-01T21:52:01.013Z",
+    "lines": 246,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/package.json",
+    "size": 1997,
+    "hash": "5518e703585c00703a3f53f632f40a8f",
+    "mtime": "2026-02-01T21:52:01.013Z",
+    "lines": 62,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/CHANGELOG.md",
+    "size": 2023,
+    "hash": "87c08582e4eee7752bd4d17f873d52cb",
+    "mtime": "2026-02-01T21:52:01.014Z",
+    "lines": 52,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/eslint.config.js",
+    "size": 1415,
+    "hash": "fb5ef768b160e761b014f7c061b81cd7",
+    "mtime": "2026-02-01T21:52:01.015Z",
+    "lines": 48,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/package.json",
+    "size": 1546,
+    "hash": "cf09d8df27565dbb23df727c4b59c032",
+    "mtime": "2026-02-01T21:52:01.016Z",
+    "lines": 65,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/README.md",
+    "size": 3923,
+    "hash": "8cb20d0a20d78c24eaa2f1cb9d5e664c",
+    "mtime": "2026-02-01T21:52:01.014Z",
+    "lines": 170,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/commands/auth.ts",
+    "size": 4988,
+    "hash": "cb9d205a90a8f67b516eca191b801248",
+    "mtime": "2026-02-01T21:52:01.016Z",
+    "lines": 189,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/commands/generate.ts",
+    "size": 16700,
+    "hash": "0f5d60c899fed7ad00c1caa57ae034f4",
+    "mtime": "2026-02-01T21:52:01.017Z",
+    "lines": 504,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/commands/skill.ts",
+    "size": 21334,
+    "hash": "dd67e2d458714ae174df2b0bce575c58",
+    "mtime": "2026-02-01T21:52:01.018Z",
+    "lines": 647,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/constants.ts",
+    "size": 345,
+    "hash": "ea374277c50ccd817d0dcb6978416370",
+    "mtime": "2026-02-01T21:52:01.019Z",
+    "lines": 10,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/index.ts",
+    "size": 2383,
+    "hash": "cd79fdfbb6dd99ba6402ae4a68f8ced6",
+    "mtime": "2026-02-01T21:52:01.019Z",
+    "lines": 74,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/types.ts",
+    "size": 4224,
+    "hash": "1ceec2ccfb4ed9c830d858ade43678cc",
+    "mtime": "2026-02-01T21:52:01.020Z",
+    "lines": 204,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/api.ts",
+    "size": 6878,
+    "hash": "e769317f1a1c4e4ac676991a01a0c184",
+    "mtime": "2026-02-01T21:52:01.021Z",
+    "lines": 235,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/auth.ts",
+    "size": 8275,
+    "hash": "7a50e924b89df84431e4da139ed4705e",
+    "mtime": "2026-02-01T21:52:01.021Z",
+    "lines": 269,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/github.ts",
+    "size": 4110,
+    "hash": "e0c1f1962fe17158aecf5cf6030b4750",
+    "mtime": "2026-02-01T21:52:01.022Z",
+    "lines": 141,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/ide.ts",
+    "size": 6948,
+    "hash": "24c77f9db22a03ade19da2f5ea38a472",
+    "mtime": "2026-02-01T21:52:01.022Z",
+    "lines": 243,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/installer.ts",
+    "size": 1009,
+    "hash": "d50b047f3e707ed51fce0b1a96ec7c81",
+    "mtime": "2026-02-01T21:52:01.022Z",
+    "lines": 39,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/logger.ts",
+    "size": 628,
+    "hash": "6c8b5d56f866281b6631fcd8150411ed",
+    "mtime": "2026-02-01T21:52:01.023Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/parse-input.ts",
+    "size": 659,
+    "hash": "21ee4918549a49f1edfc1b13857886d3",
+    "mtime": "2026-02-01T21:52:01.024Z",
+    "lines": 26,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/prompts.ts",
+    "size": 2689,
+    "hash": "d54bd850bcac60cf01e9dcc669d12dae",
+    "mtime": "2026-02-01T21:52:01.024Z",
+    "lines": 85,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/selectOrInput.ts",
+    "size": 2928,
+    "hash": "f876fd7680ef25792940068476ebbbe2",
+    "mtime": "2026-02-01T21:52:01.024Z",
+    "lines": 102,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/src/utils/tracking.ts",
+    "size": 370,
+    "hash": "6a3437afc3941ecedb6cb347d0a79e85",
+    "mtime": "2026-02-01T21:52:01.025Z",
+    "lines": 11,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/cli/tsconfig.json",
+    "size": 498,
+    "hash": "a54cb6013c2b2e0f4d5b77673531670b",
+    "mtime": "2026-02-01T21:52:01.025Z",
+    "lines": 21,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/cli/tsup.config.ts",
+    "size": 372,
+    "hash": "efe5012ad884d39d3698cc6917429872",
+    "mtime": "2026-02-01T21:52:01.026Z",
+    "lines": 21,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/CHANGELOG.md",
+    "size": 2341,
+    "hash": "6a89d2f6c0d6cb9854bdd62f5a0869aa",
+    "mtime": "2026-02-01T21:52:01.027Z",
+    "lines": 74,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/eslint.config.js",
+    "size": 1397,
+    "hash": "63af5c082420e3e51e99a40dbc149a91",
+    "mtime": "2026-02-01T21:52:01.028Z",
+    "lines": 48,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/mcpb/manifest.json",
+    "size": 1470,
+    "hash": "67a912dcded50cd3da033992ebcf609e",
+    "mtime": "2026-02-01T21:52:01.041Z",
+    "lines": 48,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/package.json",
+    "size": 1734,
+    "hash": "4890860ed151957fb2d2e83db2dcce94",
+    "mtime": "2026-02-01T21:52:01.041Z",
+    "lines": 61,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/prettier.config.mjs",
+    "size": 226,
+    "hash": "75b1c1cb1ff879c09a656533b331b3c0",
+    "mtime": "2026-02-01T21:52:01.042Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/README.md",
+    "size": 45313,
+    "hash": "29baa2937bc9ef573cf5477d62128022",
+    "mtime": "2026-02-01T21:52:01.028Z",
+    "lines": 1553,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/schema/context7.json",
+    "size": 4475,
+    "hash": "f9059e9560b0d40578aa09b8226afe14",
+    "mtime": "2026-02-01T21:52:01.042Z",
+    "lines": 131,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/smithery.yaml",
+    "size": 275,
+    "hash": "765bbb8fefbcdf509311a71094018acc",
+    "mtime": "2026-02-01T21:52:01.043Z",
+    "lines": 10,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/index.ts",
+    "size": 17184,
+    "hash": "2b84f3c7eaca272f521dac6e000976b5",
+    "mtime": "2026-02-01T21:52:01.043Z",
+    "lines": 492,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/api.ts",
+    "size": 4701,
+    "hash": "6cab2414b3a13c004fa8888169fe824b",
+    "mtime": "2026-02-01T21:52:01.044Z",
+    "lines": 127,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/constants.ts",
+    "size": 731,
+    "hash": "d1bcbc6a0c1d07a5cda46249d1b9e4c1",
+    "mtime": "2026-02-01T21:52:01.045Z",
+    "lines": 17,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/encryption.ts",
+    "size": 2324,
+    "hash": "7f8c6d96d3b4635287b6751f1d1ef674",
+    "mtime": "2026-02-01T21:52:01.045Z",
+    "lines": 73,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/jwt.ts",
+    "size": 1123,
+    "hash": "e2579bd00ba43b613faeed80bc4425df",
+    "mtime": "2026-02-01T21:52:01.045Z",
+    "lines": 39,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/types.ts",
+    "size": 671,
+    "hash": "d212d23ce1dbaf15156d223acc171880",
+    "mtime": "2026-02-01T21:52:01.046Z",
+    "lines": 32,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/mcp/src/lib/utils.ts",
+    "size": 3051,
+    "hash": "5d0834176c3d747431cb18bf5a9504e0",
+    "mtime": "2026-02-01T21:52:01.046Z",
+    "lines": 85,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/mcp/tsconfig.json",
+    "size": 277,
+    "hash": "28371cbb21e21e57e95f023d20263e19",
+    "mtime": "2026-02-01T21:52:01.047Z",
+    "lines": 13,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/CHANGELOG.md",
+    "size": 1165,
+    "hash": "6f7b108488acdfa5b1092b0bbdb37a4c",
+    "mtime": "2026-02-01T21:52:01.047Z",
+    "lines": 29,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/eslint.config.js",
+    "size": 1397,
+    "hash": "63af5c082420e3e51e99a40dbc149a91",
+    "mtime": "2026-02-01T21:52:01.049Z",
+    "lines": 48,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/package.json",
+    "size": 1273,
+    "hash": "e62f6b77db3142ea345dca2064a05136",
+    "mtime": "2026-02-01T21:52:01.050Z",
+    "lines": 57,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/prettier.config.mjs",
+    "size": 226,
+    "hash": "75b1c1cb1ff879c09a656533b331b3c0",
+    "mtime": "2026-02-01T21:52:01.050Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/README.md",
+    "size": 2183,
+    "hash": "48dc9bd6c51629388428a2e84be30aae",
+    "mtime": "2026-02-01T21:52:01.049Z",
+    "lines": 95,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/client.test.ts",
+    "size": 6353,
+    "hash": "fe0a331f5c4ca9c58b123ddd283cbbad",
+    "mtime": "2026-02-01T21:52:01.050Z",
+    "lines": 180,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/client.ts",
+    "size": 3757,
+    "hash": "450677325997e5dca9696bae04d13a35",
+    "mtime": "2026-02-01T21:52:01.051Z",
+    "lines": 133,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/command.ts",
+    "size": 1052,
+    "hash": "c5e8f60cf7f72d15e50831208a6894ff",
+    "mtime": "2026-02-01T21:52:01.051Z",
+    "lines": 40,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/get-context/index.test.ts",
+    "size": 2302,
+    "hash": "aadefe3893b8771941ecaf17872caae2",
+    "mtime": "2026-02-01T21:52:01.052Z",
+    "lines": 68,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/get-context/index.ts",
+    "size": 1704,
+    "hash": "40ce65a7443fe3386d248cd3120ee5c0",
+    "mtime": "2026-02-01T21:52:01.052Z",
+    "lines": 50,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/get-context/types.ts",
+    "size": 478,
+    "hash": "5a0f979a46b27c3d418901c2b98a64ee",
+    "mtime": "2026-02-01T21:52:01.053Z",
+    "lines": 22,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/index.ts",
+    "size": 67,
+    "hash": "346c7ea9704454ce71b1d0308dfc50bf",
+    "mtime": "2026-02-01T21:52:01.054Z",
+    "lines": 3,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/search-library/index.test.ts",
+    "size": 1679,
+    "hash": "9f306fa4871b34d994d851c17140f5bc",
+    "mtime": "2026-02-01T21:52:01.054Z",
+    "lines": 46,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/search-library/index.ts",
+    "size": 1530,
+    "hash": "56634ebec8d0b1d4ee58a5df9855495d",
+    "mtime": "2026-02-01T21:52:01.055Z",
+    "lines": 48,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/search-library/types.ts",
+    "size": 273,
+    "hash": "b8698e4fc0cb414fe559aa3ab33012fd",
+    "mtime": "2026-02-01T21:52:01.055Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/commands/types.ts",
+    "size": 1439,
+    "hash": "ae0c20d76484b8f8069d36e5980e7cda",
+    "mtime": "2026-02-01T21:52:01.056Z",
+    "lines": 58,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/error/index.ts",
+    "size": 141,
+    "hash": "c504cc7c7bbcd573d1fa1b2750380ec0",
+    "mtime": "2026-02-01T21:52:01.057Z",
+    "lines": 7,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/http/index.ts",
+    "size": 5619,
+    "hash": "49618e14ebb10f19b34c4e3238512c38",
+    "mtime": "2026-02-01T21:52:01.058Z",
+    "lines": 210,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/utils/format.ts",
+    "size": 2621,
+    "hash": "f97d646cc0a7282dc4b95d3641d00e9a",
+    "mtime": "2026-02-01T21:52:01.058Z",
+    "lines": 95,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/src/utils/test-utils.ts",
+    "size": 582,
+    "hash": "c38de09a041a03a2d1a759a0b50b325f",
+    "mtime": "2026-02-01T21:52:01.059Z",
+    "lines": 22,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/sdk/tsconfig.json",
+    "size": 747,
+    "hash": "471d4fb62eca43384b3f5b5c68e7c181",
+    "mtime": "2026-02-01T21:52:01.059Z",
+    "lines": 26,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/tsup.config.ts",
+    "size": 164,
+    "hash": "8034c34a1b0354b89be2ea634e6d8904",
+    "mtime": "2026-02-01T21:52:01.059Z",
+    "lines": 9,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/sdk/vitest.config.ts",
+    "size": 613,
+    "hash": "15851a8ce229115660f26d83fd71f28d",
+    "mtime": "2026-02-01T21:52:01.060Z",
+    "lines": 23,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/CHANGELOG.md",
+    "size": 1292,
+    "hash": "b98d7eeb7e71af1058c936a25d2012c8",
+    "mtime": "2026-02-01T21:52:01.060Z",
+    "lines": 43,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/eslint.config.js",
+    "size": 1397,
+    "hash": "63af5c082420e3e51e99a40dbc149a91",
+    "mtime": "2026-02-01T21:52:01.061Z",
+    "lines": 48,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/package.json",
+    "size": 1634,
+    "hash": "73a5765043ab87522fa27bf37d7d0ee6",
+    "mtime": "2026-02-01T21:52:01.062Z",
+    "lines": 70,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/README.md",
+    "size": 2436,
+    "hash": "283033f4e9fb40ab9277c3832a3be739",
+    "mtime": "2026-02-01T21:52:01.061Z",
+    "lines": 102,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/agents/context7.ts",
+    "size": 1717,
+    "hash": "c9bb07c312aa2c83cfa029a9c8c134dd",
+    "mtime": "2026-02-01T21:52:01.063Z",
+    "lines": 65,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/agents/index.ts",
+    "size": 71,
+    "hash": "f6535d1159799ab51a216682dd2d6e69",
+    "mtime": "2026-02-01T21:52:01.063Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/index.test.ts",
+    "size": 8093,
+    "hash": "b79eb9df90879bac48d74045cb7a98cb",
+    "mtime": "2026-02-01T21:52:01.064Z",
+    "lines": 229,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/index.ts",
+    "size": 470,
+    "hash": "63c4f2749bda4ada6a2e86d574b9c272",
+    "mtime": "2026-02-01T21:52:01.064Z",
+    "lines": 22,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/prompts/index.ts",
+    "size": 127,
+    "hash": "6f455f7be4545bb2b0bc904bb7478d51",
+    "mtime": "2026-02-01T21:52:01.065Z",
+    "lines": 7,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/prompts/system.ts",
+    "size": 4012,
+    "hash": "1e95554fab037fd2496e3153ad6f0cd1",
+    "mtime": "2026-02-01T21:52:01.066Z",
+    "lines": 83,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/tools/index.ts",
+    "size": 154,
+    "hash": "8ecc15155a90f22e458f41fcc6f00872",
+    "mtime": "2026-02-01T21:52:01.067Z",
+    "lines": 4,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/tools/query-docs.ts",
+    "size": 2862,
+    "hash": "1bba98609a33b9f8e2607d65605cecf2",
+    "mtime": "2026-02-01T21:52:01.067Z",
+    "lines": 69,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/tools/resolve-library-id.ts",
+    "size": 2491,
+    "hash": "46ff2df499722fe03f1f42760885b6b9",
+    "mtime": "2026-02-01T21:52:01.068Z",
+    "lines": 66,
+    "hasSymbols": true
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/src/tools/types.ts",
+    "size": 213,
+    "hash": "5aa9fda5fb75e292cdb8f689fcf589f8",
+    "mtime": "2026-02-01T21:52:01.068Z",
+    "lines": 10,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/tsconfig.json",
+    "size": 749,
+    "hash": "28e9450b90538d2bb6b651841b214cfc",
+    "mtime": "2026-02-01T21:52:01.069Z",
+    "lines": 26,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/tsup.config.ts",
+    "size": 413,
+    "hash": "259bb3abdf85084aaafb16b830e4e55f",
+    "mtime": "2026-02-01T21:52:01.069Z",
+    "lines": 19,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/packages/tools-ai-sdk/vitest.config.ts",
+    "size": 550,
+    "hash": "5de33b5c230fccdcf6ec745ea4843783",
+    "mtime": "2026-02-01T21:52:01.069Z",
+    "lines": 21,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/plugins/claude/context7/.mcp.json",
+    "size": 92,
+    "hash": "f803c9113b1d8cf0a7c63fb3c6f832ea",
+    "mtime": "2026-02-01T21:52:01.071Z",
+    "lines": 7,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/plugins/claude/context7/agents/docs-researcher.md",
+    "size": 1779,
+    "hash": "970ae38d42ef2c1a7dc3f03b4729a710",
+    "mtime": "2026-02-01T21:52:01.072Z",
+    "lines": 41,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/plugins/claude/context7/commands/docs.md",
+    "size": 1193,
+    "hash": "2f50e4b0eb2a7ec3d939c3793fd9ba52",
+    "mtime": "2026-02-01T21:52:01.072Z",
+    "lines": 46,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/plugins/claude/context7/README.md",
+    "size": 2090,
+    "hash": "e9d579e5063127959d6c839b04ba8471",
+    "mtime": "2026-02-01T21:52:01.071Z",
+    "lines": 74,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/plugins/claude/context7/skills/documentation-lookup/SKILL.md",
+    "size": 2185,
+    "hash": "41cc6f5ac13258c71347eb56deeda100",
+    "mtime": "2026-02-01T21:52:01.073Z",
+    "lines": 54,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/pnpm-lock.yaml",
+    "size": 156325,
+    "hash": "af5b68063773b469301d779a554c9d9b",
+    "mtime": "2026-02-01T21:52:01.075Z",
+    "lines": 4753,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/pnpm-workspace.yaml",
+    "size": 29,
+    "hash": "44f0a5d95dee07bcea063021ed80a559",
+    "mtime": "2026-02-01T21:52:01.076Z",
+    "lines": 3,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/prettier.config.mjs",
+    "size": 226,
+    "hash": "75b1c1cb1ff879c09a656533b331b3c0",
+    "mtime": "2026-02-01T21:52:01.076Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/README.md",
+    "size": 11361,
+    "hash": "9d5cc3ee99919397ba47b9e9b68c6e79",
+    "mtime": "2026-02-01T21:52:00.890Z",
+    "lines": 246,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/SECURITY.md",
+    "size": 1686,
+    "hash": "b79ecb52a0f9c92eedaef1e663f1c220",
+    "mtime": "2026-02-01T21:52:00.890Z",
+    "lines": 45,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/server.json",
+    "size": 1837,
+    "hash": "676befd42c0bcdd052f572425f80c01d",
+    "mtime": "2026-02-01T21:52:01.085Z",
+    "lines": 68,
+    "hasSymbols": false
+  },
+  {
+    "path": "tools/context7/tsconfig.json",
+    "size": 317,
+    "hash": "92b583510073a946ff2dce66d0febe59",
+    "mtime": "2026-02-01T21:52:01.086Z",
+    "lines": 14,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/eslint.config.mjs",
+    "size": 4166,
+    "hash": "a5fd8a4db8682bc125a426f676187599",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 176,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/index.html",
+    "size": 892,
+    "hash": "2bc39e415e2c6dc270ce1086314a0bfe",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 29,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/package.json",
+    "size": 1823,
+    "hash": "30ea5e3d637fe798f1bcebdba013c8e4",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 64,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/postcss.config.js",
+    "size": 69,
+    "hash": "5db811c164888949d497e7dfdb1f08b4",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 5,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/README.md",
+    "size": 1171,
+    "hash": "232453d3f56c54a61e237b5ff8d7fe47",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 51,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/App.tsx",
+    "size": 595,
+    "hash": "8a60390e0fdadfd3364ea698b7aeddae",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 22,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/components/icons.tsx",
+    "size": 6474,
+    "hash": "387a7277c668c04ebf353dc361319e3c",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 187,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/components/navbar.tsx",
+    "size": 4336,
+    "hash": "b44bea6fd58472a90a9eaa85a30b6f71",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 145,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/components/primitives.ts",
+    "size": 1181,
+    "hash": "be287ad59bdc543c52ed4ad9dbbad7fd",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 54,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/components/theme-switch.tsx",
+    "size": 2033,
+    "hash": "412a493661d8ffd527eab7482dc7b760",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 83,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/config/site.ts",
+    "size": 1244,
+    "hash": "1cb551a4ca0360c989227b8552ea62b6",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 70,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/hero.ts",
+    "size": 64,
+    "hash": "83a8733f0dd1fa63ba77106b88d4c2fd",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/layouts/default.tsx",
+    "size": 777,
+    "hash": "4c82e965292cff3adfdb0a1f3985b8bc",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 30,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/main.tsx",
+    "size": 424,
+    "hash": "5db4cdcef864e877e0c1e551b67eb68c",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 18,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/pages/about.tsx",
+    "size": 435,
+    "hash": "af2acfc0e6e18a195a9087b26adae0d4",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 15,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/pages/blog.tsx",
+    "size": 434,
+    "hash": "d5a42d11f84e69deb7028f56673e91ca",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 15,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/pages/docs.tsx",
+    "size": 434,
+    "hash": "3f20945bb269b92ae45e695be8f98f81",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 15,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/pages/index.tsx",
+    "size": 1918,
+    "hash": "1b1cabbbdeb04e16f08962c533bddddf",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 61,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/pages/pricing.tsx",
+    "size": 437,
+    "hash": "99c023bb9a4aba86e97b1d18ca71544d",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 15,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/provider.tsx",
+    "size": 497,
+    "hash": "ec5d55f4d8f768bc5b37c7a32e6755d6",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 21,
+    "hasSymbols": true
+  },
+  {
+    "path": "vite-template/src/styles/globals.css",
+    "size": 154,
+    "hash": "545e3054feef0f4f41b9e3147f7b9fb3",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 6,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/types/index.ts",
+    "size": 110,
+    "hash": "28d5b2d24a8d93962be6b558db98c441",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 6,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/src/vite-env.d.ts",
+    "size": 38,
+    "hash": "0352474ba2918efe13895edbc3780d94",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 2,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/tsconfig.json",
+    "size": 652,
+    "hash": "b08ef24a2f0d14cb6bbc9f007150ea5d",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 29,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/tsconfig.node.json",
+    "size": 233,
+    "hash": "df562a73dce2f53f022bc93ee20099c2",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 12,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/vercel.json",
+    "size": 69,
+    "hash": "139a9a7977999d75c36a2517fa103324",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 5,
+    "hasSymbols": false
+  },
+  {
+    "path": "vite-template/vite.config.ts",
+    "size": 292,
+    "hash": "24040bf79eef78e7d466ac612bc3656e",
+    "mtime": "2026-01-29T16:25:23.000Z",
+    "lines": 10,
+    "hasSymbols": false
+  }
+]

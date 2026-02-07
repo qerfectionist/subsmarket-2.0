@@ -1,0 +1,489 @@
+{
+    "version": "1.0.0",
+    "updated_at": "2026-02-06T19:20:00+05:00",
+    "currency": "KZT",
+    "categories": {
+        "streaming": {
+            "label": "Стриминг",
+            "icon": "📺",
+            "services": [
+                {
+                    "id": "youtube_premium",
+                    "name": "YouTube Premium",
+                    "logo": "youtube",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 800,
+                        "max": 1200,
+                        "recommended": 1000
+                    },
+                    "notes": "При 6 участниках. Попытки продавать за 1500₸ критикуются сообществом",
+                    "regions": [
+                        "KZ",
+                        "RU",
+                        "TR"
+                    ],
+                    "region_restriction": true,
+                    "popularity": 95
+                },
+                {
+                    "id": "netflix",
+                    "name": "Netflix",
+                    "logo": "netflix",
+                    "family_size": 5,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 1200,
+                        "max": 2000,
+                        "recommended": 1500
+                    },
+                    "notes": "Проблемы с регионами, нужна верификация через SMS",
+                    "regions": [
+                        "KZ",
+                        "PL",
+                        "TR"
+                    ],
+                    "region_restriction": true,
+                    "popularity": 85
+                },
+                {
+                    "id": "spotify",
+                    "name": "Spotify",
+                    "logo": "spotify",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 600,
+                        "max": 1000,
+                        "recommended": 800
+                    },
+                    "notes": "Требует один адрес для семьи",
+                    "regions": [
+                        "KZ"
+                    ],
+                    "region_restriction": true,
+                    "popularity": 70
+                },
+                {
+                    "id": "apple_music",
+                    "name": "Apple Music",
+                    "logo": "apple",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 800,
+                        "max": 1200,
+                        "recommended": 1000
+                    },
+                    "notes": "Кэшбэк Евраз 30% в категории Развлечения",
+                    "regions": [
+                        "KZ"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 60
+                },
+                {
+                    "id": "yandex_plus",
+                    "name": "Яндекс Плюс",
+                    "logo": "yandex",
+                    "family_size": 4,
+                    "billing_cycle": "yearly",
+                    "price_range": {
+                        "min": 2000,
+                        "max": 4000,
+                        "recommended": 3000
+                    },
+                    "notes": "Годовая подписка популярнее месячной. Включает Кинопоиск, Музыку, Диск",
+                    "regions": [
+                        "KZ",
+                        "RU"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 90
+                },
+                {
+                    "id": "kinopoisk",
+                    "name": "Кинопоиск",
+                    "logo": "kinopoisk",
+                    "family_size": 4,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 500,
+                        "max": 800,
+                        "recommended": 600
+                    },
+                    "notes": "Часто идёт в комплекте с Яндекс Плюс",
+                    "regions": [
+                        "KZ",
+                        "RU"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 75
+                },
+                {
+                    "id": "ivi",
+                    "name": "IVI",
+                    "logo": "ivi",
+                    "family_size": 5,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 400,
+                        "max": 700,
+                        "recommended": 500
+                    },
+                    "notes": "Меньше спрос чем на Netflix/Кинопоиск",
+                    "regions": [
+                        "KZ",
+                        "RU"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 45
+                },
+                {
+                    "id": "megogo",
+                    "name": "MEGOGO",
+                    "logo": "megogo",
+                    "family_size": 5,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 500,
+                        "max": 800,
+                        "recommended": 600
+                    },
+                    "notes": "Максимальный тариф ~3500₸ за полгода",
+                    "regions": [
+                        "KZ",
+                        "UA",
+                        "RU"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 40
+                },
+                {
+                    "id": "crunchyroll",
+                    "name": "Crunchyroll",
+                    "logo": "crunchyroll",
+                    "family_size": 4,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 600,
+                        "max": 1000,
+                        "recommended": 800
+                    },
+                    "notes": "Нишевый спрос (аниме)",
+                    "regions": [
+                        "US",
+                        "EU"
+                    ],
+                    "region_restriction": true,
+                    "popularity": 25
+                }
+            ]
+        },
+        "cloud": {
+            "label": "Облако и AI",
+            "icon": "☁️",
+            "services": [
+                {
+                    "id": "microsoft_365",
+                    "name": "Microsoft 365",
+                    "logo": "microsoft",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 600,
+                        "max": 1000,
+                        "recommended": 750
+                    },
+                    "notes": "1TB облака + Office + Copilot базовый. Clipchamp Premium включён",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 80
+                },
+                {
+                    "id": "google_one_2tb",
+                    "name": "Google One 2TB",
+                    "logo": "google",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 400,
+                        "max": 600,
+                        "recommended": 500
+                    },
+                    "notes": "Семейный план на 6 человек",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 65
+                },
+                {
+                    "id": "google_one_ai_premium",
+                    "name": "Google One AI Premium",
+                    "logo": "google",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 2500,
+                        "max": 3500,
+                        "recommended": 3000
+                    },
+                    "notes": "5TB + Gemini Advanced + YouTube Premium. Топовый тариф",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 50
+                },
+                {
+                    "id": "yandex_360",
+                    "name": "Яндекс 360",
+                    "logo": "yandex",
+                    "family_size": 1,
+                    "billing_cycle": "yearly",
+                    "price_range": {
+                        "min": 3500,
+                        "max": 4500,
+                        "recommended": 4100
+                    },
+                    "notes": "1TB облака. Шаринг через семью Яндекса",
+                    "regions": [
+                        "KZ",
+                        "RU"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 55
+                },
+                {
+                    "id": "icloud_plus",
+                    "name": "iCloud+",
+                    "logo": "apple",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 300,
+                        "max": 500,
+                        "recommended": 400
+                    },
+                    "notes": "200GB план",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 40
+                }
+            ]
+        },
+        "education": {
+            "label": "Образование",
+            "icon": "🎓",
+            "services": [
+                {
+                    "id": "duolingo_family",
+                    "name": "Duolingo Family",
+                    "logo": "duolingo",
+                    "family_size": 6,
+                    "billing_cycle": "yearly",
+                    "price_range": {
+                        "min": 2400,
+                        "max": 4200,
+                        "recommended": 4000
+                    },
+                    "notes": "Высокий спрос. Бесконечные жизни, без рекламы, все языки",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 70
+                },
+                {
+                    "id": "headspace",
+                    "name": "Headspace",
+                    "logo": "headspace",
+                    "family_size": 6,
+                    "billing_cycle": "monthly",
+                    "price_range": {
+                        "min": 500,
+                        "max": 800,
+                        "recommended": 600
+                    },
+                    "notes": "Нишевый спрос. Медитации и ментальное здоровье",
+                    "regions": [
+                        "GLOBAL"
+                    ],
+                    "region_restriction": false,
+                    "popularity": 20
+                }
+            ]
+        },
+        "telecom": {
+            "label": "Телеком",
+            "icon": "📱",
+            "operators": [
+                {
+                    "id": "altel",
+                    "name": "Алтел",
+                    "logo": "altel",
+                    "tariffs": [
+                        {
+                            "id": "altel_januya",
+                            "name": "Жануя",
+                            "family_size": 5,
+                            "billing_cycle": "monthly",
+                            "price": 1750,
+                            "notes": "Популярный семейный тариф"
+                        }
+                    ],
+                    "gb_price_per_unit": {
+                        "min": 80,
+                        "max": 120,
+                        "recommended": 100
+                    },
+                    "gb_min_volume": 5,
+                    "popularity": 85
+                },
+                {
+                    "id": "tele2",
+                    "name": "Теле2",
+                    "logo": "tele2",
+                    "tariffs": [
+                        {
+                            "id": "tele2_vygodno_vmeste",
+                            "name": "Выгодно вместе",
+                            "family_size": 5,
+                            "billing_cycle": "monthly",
+                            "discount_percent": 20,
+                            "notes": "Скидка 15-20% на тариф каждого участника"
+                        }
+                    ],
+                    "gb_price_per_unit": {
+                        "min": 100,
+                        "max": 150,
+                        "recommended": 120
+                    },
+                    "gb_min_volume": 3,
+                    "popularity": 70
+                },
+                {
+                    "id": "beeline",
+                    "name": "Билайн",
+                    "logo": "beeline",
+                    "tariffs": [
+                        {
+                            "id": "beeline_family",
+                            "name": "Семейный",
+                            "family_size": 5,
+                            "billing_cycle": "monthly",
+                            "price": 2500,
+                            "notes": "С безлимитным интернетом"
+                        }
+                    ],
+                    "gb_price_per_unit": {
+                        "min": 100,
+                        "max": 150,
+                        "recommended": 120
+                    },
+                    "gb_min_volume": 5,
+                    "popularity": 50
+                },
+                {
+                    "id": "activ",
+                    "name": "Актив",
+                    "logo": "activ",
+                    "tariffs": [
+                        {
+                            "id": "activ_family_unlimited",
+                            "name": "Семейный безлимит",
+                            "family_size": 5,
+                            "billing_cycle": "monthly",
+                            "price_range": {
+                                "min": 600,
+                                "max": 1000
+                            },
+                            "notes": "Для интернета и роутеров"
+                        }
+                    ],
+                    "gb_price_per_unit": {
+                        "min": 70,
+                        "max": 100,
+                        "recommended": 85
+                    },
+                    "gb_min_volume": 5,
+                    "popularity": 75
+                }
+            ]
+        }
+    },
+    "trust_system": {
+        "initial_score": 5.0,
+        "min_score": 1.0,
+        "max_score": 5.0,
+        "events": {
+            "successful_deal": 0.1,
+            "first_complaint_confirmed": -0.5,
+            "repeat_complaint_confirmed": -1.0,
+            "seller_cancellation": -0.2,
+            "fraud_ban": -5.0
+        },
+        "thresholds": {
+            "low_rating_warning": 3.0,
+            "cannot_create_listings": 2.0,
+            "ban": 1.0
+        },
+        "badges": [
+            {
+                "id": "newbie",
+                "name": "Новичок",
+                "icon": "🆕",
+                "condition": "deals == 0"
+            },
+            {
+                "id": "verified",
+                "name": "Проверенный",
+                "icon": "✅",
+                "condition": "deals >= 10 && score >= 4.5"
+            },
+            {
+                "id": "experienced",
+                "name": "Опытный продавец",
+                "icon": "🥉",
+                "condition": "deals >= 50 && score >= 4.5"
+            },
+            {
+                "id": "gold",
+                "name": "Золотой продавец",
+                "icon": "🥇",
+                "condition": "deals >= 100 && score >= 4.8"
+            },
+            {
+                "id": "platinum",
+                "name": "Платиновый продавец",
+                "icon": "💎",
+                "condition": "deals >= 500 && score == 5.0"
+            },
+            {
+                "id": "fast_responder",
+                "name": "Быстро отвечает",
+                "icon": "⚡",
+                "condition": "avg_response_time < 3600"
+            },
+            {
+                "id": "top_weekly",
+                "name": "Топ недели",
+                "icon": "🔥",
+                "condition": "weekly_rank == 1"
+            }
+        ]
+    },
+    "anti_abuse": {
+        "min_deal_amount": 500,
+        "max_same_pair_deals": 3,
+        "min_account_age_days": 7,
+        "cooldown_between_listings_seconds": 60,
+        "auto_delete_inactive_days": 30
+    }
+}
