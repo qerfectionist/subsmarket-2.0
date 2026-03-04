@@ -55,23 +55,48 @@ export function ClubDetailsPage() {
   const joinMutation = useMutation({
     mutationFn: (phone?: string | void) =>
       api.joinClub(id!, phone ? phone : undefined),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["club", id] });
+      const previousClub = queryClient.getQueryData(["club", id]);
+      queryClient.setQueryData(["club", id], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          my_status: "pending", // Optimistically assume 'pending' initially
+          current_members: old.current_members + 1,
+        };
+      });
+      return { previousClub };
+    },
     onSuccess: (data) => {
       haptic.notification("success");
-      queryClient.invalidateQueries({ queryKey: ["club", id] });
-      // Detect if auto-approved or pending
+      // Detect if auto-approved or pending (so we can adjust UI correctly)
       const msg = (data as { message?: string })?.message || "";
-      setJoinMessage(
-        msg.toLowerCase().includes("auto") ? "approved" : "pending",
-      );
+      const isApproved = msg.toLowerCase().includes("auto");
+
+      setJoinMessage(isApproved ? "approved" : "pending");
       setShowJoinSuccess(true);
+
+      // We invalidate to get the correct 'my_status' and potentially actual members list
+      queryClient.invalidateQueries({ queryKey: ["club", id] });
     },
-    onError: () => haptic.notification("error"),
+    onError: (_err, _newTodo, context) => {
+      haptic.notification("error");
+      if (context?.previousClub) {
+        queryClient.setQueryData(["club", id], context.previousClub);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["club", id] });
+      onPhoneModalClose();
+    },
   });
 
   const leaveMutation = useMutation({
     mutationFn: () => api.leaveClub(id!),
     onSuccess: () => {
       haptic.notification("success");
+      queryClient.removeQueries({ queryKey: ["club", id] }); // clear cache
       navigate("/clubs");
     },
     onError: () => haptic.notification("error"),
@@ -79,11 +104,31 @@ export function ClubDetailsPage() {
 
   const cancelMutation = useMutation({
     mutationFn: () => api.cancelJoinRequest(id!),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["club", id] });
+      const previousClub = queryClient.getQueryData(["club", id]);
+      queryClient.setQueryData(["club", id], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          my_status: null,
+          current_members: Math.max(1, old.current_members - 1),
+        };
+      });
+      return { previousClub };
+    },
     onSuccess: () => {
       haptic.notification("success");
+    },
+    onError: (_err, _newTodo, context) => {
+      haptic.notification("error");
+      if (context?.previousClub) {
+        queryClient.setQueryData(["club", id], context.previousClub);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["club", id] });
     },
-    onError: () => haptic.notification("error"),
   });
 
   const remindMutation = useMutation({
@@ -148,24 +193,24 @@ export function ClubDetailsPage() {
   const currentUserId: number = tgUserId
     ? Number(tgUserId)
     : (() => {
-        // Parse mock init data: "mock:12345:dev_user"
-        try {
-          const initData = window.Telegram?.WebApp?.initData || "";
-          if (initData.startsWith("mock:")) {
-            return parseInt(initData.split(":")[1]) || 12345;
-          }
-        } catch {
-          /* ignore parse errors */
+      // Parse mock init data: "mock:12345:dev_user"
+      try {
+        const initData = window.Telegram?.WebApp?.initData || "";
+        if (initData.startsWith("mock:")) {
+          return parseInt(initData.split(":")[1]) || 12345;
         }
-        return 12345;
-      })();
+      } catch {
+        /* ignore parse errors */
+      }
+      return 12345;
+    })();
   const isHost = club.host_id === currentUserId;
   const myStatus = club.my_status;
   // Host is always treated as "in the club"
   const isMember = isHost || myStatus === "active" || myStatus === "approved";
   const isPending = !isHost && myStatus === "pending";
-  // Backend may not count the host in current_members — add 1 if host
-  const membersCount = (club.current_members ?? 0) + (isHost ? 1 : 0);
+  // Backend now counts the host in current_members naturally
+  const membersCount = club.current_members ?? 0;
   const fillPercent = Math.round((membersCount / club.max_members) * 100);
 
   const statusMap: Record<
@@ -211,9 +256,25 @@ export function ClubDetailsPage() {
           </NavbarItem>
         </NavbarContent>
         <NavbarContent justify="end">
-          <NavbarItem>
-            <div className="w-8" />{" "}
-            {/* Placeholder to balance the back button */}
+          <NavbarItem className="flex items-center">
+            {isMember && !isHost ? (
+              <Button
+                isIconOnly
+                variant="flat"
+                color="danger"
+                radius="full"
+                size="sm"
+                className="w-9 h-9"
+                onPress={() => {
+                  haptic.impact("light");
+                  onOpen();
+                }}
+              >
+                <MSIcon name="logout" size={18} />
+              </Button>
+            ) : (
+              <div className="w-10" />
+            )}
           </NavbarItem>
         </NavbarContent>
       </Navbar>
@@ -238,7 +299,7 @@ export function ClubDetailsPage() {
                 style={{
                   background:
                     SERVICE_COLORS[
-                      club.subscription.service_name?.toLowerCase()
+                    club.subscription.service_name?.toLowerCase()
                     ] || "#6366f1",
                 }}
                 className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-sm mt-2"
@@ -249,13 +310,20 @@ export function ClubDetailsPage() {
                 <h2 className="text-xl font-black">
                   {club.subscription.service_name}
                 </h2>
-                <p className="text-xs text-default-400 mt-1">
-                  Оплата{" "}
-                  {club.payment_method === "kaspi"
-                    ? "Kaspi"
-                    : club.payment_method}{" "}
-                  · {club.payment_day || 1} числа
-                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="flex items-center gap-1 text-xs font-medium text-default-500 bg-content2 px-1.5 py-0.5 rounded-md capitalize">
+                    {club.payment_method === "kaspi" && (
+                      <div className="w-3 h-3 rounded-sm bg-[#f14635] flex items-center justify-center">
+                        <span className="text-[7px] font-black text-white leading-none">K</span>
+                      </div>
+                    )}
+                    {club.payment_method === "kaspi" ? "Kaspi" : club.payment_method}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-medium text-default-500 bg-content2 px-1.5 py-0.5 rounded-md">
+                    <MSIcon name="event" className="text-[12px]" />
+                    {club.payment_day || 1} числа
+                  </span>
+                </div>
               </div>
               <div className="w-full h-px bg-divider" />
               <div>
@@ -353,7 +421,7 @@ export function ClubDetailsPage() {
                     style={{
                       background:
                         SERVICE_COLORS[
-                          club.subscription.service_name?.toLowerCase()
+                        club.subscription.service_name?.toLowerCase()
                         ] || "#6366f1",
                     }}
                     className="w-11 h-11 rounded-[12px] flex items-center justify-center text-white text-[17px] font-bold flex-shrink-0"
@@ -420,23 +488,48 @@ export function ClubDetailsPage() {
               {/* Payment Info inside the same block */}
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-default-500">Оплата</span>
-                  <span className="font-semibold capitalize">
-                    {club.payment_method === "kaspi"
-                      ? "Kaspi"
-                      : club.payment_method}{" "}
-                    · {club.payment_day || 1} числа
+                  <span className="text-default-500 flex items-center gap-1.5">
+                    <MSIcon name="account_balance" className="text-[16px] text-default-400" />
+                    Оплата
                   </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold capitalize flex items-center gap-1.5 bg-content2 px-2 py-1 rounded-md text-default-700">
+                      {club.payment_method === "kaspi" && (
+                        <div className="w-3.5 h-3.5 rounded-sm bg-[#f14635] flex items-center justify-center">
+                          <span className="text-[8px] font-black text-white leading-none">K</span>
+                        </div>
+                      )}
+                      {club.payment_method === "kaspi"
+                        ? "Kaspi"
+                        : club.payment_method}
+                    </span>
+                    <span className="font-semibold flex items-center gap-1 bg-content2 px-2 py-1 rounded-md text-default-700">
+                      <MSIcon name="event" className="text-[14px] text-default-400" />
+                      {club.payment_day || 1} числа
+                    </span>
+                  </div>
                 </div>
                 {club.payment_details && (
-                  <>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-default-500">Реквизиты</span>
-                      <span className="font-mono bg-content2 px-2 py-1 rounded-md select-all text-default-600 font-medium tracking-wider">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-default-500 flex items-center gap-1.5">
+                      <MSIcon name="credit_score" className="text-[16px] text-default-400" />
+                      Реквизиты
+                    </span>
+                    <div
+                      className="flex items-center gap-2 cursor-pointer group active:opacity-70 transition-opacity"
+                      onClick={() => {
+                        if (club.payment_details) {
+                          navigator.clipboard.writeText(club.payment_details);
+                          haptic.selection();
+                        }
+                      }}
+                    >
+                      <span className="font-mono bg-content2 px-2 py-1 rounded-md text-default-700 font-medium tracking-wider flex items-center gap-2">
                         {club.payment_details}
+                        <MSIcon name="content_copy" className="text-[14px] text-default-400 group-active:text-primary transition-colors" />
                       </span>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -448,17 +541,10 @@ export function ClubDetailsPage() {
           {/* Header */}
           <div className="px-5 py-4 flex items-center justify-between">
             <p className="text-sm font-semibold">Участники</p>
-            <div className="flex items-center gap-2">
-              <Progress
-                value={fillPercent}
-                color={isFull ? "success" : "primary"}
-                size="sm"
-                radius="full"
-                className="w-20"
-              />
-              <p className="text-sm font-bold tabular-nums text-default-500">
-                {membersCount}
-                <span className="font-normal">/{club.max_members}</span>
+            <div className="flex items-center gap-1.5 bg-content2 px-2 py-1.5 rounded-md">
+              <MSIcon name="group" className="text-[14px] text-default-400" />
+              <p className="text-xs font-semibold tabular-nums text-default-700">
+                {membersCount}<span className="text-default-400 font-medium">/{club.max_members}</span>
               </p>
             </div>
           </div>
@@ -574,26 +660,7 @@ export function ClubDetailsPage() {
           ))}
         </div>
 
-        {/* Description / Rules */}
-        {(club.rules || club.description) && (
-          <div className="bg-content1 rounded-3xl px-5 py-4 space-y-3">
-            {club.description && (
-              <p className="text-sm text-default-500 leading-relaxed">
-                {club.description}
-              </p>
-            )}
-            {club.rules && (
-              <div className="flex gap-2 bg-warning/8 rounded-2xl px-3 py-2 border border-warning/20">
-                <MSIcon
-                  name="warning"
-                  size={14}
-                  className="text-warning flex-shrink-0 mt-0.5"
-                />
-                <p className="text-xs text-default-500">{club.rules}</p>
-              </div>
-            )}
-          </div>
-        )}
+
 
         {/* Telegram group link */}
         {club.telegram_group_link && (
@@ -632,127 +699,114 @@ export function ClubDetailsPage() {
       </main>
 
       {/* Bottom CTA — fixed above tab bar */}
-      <div className="fixed bottom-16 left-0 right-0 z-50">
-        {/* gradient fade */}
-        <div className="h-6 bg-gradient-to-t from-background to-transparent" />
-        <div className="bg-background px-4 pb-4">
-          <div className="max-w-lg mx-auto flex flex-col gap-2">
-            {/* Pending state */}
-            {isPending && !isHost && (
-              <>
-                <div className="flex items-center justify-center gap-2 pb-1">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-warning" />
-                  </span>
-                  <span className="text-sm text-warning font-semibold">
-                    Ждём одобрения организатора
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    color="primary"
-                    variant="flat"
-                    size="lg"
-                    fullWidth
-                    className="font-bold text-sm h-12 rounded-2xl"
-                    startContent={
-                      !remindMutation.isPending && (
-                        <MSIcon name="notifications" size={16} />
-                      )
+      {(!isMember || isPending || isHost) && (
+        <div className="fixed bottom-16 left-0 right-0 z-50">
+          {/* gradient fade */}
+          <div className="h-6 bg-gradient-to-t from-background to-transparent" />
+          <div className="bg-background px-4 pb-4">
+            <div className="max-w-lg mx-auto flex flex-col gap-2">
+              {/* Pending state */}
+              {isPending && !isHost && (
+                <>
+                  <div className="flex items-center justify-center gap-2 pb-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-warning" />
+                    </span>
+                    <span className="text-sm text-warning font-semibold">
+                      Ждём одобрения организатора
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      color="primary"
+                      variant="flat"
+                      size="lg"
+                      fullWidth
+                      className="font-bold text-sm h-12 rounded-2xl"
+                      startContent={
+                        !remindMutation.isPending && (
+                          <MSIcon name="notifications" size={16} />
+                        )
+                      }
+                      isLoading={remindMutation.isPending}
+                      isDisabled={remindMutation.isSuccess}
+                      onPress={() => {
+                        haptic.impact("medium");
+                        remindMutation.mutate();
+                      }}
+                    >
+                      {remindMutation.isSuccess
+                        ? "Напомнили ✓"
+                        : "Напомнить хосту"}
+                    </Button>
+                    <Button
+                      color="danger"
+                      variant="flat"
+                      size="lg"
+                      fullWidth
+                      className="font-bold text-sm h-12 rounded-2xl"
+                      startContent={
+                        !cancelMutation.isPending && (
+                          <MSIcon name="cancel" size={16} />
+                        )
+                      }
+                      isLoading={cancelMutation.isPending}
+                      onPress={() => {
+                        haptic.impact("heavy");
+                        cancelMutation.mutate();
+                      }}
+                    >
+                      Отменить заявку
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {!isMember && !isPending && !isHost && (
+                <Button
+                  color="primary"
+                  size="lg"
+                  fullWidth
+                  className="font-bold text-base h-14 rounded-2xl"
+                  onPress={() => {
+                    haptic.impact("medium");
+                    if (
+                      club?.category === "telecom" ||
+                      club?.subscription?.category === "telecom"
+                    ) {
+                      onPhoneModalOpen();
+                    } else {
+                      joinMutation.mutate();
                     }
-                    isLoading={remindMutation.isPending}
-                    isDisabled={remindMutation.isSuccess}
-                    onPress={() => {
-                      haptic.impact("medium");
-                      remindMutation.mutate();
-                    }}
-                  >
-                    {remindMutation.isSuccess
-                      ? "Напомнили ✓"
-                      : "Напомнить хосту"}
-                  </Button>
-                  <Button
-                    color="danger"
-                    variant="flat"
-                    size="lg"
-                    fullWidth
-                    className="font-bold text-sm h-12 rounded-2xl"
-                    startContent={
-                      !cancelMutation.isPending && (
-                        <MSIcon name="cancel" size={16} />
-                      )
-                    }
-                    isLoading={cancelMutation.isPending}
-                    onPress={() => {
-                      haptic.impact("heavy");
-                      cancelMutation.mutate();
-                    }}
-                  >
-                    Отменить заявку
-                  </Button>
-                </div>
-              </>
-            )}
+                  }}
+                  isLoading={joinMutation.isPending}
+                  isDisabled={isFull}
+                >
+                  {isFull
+                    ? "Клуб заполнен"
+                    : `Вступить · ${Math.round(club?.price_per_member || 0)} ₸/мес`}
+                </Button>
+              )}
 
-            {!isMember && !isPending && !isHost && (
-              <Button
-                color="primary"
-                size="lg"
-                fullWidth
-                className="font-bold text-base h-14 rounded-2xl"
-                onPress={() => {
-                  haptic.impact("medium");
-                  if (
-                    club.category === "telecom" ||
-                    club.subscription?.category === "telecom"
-                  ) {
-                    onPhoneModalOpen();
-                  } else {
-                    joinMutation.mutate();
-                  }
-                }}
-                isLoading={joinMutation.isPending}
-                isDisabled={isFull}
-              >
-                {isFull
-                  ? "Клуб заполнен"
-                  : `Вступить · ${Math.round(club.price_per_member)} ₸/мес`}
-              </Button>
-            )}
-
-            {isMember && !isHost && (
-              <Button
-                color="danger"
-                variant="flat"
-                size="lg"
-                fullWidth
-                className="font-bold text-base h-14 rounded-2xl"
-                onPress={() => {
-                  haptic.impact("light");
-                  onOpen();
-                }}
-              >
-                Выйти из клуба
-              </Button>
-            )}
-
-            {isHost && (
-              <Button
-                color="primary"
-                variant="flat"
-                size="lg"
-                fullWidth
-                className="font-bold text-base h-14 rounded-2xl"
-                onPress={() => navigate(`/clubs/${id}/requests`)}
-                startContent={<MSIcon name="group_add" size={20} />}
-              >
-                Заявки на вступление
-              </Button>
-            )}
+              {isHost && (
+                <Button
+                  color="primary"
+                  variant="flat"
+                  size="lg"
+                  fullWidth
+                  className="font-bold text-base h-14 rounded-2xl"
+                  onPress={() => navigate(`/clubs/${id}/requests`)}
+                  startContent={<MSIcon name="group_add" size={20} />}
+                >
+                  Заявки на вступление
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )
+      }
 
       {/* Leave Modal */}
       <Modal
@@ -904,7 +958,6 @@ export function ClubDetailsPage() {
                       if (!isPhoneComplete) return;
                       haptic.impact("medium");
                       joinMutation.mutate(phoneNumber);
-                      onClose();
                     }}
                     isDisabled={!isPhoneComplete}
                     isLoading={joinMutation.isPending}
@@ -946,11 +999,10 @@ export function ClubDetailsPage() {
             <>
               <ModalHeader className="flex flex-col gap-2 pt-8 pb-2 items-center text-center">
                 <div
-                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${
-                    joinMessage === "approved"
-                      ? "bg-success/20 text-success"
-                      : "bg-primary/20 text-primary"
-                  }`}
+                  className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${joinMessage === "approved"
+                    ? "bg-success/20 text-success"
+                    : "bg-primary/20 text-primary"
+                    }`}
                 >
                   <MSIcon
                     name={
@@ -987,6 +1039,6 @@ export function ClubDetailsPage() {
           )}
         </ModalContent>
       </Modal>
-    </div>
+    </div >
   );
 }

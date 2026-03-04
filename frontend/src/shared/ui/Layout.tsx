@@ -24,7 +24,7 @@ export function Layout() {
                 <Link
                     to="/admin"
                     className="fixed right-4 z-50 flex items-center justify-center w-12 h-12 bg-danger text-white rounded-full shadow-lg shadow-danger/40 active:scale-95 transition-transform"
-                    style={{ bottom: showNav ? 'calc(5rem + 16px)' : '2rem' }}
+                    style={{ bottom: showNav ? 'calc(10rem + 16px)' : '2rem' }}
                 >
                     <MSIcon name="admin_panel_settings" size={24} filled />
                 </Link>

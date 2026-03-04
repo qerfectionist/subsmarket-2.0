@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Integer, String, Numeric, DateTime
+from sqlalchemy import Index, Integer, String, Numeric, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.domain.entities.base import Base
@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 class User(Base):
     """Telegram user (buyer/seller/host)."""
     __tablename__ = "users"
+    __table_args__ = (
+        Index("ix_users_username", "username"),
+    )
     
     user_id: Mapped[int] = mapped_column(Integer, primary_key=True)  # Telegram ID
     username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -28,7 +31,7 @@ class User(Base):
     p2p_total_volume_gb: Mapped[int] = mapped_column(Integer, default=0)
     
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     last_active_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships

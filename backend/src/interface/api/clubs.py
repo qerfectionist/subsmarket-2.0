@@ -1,13 +1,11 @@
 """Club API routes."""
 
-from datetime import datetime
-from fastapi import Request
 from decimal import Decimal
 from typing import Annotated, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -37,37 +35,130 @@ def get_service(db: AsyncSession = Depends(get_db)) -> ClubService:
     return ClubService(db)
 
 
-@router.get("", response_model=list[ClubListItem])
+@router.get("/my", response_model=list[ClubListItem])
+@limiter.limit("60/minute")
+async def get_my_clubs(
+    request: Request,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    service: Annotated[ClubService, Depends(get_service)],
+) -> list[ClubListItem]:
+    """Get clubs where current user is host or active member."""
+    # Clubs where user is host
+    host_q = await db.execute(
+        select(Club)
+        .options(selectinload(Club.subscription))
+        .where(Club.host_id == tg_user.id)
+        .where(Club.is_deleted == False)
+        .where(Club.status != "deleted")
+        .order_by(Club.created_at.desc())
+    )
+    hosted = host_q.scalars().all()
+
+    # Club IDs where user is a member (not host)
+    member_q = await db.execute(
+        select(ClubMember.club_id)
+        .where(ClubMember.user_id == tg_user.id)
+        .where(ClubMember.status.in_(["active", "pending", "approved"]))
+    )
+    member_club_ids = [row[0] for row in member_q.all()]
+
+    member_clubs: list[Club] = []
+    if member_club_ids:
+        mclub_q = await db.execute(
+            select(Club)
+            .options(selectinload(Club.subscription))
+            .where(Club.club_id.in_(member_club_ids))
+            .where(Club.is_deleted == False)
+            .order_by(Club.created_at.desc())
+        )
+        member_clubs = mclub_q.scalars().all()
+
+    all_clubs = hosted + member_clubs
+    if not all_clubs:
+        return []
+
+    club_ids = [c.club_id for c in all_clubs]
+    counts = await service._get_member_counts_batch(club_ids)
+
+    return [
+        service._build_club_list_item(club, counts.get(club.club_id, 0) + 1)
+        for club in all_clubs
+    ]
+
+
+@router.get("", response_model=dict)
+@limiter.limit("60/minute")
 async def get_clubs(
+    request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     service: Annotated[ClubService, Depends(get_service)],
     category: Optional[str] = Query(None, description="Filter: digital or telecom"),
     status_filter: Optional[str] = Query(None, alias="status", description="Filter: open, full"),
+    search: Optional[str] = Query(None, description="Search by subscription name"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-) -> list[ClubListItem]:
-    """Get list of clubs with filters."""
-    query = (
-        select(Club)
-        .options(selectinload(Club.subscription))
-        .where(Club.is_deleted == False)
-    )
-    
+) -> dict:
+    """Get paginated list of clubs. Returns {items, total}."""
+    # Build base conditions
+    conditions = [Club.is_deleted == False]
     if category:
-        query = query.where(Club.category == category)
-    
+        conditions.append(Club.category == category)
     if status_filter:
-        query = query.where(Club.status == status_filter)
+        conditions.append(Club.status == status_filter)
     else:
-        # Default: show open clubs first
-        query = query.where(Club.status.in_(["open", "full"]))
-    
-    query = query.order_by(Club.created_at.desc()).limit(limit).offset(offset)
-    
-    result = await db.execute(query)
+        conditions.append(Club.status.in_(["open", "full"]))
+
+    # Search by subscription name (JOIN if needed)
+    search_join = search and search.strip()
+
+    # Get total count
+    if search_join:
+        count_query = (
+            select(func.count(Club.club_id))
+            .join(Subscription, Club.subscription_id == Subscription.subscription_id)
+            .where(*conditions)
+            .where(Subscription.service_name.ilike(f"%{search_join}%"))
+        )
+    else:
+        count_query = select(func.count(Club.club_id)).where(*conditions)
+    count_result = await db.execute(count_query)
+    total = count_result.scalar() or 0
+
+    # Get paginated clubs
+    if search_join:
+        paginated_query = (
+            select(Club)
+            .options(selectinload(Club.subscription))
+            .join(Subscription, Club.subscription_id == Subscription.subscription_id)
+            .where(*conditions)
+            .where(Subscription.service_name.ilike(f"%{search_join}%"))
+            .order_by(Club.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+    else:
+        paginated_query = (
+            select(Club)
+            .options(selectinload(Club.subscription))
+            .where(*conditions)
+            .order_by(Club.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+    result = await db.execute(paginated_query)
     clubs = result.scalars().all()
-    
-    return [await service.get_club_list_item(club) for club in clubs]
+
+    # ONE batch query for all member counts — eliminates N+1
+    club_ids = [c.club_id for c in clubs]
+    counts = await service._get_member_counts_batch(club_ids)
+
+    items = [
+        service._build_club_list_item(club, counts.get(club.club_id, 0) + 1)
+        for club in clubs
+    ]
+
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/{club_id}", response_model=ClubDetails)
@@ -157,52 +248,10 @@ async def delete_club(
 async def get_club_members(
     club_id: UUID,
     tg_user: Annotated[TelegramUser, Depends(get_current_user)],
-    db: Annotated[AsyncSession, Depends(get_db)],
+    service: Annotated[ClubService, Depends(get_service)],
 ) -> list[ClubMemberResponse]:
-    """Get club members. Only visible to host and members."""
-    # Logic remains here as it's simple read-only access control + query
-    # Get club to check host
-    club_result = await db.execute(select(Club).where(Club.club_id == club_id))
-    club = club_result.scalar_one_or_none()
-    
-    if not club:
-        raise HTTPException(status_code=404, detail="Club not found")
-    
-    # Check access
-    is_host = club.host_id == tg_user.id
-    
-    member_check = await db.execute(
-        select(ClubMember)
-        .where(ClubMember.club_id == club_id)
-        .where(ClubMember.user_id == tg_user.id)
-        .where(ClubMember.status == "active")
-    )
-    is_member = member_check.scalar_one_or_none() is not None
-    
-    if not is_host and not is_member:
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Get members
-    result = await db.execute(
-        select(ClubMember)
-        .options(selectinload(ClubMember.user))
-        .where(ClubMember.club_id == club_id)
-        .where(ClubMember.status.in_(["active", "pending"]))
-        .order_by(ClubMember.joined_at)
-    )
-    members = result.scalars().all()
-    
-    return [
-        ClubMemberResponse(
-            member_id=m.member_id,
-            user=UserResponse.model_validate(m.user),
-            status=m.status,
-            phone_number=m.phone_number,
-            joined_at=m.joined_at,
-            last_payment_at=m.last_payment_at,
-        )
-        for m in members
-    ]
+    """Get club members. Only visible to host and active members."""
+    return await service.get_club_members(club_id, tg_user.id)
 
 
 @router.get("/{club_id}/pending", response_model=list[ClubMemberResponse])

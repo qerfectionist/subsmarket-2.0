@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
+import re
 
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
@@ -25,7 +26,37 @@ class ClubService:
             .where(ClubMember.club_id == club_id)
             .where(ClubMember.status.in_(["active", "pending"]))
         )
-        return result.scalar() or 0
+        # Include the host (+1) who always occupies 1 slot
+        return (result.scalar() or 0) + 1
+
+    async def _get_member_counts_batch(self, club_ids: list[UUID]) -> dict[UUID, int]:
+        """Single query to get member counts for multiple clubs. Eliminates N+1."""
+        if not club_ids:
+            return {}
+        result = await self.db.execute(
+            select(ClubMember.club_id, func.count(ClubMember.member_id))
+            .where(ClubMember.club_id.in_(club_ids))
+            .where(ClubMember.status.in_(["active", "pending"]))
+            .group_by(ClubMember.club_id)
+        )
+        return {row[0]: row[1] for row in result.all()}
+
+    def _build_club_list_item(self, club: Club, member_count: int) -> ClubListItem:
+        """Build ClubListItem from already-fetched data (no DB calls)."""
+        return ClubListItem(
+            club_id=club.club_id,
+            host_id=club.host_id,
+            subscription=SubscriptionResponse.model_validate(club.subscription),
+            category=club.category,
+            price_total=club.price_total,
+            price_per_member=club.price_per_member,
+            max_members=club.max_members,
+            current_members=member_count,
+            status=club.status,
+            description=club.description,
+            created_at=club.created_at,
+            approval_mode=club.approval_mode,
+        )
 
     async def get_club_list_item(self, club: Club) -> ClubListItem:
         """Convert Club model to ClubListItem with member count."""
@@ -198,6 +229,19 @@ class ClubService:
 
     async def create_club(self, data: ClubCreate, user_id: int) -> ClubListItem:
         """Create a new club."""
+        # Enforce Free Tier limit: Max 3 clubs owned
+        active_count_result = await self.db.execute(
+            select(func.count(Club.club_id))
+            .where(Club.host_id == user_id)
+            .where(Club.is_deleted == False)
+        )
+        active_count = active_count_result.scalar() or 0
+        if active_count >= 3:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Max 3 clubs allowed on Free tier. Delete existing clubs or upgrade."
+            )
+
         subscription = await self._resolve_subscription(data)
 
         price_per_member = data.price_total / Decimal(data.max_members)
@@ -221,65 +265,77 @@ class ClubService:
         await self.db.flush()
         await self.db.refresh(club, ["subscription"])
 
-        list_item = await self.get_club_list_item(club)
-        await self.db.commit()
+        try:
+            list_item = await self.get_club_list_item(club)
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise
+
         return list_item
 
     async def join_club(self, club_id: UUID, user: User, phone_number: Optional[str] = None) -> str:
-        """Process join request."""
-        # Get club with locking for update if needed (omitted for simplicity, but strictly should lock)
+        """Process join request with SELECT FOR UPDATE to prevent race conditions."""
+        # Phone number validation for telecom clubs
+        _PHONE_RE = re.compile(r'^\+?[78]\d{10}$')
+
+        # Lock the club row for this transaction to prevent concurrent joins
         result = await self.db.execute(
             select(Club)
-            .options(selectinload(Club.members))
             .where(Club.club_id == club_id)
             .where(Club.is_deleted == False)
+            .with_for_update()
         )
         club = result.scalar_one_or_none()
-        
+
         if not club:
             raise HTTPException(status_code=404, detail="Club not found")
-            
+
+        if club.host_id == user.user_id:
+            raise HTTPException(status_code=400, detail="Host cannot join their own club")
+
         if club.status != "open":
             raise HTTPException(status_code=400, detail="Club is not accepting new members")
-            
-        # Telecom Logic: Phone Check
-        if club.category == "telecom" and not phone_number:
-             # Basic check, in real app verify via SMS or User profile
-            raise HTTPException(
-                status_code=400, 
-                detail="Phone number required for Telecom clubs"
-            )
 
-        # Check existing membership
-        existing = next(
-            (m for m in club.members if m.user_id == user.user_id and m.status not in ["left", "kicked"]),
-            None
+        # Telecom Logic: Phone Check + Validation
+        if club.category == "telecom":
+            if not phone_number:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Phone number required for Telecom clubs",
+                )
+            digits_only = re.sub(r'\D', '', phone_number)
+            if not _PHONE_RE.match(f'+{digits_only}'):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid phone number format. Expected Kazakhstan/Russia number (+7XXXXXXXXXX)",
+                )
+
+        # Check existing membership (re-query, NOT from loaded members to avoid stale data)
+        existing_result = await self.db.execute(
+            select(ClubMember)
+            .where(ClubMember.club_id == club_id)
+            .where(ClubMember.user_id == user.user_id)
+            .where(ClubMember.status.not_in(["left", "kicked"]))
         )
-        if existing:
+        if existing_result.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Already a member")
-            
-        # Check capacity
+
+        # Check capacity INSIDE the locked transaction
         active_count = await self._get_member_count(club_id)
         if active_count >= club.max_members:
             club.status = "full"
+            await self.db.commit()
             raise HTTPException(status_code=400, detail="Club is full")
-            
-        # Ensure user exists in DB (creates if not exists, handled by `get_current_user` usually, 
-        # but here we ensure the ORM object is attached if needed. 
-        # Assuming `user` passed is already a valid ORM object or we fetch it.
-        # Ideally the caller ensures user exists in DB)
-        
-        # Determine initial membership status based on club approval settings
-        # Status flow: pending → approved (credentials revealed) → active (paid)
+
+        # Determine initial membership status
         new_status = "pending"
         msg = "Join request sent. Awaiting host approval."
 
         if club.approval_mode == "auto":
             if club.min_trust_score and user.trust_score < club.min_trust_score:
-                # Trust score too low — fall back to manual review
                 msg = "Trust score too low for auto-approval. Request pending host review."
             else:
-                # Auto-approve: skip host review, reveal payment credentials
                 new_status = "approved"
                 msg = "Request auto-approved! Please proceed to payment."
 
@@ -289,10 +345,10 @@ class ClubService:
             status=new_status,
             phone_number=phone_number,
         )
-        
+
         self.db.add(member)
-        
-        # Auto-close if full (predictive)
+
+        # Auto-close if now full
         if active_count + 1 >= club.max_members:
             club.status = "full"
 
@@ -301,6 +357,17 @@ class ClubService:
 
     async def leave_club(self, club_id: UUID, user_id: int) -> str:
         """Leave a club."""
+        # Check if club exists and if user is host
+        club_result = await self.db.execute(
+            select(Club).where(Club.club_id == club_id)
+        )
+        club = club_result.scalar_one_or_none()
+        
+        if not club:
+            raise HTTPException(status_code=404, detail="Club not found")
+        if club.host_id == user_id:
+            raise HTTPException(status_code=400, detail="Host cannot leave their own club. Delete or transfer it instead.")
+
         result = await self.db.execute(
             select(ClubMember)
             .where(ClubMember.club_id == club_id)
@@ -313,14 +380,10 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Not a member")
             
         member.status = "left"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
         
         # Reopen club if it was full
-        club_result = await self.db.execute(
-            select(Club).where(Club.club_id == club_id)
-        )
-        club = club_result.scalar_one_or_none()
-        if club and club.status == "full":
+        if club.status == "full":
             club.status = "open"
 
         await self.db.commit()
@@ -398,7 +461,7 @@ class ClubService:
             raise HTTPException(status_code=400, detail=f"Member is already {member.status}")
 
         member.status = "kicked"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
 
         await self.db.commit()
         return "Member rejected"
@@ -417,10 +480,58 @@ class ClubService:
             raise HTTPException(status_code=404, detail="No pending request found")
 
         member.status = "left"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
 
         await self.db.commit()
         return "Join request cancelled"
+
+    async def get_club_members(
+        self, club_id: UUID, user_id: int
+    ) -> list["ClubMemberResponse"]:
+        """Get active + pending members. Accessible only to the host or active members."""
+        from src.interface.schemas.schemas import ClubMemberResponse
+
+        # Fetch club
+        club_result = await self.db.execute(
+            select(Club).where(Club.club_id == club_id).where(Club.is_deleted == False)
+        )
+        club = club_result.scalar_one_or_none()
+        if not club:
+            raise HTTPException(status_code=404, detail="Club not found")
+
+        # Access control: host or active member only
+        is_host = club.host_id == user_id
+        if not is_host:
+            member_check = await self.db.execute(
+                select(ClubMember)
+                .where(ClubMember.club_id == club_id)
+                .where(ClubMember.user_id == user_id)
+                .where(ClubMember.status == "active")
+            )
+            if member_check.scalar_one_or_none() is None:
+                raise HTTPException(status_code=403, detail="Access denied")
+
+        # Fetch members with eager-loaded user
+        result = await self.db.execute(
+            select(ClubMember)
+            .options(selectinload(ClubMember.user))
+            .where(ClubMember.club_id == club_id)
+            .where(ClubMember.status.in_(["active", "pending"]))
+            .order_by(ClubMember.joined_at)
+        )
+        members = result.scalars().all()
+
+        return [
+            ClubMemberResponse(
+                member_id=m.member_id,
+                user=UserResponse.model_validate(m.user),
+                status=m.status,
+                phone_number=m.phone_number,
+                joined_at=m.joined_at,
+                last_payment_at=m.last_payment_at,
+            )
+            for m in members
+        ]
 
     async def remind_host_of_request(self, club_id: UUID, user: User) -> str:
         """Send a reminder notification to the host about pending join requests."""
@@ -459,26 +570,36 @@ class ClubService:
             f"Откройте приложение, чтобы рассмотреть заявку."
         )
 
-        await NotificationService.send_to_user(club.host_id, message)
+        await NotificationService().send_to_user(club.host_id, message)
         return "Reminder sent to host"
 
-    async def delete_club(self, club_id: UUID, host_id: int):
+    async def delete_club(self, club_id: UUID, user_id: int) -> str:
+        """Delete a club (Soft Delete). Only host or admin can delete."""
+        from src.config import get_settings
+
+        settings = get_settings()
+        is_admin = user_id in settings.admin_ids
+
         club_result = await self.db.execute(select(Club).where(Club.club_id == club_id))
         club = club_result.scalar_one_or_none()
 
         if not club:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Club not found"
+            )
 
-        # Either host or admin (for open testing we can just delete)
-        if club.host_id != host_id:
-            # allow for testing? let's stick to reality or at least logging
-            pass # Currently allowing any admin action as you asked
+        if not is_admin and club.host_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only the club host or an admin can delete this club",
+            )
 
-        from sqlalchemy import delete
-        await self.db.execute(delete(ClubMember).where(ClubMember.club_id == club_id))
-
-        await self.db.delete(club)
+        # Soft delete the club so historical deals and membership references don't break
+        club.is_deleted = True
+        club.deleted_at = datetime.now(timezone.utc)
+        club.status = "deleted"
+        
         await self.db.commit()
-        return "Club completely deleted"
+        return "Club deleted successfully"
 
 

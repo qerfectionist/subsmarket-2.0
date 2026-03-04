@@ -4,7 +4,7 @@ Trust System API endpoints.
 Manages trust scores, complaints, and join requests.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException, Body, UploadFile, File
@@ -416,7 +416,7 @@ async def action_join_request(
         raise HTTPException(status_code=400, detail="Action must be 'approve' or 'reject'")
     
     join_request.status = "approved" if action.action == "approve" else "rejected"
-    join_request.resolved_at = datetime.utcnow()
+    join_request.resolved_at = datetime.now(timezone.utc)
     
     await db.commit()
     
@@ -465,7 +465,7 @@ async def resolve_complaint(
         
     complaint.status = "confirmed" if action.action == "confirm" else "rejected"
     complaint.resolution_notes = action.resolution_notes
-    complaint.resolved_at = datetime.utcnow()
+    complaint.resolved_at = datetime.now(timezone.utc)
     
     if action.action == "confirm":
         # Check if it's the first confirmed complaint for this user

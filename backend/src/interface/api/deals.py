@@ -124,7 +124,9 @@ async def mark_deal_paid(
 
 
 @router.post("/{deal_id}/confirm", response_model=DealResponse)
+@limiter.limit("5/minute")
 async def confirm_deal(
+    request: Request,
     deal_id: UUID,
     tg_user: Annotated[TelegramUser, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -136,7 +138,9 @@ async def confirm_deal(
     return await DealService.confirm_deal(db, deal_id, tg_user.id)
 
 @router.post("/{deal_id}/dispute", response_model=DealResponse)
+@limiter.limit("3/minute")
 async def open_dispute(
+    request: Request,
     deal_id: UUID,
     tg_user: Annotated[TelegramUser, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],

@@ -1,6 +1,6 @@
 """User API routes."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -34,13 +34,13 @@ async def get_me(
             user_id=tg_user.id,
             username=tg_user.username,
             first_name=tg_user.first_name,
-            last_active_at=datetime.utcnow(),
+            last_active_at=datetime.now(timezone.utc),
         )
         db.add(user)
         await db.flush()
     else:
         # Update last active
-        user.last_active_at = datetime.utcnow()
+        user.last_active_at = datetime.now(timezone.utc)
         if tg_user.username:
             user.username = tg_user.username
         if tg_user.first_name:

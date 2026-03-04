@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     # Telegram
     telegram_bot_token: str = ""
     
-    # Security
-    secret_key: str = "dev-secret-key"
+    # Security — MUST be set via environment variable in production
+    secret_key: str
     
     # CORS
     cors_origins: list[str] = [

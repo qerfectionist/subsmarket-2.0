@@ -13,23 +13,23 @@ from src.security import limiter
 router = APIRouter(prefix="/gigabytes", tags=["Gigabytes"])
 
 @router.post("", response_model=GigabyteOfferResponse, status_code=status.HTTP_201_CREATED)
-@limiter.limit("10/hour")
+@limiter.limit("1/minute")
 async def create_gigabyte_offer(
     request: Request,
     data: GigabyteOfferCreate,
     tg_user: Annotated[TelegramUser, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
-    """Create a new GB sell offer. Rate limited: 10 per hour."""
-    # Anti-spam: max 5 active offers per user
+    """Create a new GB sell offer. Rate limited: 1 per minute."""
+    # Anti-spam: max 3 active offers per user (Free tier)
     active_count_result = await db.execute(
         select(func.count(GigabyteOffer.offer_id))
         .where(GigabyteOffer.seller_id == tg_user.id)
         .where(GigabyteOffer.is_active == True)
     )
     active_count = active_count_result.scalar() or 0
-    if active_count >= 5:
-        raise HTTPException(status_code=429, detail="Max 5 active offers allowed")
+    if active_count >= 3:
+        raise HTTPException(status_code=429, detail="Max 3 active offers allowed on Free tier")
     # 1. Validate inputs
     if data.amount_gb <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")

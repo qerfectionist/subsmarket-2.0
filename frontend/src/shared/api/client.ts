@@ -43,6 +43,13 @@ export async function apiFetch<T>(
     });
 
     if (!response.ok) {
+        // Global 401 handler: session expired or invalid Telegram auth
+        if (response.status === 401) {
+            const tgApp = (window as any).Telegram?.WebApp;
+            tgApp?.showAlert?.('Сессия истекла. Пожалуйста, перезапустите приложение.');
+            throw new Error('AUTH_EXPIRED');
+        }
+
         const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
         throw new Error(error.detail || `HTTP ${response.status}`);
     }
@@ -202,13 +209,23 @@ export const api = {
     async getClubs(params?: {
         category?: 'digital' | 'telecom';
         status?: 'open' | 'full';
-    }): Promise<Club[]> {
+        search?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<{ items: Club[]; total: number; limit: number; offset: number }> {
         const searchParams = new URLSearchParams();
         if (params?.category) searchParams.set('category', params.category);
         if (params?.status) searchParams.set('status', params.status);
+        if (params?.search) searchParams.set('search', params.search);
+        if (params?.limit) searchParams.set('limit', String(params.limit));
+        if (params?.offset) searchParams.set('offset', String(params.offset));
 
         const query = searchParams.toString();
-        return apiFetch<Club[]>(`/clubs${query ? `?${query}` : ''}`);
+        return apiFetch<{ items: Club[]; total: number; limit: number; offset: number }>(`/clubs${query ? `?${query}` : ''}`);
+    },
+
+    async getMyClubs(): Promise<Club[]> {
+        return apiFetch<Club[]>('/clubs/my');
     },
 
     async getClub(clubId: string): Promise<ClubDetails> {
@@ -255,10 +272,6 @@ export const api = {
         return apiFetch(`/clubs/${clubId}/members/${memberId}/reject`, { method: 'POST' });
     },
 
-    // My clubs
-    async getMyClubs(): Promise<Club[]> {
-        return apiFetch<Club[]>('/users/me/clubs');
-    },
 
     // ============================================
     // GB Market
@@ -330,18 +343,13 @@ export const api = {
         const query = category ? `?category=${category}` : '';
         return apiFetch<AccountOffer[]>(`/accounts${query}`);
     },
-
-    async buyGigabyteOffer(offerId: string): Promise<void> {
-        // Deprecated in favor of createDeal, but kept for backward compatibility if needed
-        return apiFetch<void>(`/gigabytes/${offerId}/buy`, {
-            method: 'POST',
-        });
-    },
 };
 
-
 export const client = {
-    get: <T>(url: string, config?: any) => apiFetch<T>(url, config).then(data => ({ data })),
+    get: <T>(url: string, config?: any) => {
+        const query = config?.params ? '?' + new URLSearchParams(config.params).toString() : '';
+        return apiFetch<T>(`${url}${query}`).then(data => ({ data }));
+    },
     post: <T>(url: string, data?: any, config?: any) => apiFetch<T>(url, {
         method: 'POST',
         body: JSON.stringify(data),

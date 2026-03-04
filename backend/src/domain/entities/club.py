@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy import ForeignKey, Index, Integer, String, Text, Numeric, DateTime
@@ -57,7 +57,7 @@ class Club(Base, SoftDeleteMixin):
     telegram_group_link: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     host: Mapped["User"] = relationship(back_populates="clubs_hosted")
@@ -93,7 +93,7 @@ class ClubMember(Base):
     next_payment_due: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Timestamps
-    joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     left_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships

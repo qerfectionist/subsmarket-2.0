@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, Numeric, DateTime
@@ -28,7 +28,7 @@ class GigabyteOffer(Base, SoftDeleteMixin):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     seller: Mapped["User"] = relationship()
@@ -51,7 +51,7 @@ class AccountOffer(Base, SoftDeleteMixin):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     seller: Mapped["User"] = relationship()

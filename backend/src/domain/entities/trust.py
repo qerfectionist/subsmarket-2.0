@@ -2,7 +2,7 @@
 Trust-related entities: TrustEvent, Complaint.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy import ForeignKey, Index, Integer, String, Text, Numeric, DateTime
@@ -44,7 +44,7 @@ class TrustEvent(Base):
     related_deal_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     user: Mapped["User"] = relationship()
@@ -80,7 +80,7 @@ class Complaint(Base):
     resolved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.user_id"), nullable=True)
     resolution_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships
@@ -112,5 +112,5 @@ class JoinRequest(Base):
     status: Mapped[str] = mapped_column(String(20), default="pending")
     # Statuses: pending, approved, rejected
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
