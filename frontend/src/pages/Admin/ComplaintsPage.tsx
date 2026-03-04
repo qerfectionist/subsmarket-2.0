@@ -27,6 +27,21 @@ const ComplaintCard = ({
             <div className="text-sm">
                 <p>Reporter: {complaint.reporter_id}</p>
                 <p>Target: {complaint.target_id}</p>
+                {complaint.description && (
+                    <p className="mt-2 text-gray-400 italic text-xs">"{complaint.description}"</p>
+                )}
+                {complaint.evidence_urls && complaint.evidence_urls.length > 0 && (
+                    <div className="mt-2">
+                        <a
+                            href={complaint.evidence_urls[0]}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-400 text-xs underline flex items-center gap-1"
+                        >
+                            📷 Скриншот ({complaint.evidence_urls.length})
+                        </a>
+                    </div>
+                )}
             </div>
 
             <div className="flex gap-2 mt-2">
@@ -43,13 +58,13 @@ const ComplaintCard = ({
                     Подтвердить нарушение
                 </button>
             </div>
-        </div>
+        </div >
     );
 };
 
 export const ComplaintsPage = () => {
     const navigate = useNavigate();
-    const { user } = useTelegram();
+    const { user: _user } = useTelegram();
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [loading, setLoading] = useState(true);
 

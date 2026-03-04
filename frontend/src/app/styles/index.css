@@ -5,30 +5,40 @@
 @layer base {
     body {
         @apply bg-black text-white antialiased;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+        /* ui-rounded = SF Pro Rounded на iOS/macOS                             */
+        /* Nunito Variable = единственный visibly-rounded + RU/KZ Cyrillic       */
+        font-family: ui-rounded, 'Nunito Variable', 'Nunito', system-ui, sans-serif;
     }
 }
 
-/* Glass Utilities */
-.glass {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
-}
 
 /* Telegram Overrides */
 :root {
     --tg-theme-bg-color: #000000;
     --tg-theme-secondary-bg-color: #000000;
     --tg-theme-text-color: #ffffff;
+}
+
+/* Material Symbols Rounded */
+.material-symbols-rounded {
+    font-family: 'Material Symbols Rounded', sans-serif;
+    font-style: normal;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+/* Hide scrollbar but keep scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

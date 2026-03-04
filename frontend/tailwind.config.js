@@ -12,7 +12,12 @@ module.exports = {
             colors: {
                 background: "#000000",
                 foreground: "#ffffff",
-            }
+            },
+            fontFamily: {
+                // ui-rounded = SF Pro Rounded на iOS/macOS
+                // Nunito Variable = visibly rounded, RU + KZ Cyrillic support
+                sans: ['ui-rounded', 'Nunito Variable', 'Nunito', 'system-ui', 'sans-serif'],
+            },
         },
     },
     darkMode: "class",

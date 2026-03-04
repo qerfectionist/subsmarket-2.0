@@ -1,98 +1,137 @@
 import { t } from '@/shared/i18n';
-
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/shared/api';
+import { Card, CardBody, Skeleton } from '@heroui/react';
+import { MSIcon } from '@/shared/ui/MSIcon';
 
 export function HomePage() {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['me'],
+        queryFn: () => api.getMe(),
+    });
+
+    const clubCount = (profile as any)?.clubs_count ?? 0;
+    const trustScore = (profile as any)?.trust_score ?? 5.0;
+    const dealsCount = (profile as any)?.p2p_deals_count ?? 0;
+
     return (
-        <div className="p-4 space-y-6 pb-28">
-            {/* Header */}
-            <header>
-                <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Welcome Back</div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
-                    {user?.first_name || 'User'}
-                </h1>
-                <p className="text-white/60 mt-1 text-sm tracking-wide">
-                    {t('home', 'subtitle')}
-                </p>
-            </header>
-
-            {/* Action Hub */}
-            <section className="grid grid-cols-2 gap-4"> {/* Increased gap */}
-                <Link to="/clubs?type=digital" className="block h-full group">
-                    <div className="glass-card p-6 h-full transition-all active:scale-[0.98] group-hover:bg-white/5 flex flex-col justify-between">
-                        <div>
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl mb-4 font-bold border border-blue-500/10">S</div>
-                            <h3 className="font-semibold text-[17px] leading-tight mb-1 tracking-tight">{t('home', 'subscriptions')}</h3>
-                        </div>
-                        <p className="text-[11px] text-white/50 font-medium leading-relaxed mt-2 line-clamp-2">
-                            {t('home', 'subscriptions_desc')}
-                        </p>
+        <div className="flex flex-col min-h-[100dvh] bg-background text-foreground pb-28">
+            <main className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6">
+                {/* Header */}
+                <header className="pt-2">
+                    <div className="text-[10px] text-default-400 uppercase tracking-[0.25em] font-bold mb-2 flex items-center gap-2">
+                        <span className="inline-block w-1 h-1 rounded-full bg-success animate-pulse" />
+                        Welcome Back
                     </div>
-                </Link>
+                    <h1 className="text-3xl font-bold tracking-tight leading-none text-foreground">
+                        {user?.first_name || 'User'}
+                    </h1>
+                    <p className="text-default-500 mt-1.5 text-xs font-medium tracking-wide">
+                        {t('home', 'subtitle')}
+                    </p>
+                </header>
 
-                <Link to="/clubs?type=telecom" className="block h-full group">
-                    <div className="glass-card p-6 h-full transition-all active:scale-[0.98] group-hover:bg-white/5 flex flex-col justify-between">
-                        <div>
-                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl mb-4 font-bold border border-purple-500/10">T</div>
-                            <h3 className="font-semibold text-[17px] leading-tight mb-1 tracking-tight">{t('home', 'telecom')}</h3>
-                        </div>
-                        <p className="text-[11px] text-white/50 font-medium leading-relaxed mt-2 line-clamp-2">
-                            {t('home', 'telecom_desc')}
-                        </p>
-                    </div>
-                </Link>
-
-                <Link to="/gb-market" className="block h-full col-span-2 group"> {/* Full width for Market */}
-                    <div className="glass-card p-6 h-full transition-all active:scale-[0.98] group-hover:bg-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/10">G</div>
+                {/* Action Hub */}
+                <section className="grid grid-cols-2 gap-3">
+                    <Card as={Link} to="/clubs?type=digital" isPressable shadow="sm" className="h-full">
+                        <CardBody className="p-4 flex flex-col justify-between min-h-[140px]">
+                            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                                <MSIcon name="grid_view" size={22} filled />
+                            </div>
                             <div>
-                                <h3 className="font-semibold text-[17px] leading-tight tracking-tight">{t('home', 'gb_market')}</h3>
-                                <p className="text-[13px] text-white/50 font-medium leading-relaxed mt-0.5">
-                                    {t('home', 'gb_market_desc')}
+                                <h3 className="font-semibold text-base leading-tight mb-1 text-foreground">{t('home', 'subscriptions')}</h3>
+                                <p className="text-xs text-default-500 font-medium leading-relaxed line-clamp-2">
+                                    {t('home', 'subscriptions_desc')}
                                 </p>
                             </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 group-hover:text-white/60 transition-colors">
-                            →
-                        </div>
-                    </div>
-                </Link>
+                        </CardBody>
+                    </Card>
 
-                <div className="block h-full opacity-40 cursor-not-allowed col-span-2">
-                    <div className="glass-card p-4 h-full bg-white/5 border-dashed border-white/10 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gray-500/10 text-gray-400 flex items-center justify-center text-lg font-bold border border-gray-500/10">A</div>
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-base text-white/60 tracking-tight">{t('home', 'accounts')}</h3>
-                                <span className="text-[9px] bg-white/10 text-white/50 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Soon</span>
+                    <Card as={Link} to="/clubs?type=telecom" isPressable shadow="sm" className="h-full">
+                        <CardBody className="p-4 flex flex-col justify-between min-h-[140px]">
+                            <div className="w-11 h-11 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-3">
+                                <MSIcon name="wifi" size={22} filled />
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                            <div>
+                                <h3 className="font-semibold text-base leading-tight mb-1 text-foreground">{t('home', 'telecom')}</h3>
+                                <p className="text-xs text-default-500 font-medium leading-relaxed line-clamp-2">
+                                    {t('home', 'telecom_desc')}
+                                </p>
+                            </div>
+                        </CardBody>
+                    </Card>
 
-            {/* Stats */}
-            <div className="glass-card p-5">
-                <div className="grid grid-cols-3 gap-4 text-center divide-x divide-white/10">
-                    <div className="flex flex-col gap-1">
-                        <div className="text-2xl font-bold tracking-tight">0</div>
-                        <div className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-medium">{t('home', 'stats_clubs')}</div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <div className="text-2xl font-bold tracking-tight">5.0</div>
-                        <div className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-medium">{t('home', 'stats_rating')}</div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <div className="text-2xl font-bold tracking-tight">0</div>
-                        <div className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-medium">{t('home', 'stats_deals')}</div>
-                    </div>
-                </div>
-            </div>
+                    <Card as={Link} to="/gb-market" isPressable shadow="sm" className="col-span-2">
+                        <CardBody className="p-4 flex flex-row items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-11 h-11 rounded-xl bg-success/10 text-success flex items-center justify-center">
+                                    <MSIcon name="storefront" size={22} filled />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-base leading-tight text-foreground">{t('home', 'gb_market')}</h3>
+                                    <p className="text-xs text-default-500 font-medium mt-0.5">
+                                        {t('home', 'gb_market_desc')}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-default-100 flex items-center justify-center text-default-400">
+                                <MSIcon name="chevron_right" size={16} />
+                            </div>
+                        </CardBody>
+                    </Card>
+
+                    {/* Coming Soon */}
+                    <Card className="col-span-2 bg-content2/50 border-dashed border-1 border-default-200 opacity-60">
+                        <CardBody className="p-4 flex flex-row items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-default-200/50 text-default-400 flex items-center justify-center">
+                                <MSIcon name="person_add" size={18} filled />
+                            </div>
+                            <div className="flex-1 flex items-center gap-2">
+                                <h3 className="font-semibold text-sm text-default-500 tracking-tight">{t('home', 'accounts')}</h3>
+                                <span className="text-[10px] bg-default-200 text-default-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                    Soon
+                                </span>
+                            </div>
+                        </CardBody>
+                    </Card>
+                </section>
+
+                {/* Stats */}
+                <Card shadow="sm">
+                    {isLoading ? (
+                        <CardBody className="p-5 grid grid-cols-3 gap-4 text-center divide-x divide-default-100">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="flex flex-col items-center gap-2">
+                                    <Skeleton className="h-7 w-12 rounded-lg" />
+                                    <Skeleton className="h-3 w-16 rounded" />
+                                </div>
+                            ))}
+                        </CardBody>
+                    ) : (
+                        <CardBody className="p-5 grid grid-cols-3 gap-4 text-center divide-x divide-default-100">
+                            <div className="flex flex-col gap-1">
+                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">{clubCount}</div>
+                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_clubs')}</div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">
+                                    {typeof trustScore === 'number' ? trustScore.toFixed(1) : trustScore}
+                                </div>
+                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_rating')}</div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">{dealsCount}</div>
+                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_deals')}</div>
+                            </div>
+                        </CardBody>
+                    )}
+                </Card>
+            </main>
         </div>
     );
 }
 
-
+export default HomePage;

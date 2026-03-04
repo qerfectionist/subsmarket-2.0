@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
+import { MSIcon } from './MSIcon';
 
 export interface FileUploadProps {
     onFileSelect: (file: File) => void;
     accept?: string;
-    maxSize?: number; // in MB
+    maxSize?: number;
     label?: string;
     error?: string;
     className?: string;
@@ -14,7 +15,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     onFileSelect,
     accept = 'image/*',
     maxSize = 5,
-    label = 'Tap or drag to upload',
+    label = 'Нажмите или перетащите файл',
     error,
     className
 }) => {
@@ -25,12 +26,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     const handleFile = (file: File) => {
         if (file.size > maxSize * 1024 * 1024) {
-            alert(`File size must be less than ${maxSize}MB`);
+            alert(`Размер файла не должен превышать ${maxSize}MB`);
             return;
         }
         setSelectedFile(file);
         onFileSelect(file);
-
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onloadend = () => setPreview(reader.result as string);
@@ -43,9 +43,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     const onDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        if (e.dataTransfer.files?.[0]) {
-            handleFile(e.dataTransfer.files[0]);
-        }
+        if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
     };
 
     const clearFile = (e: React.MouseEvent) => {
@@ -56,14 +54,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     };
 
     return (
-        <div className={cn("w-full", className)}>
+        <div className={cn('w-full', className)}>
             <div
                 className={cn(
-                    "relative border-2 border-dashed rounded-xl p-6 transition-all cursor-pointer overflow-hidden",
-                    isDragging 
-                        ? "border-[var(--color-button)] bg-[var(--color-button)]/10" 
-                        : "border-[var(--color-separator)] hover:border-[var(--color-text-secondary)]",
-                    error ? "border-[var(--color-destructive)] bg-[var(--color-destructive)]/5" : "bg-[var(--color-bg-secondary)]"
+                    'relative border-2 border-dashed rounded-2xl p-6 transition-all cursor-pointer',
+                    isDragging
+                        ? 'border-primary bg-primary-50'
+                        : 'border-default-200 hover:border-default-400 bg-content2',
+                    error && 'border-danger bg-danger-50'
                 )}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
@@ -79,55 +77,38 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 />
 
                 {selectedFile ? (
-                    <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-3 flex items-center gap-3 relative z-10 animate-in fade-in">
+                    <div className="bg-content1 rounded-xl p-3 flex items-center gap-3 animate-in fade-in">
                         {preview ? (
-                            <img src={preview} alt="Preview" className="w-12 h-12 rounded object-cover" />
+                            <img src={preview} alt="Preview" className="w-12 h-12 rounded-lg object-cover" />
                         ) : (
-                            <div className="w-12 h-12 bg-[var(--color-bg-primary)] rounded flex items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-[var(--color-text-secondary)]">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                            <div className="w-12 h-12 bg-content2 rounded-xl flex items-center justify-center">
+                                <MSIcon name="description" size={24} className="text-default-400" />
                             </div>
                         )}
 
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                                {selectedFile.name}
-                            </p>
-                            <p className="text-xs text-[var(--color-text-tertiary)]">
-                                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
+                            <p className="text-sm font-semibold text-foreground truncate">{selectedFile.name}</p>
+                            <p className="text-xs text-default-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
 
                         <button
                             onClick={clearFile}
-                            className="p-2 hover:bg-[var(--color-bg-primary)] rounded-full transition-colors"
+                            className="p-1.5 hover:bg-content2 rounded-full transition-colors text-default-400"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-[var(--color-text-secondary)]">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
+                            <MSIcon name="close" size={18} />
                         </button>
                     </div>
                 ) : (
                     <div className="text-center">
-                        <div className="w-12 h-12 bg-[var(--color-bg-tertiary)] rounded-full flex items-center justify-center mx-auto mb-3">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-[var(--color-text-secondary)]">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
+                        <div className="w-12 h-12 bg-content1 border border-default-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <MSIcon name="cloud_upload" size={24} className="text-default-400" />
                         </div>
-                        <p className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                            {label}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-tertiary)]">
-                            Max {maxSize}MB
-                        </p>
+                        <p className="text-sm font-semibold text-foreground mb-1">{label}</p>
+                        <p className="text-xs text-default-400">Макс. {maxSize}MB</p>
                     </div>
                 )}
             </div>
-            {error && (
-                <p className="mt-1 text-xs text-[var(--color-destructive)]">{error}</p>
-            )}
+            {error && <p className="mt-1.5 text-xs text-danger font-medium">{error}</p>}
         </div>
     );
 };

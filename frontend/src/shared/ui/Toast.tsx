@@ -1,19 +1,28 @@
 import * as React from 'react';
-import { useHaptic } from '@/shared/hooks/useHaptic';
+import { MSIcon } from './MSIcon';
 
 interface ToastProps {
   message: string;
   isVisible: boolean;
   onClose: () => void;
   duration?: number;
+  type?: 'success' | 'error' | 'info';
 }
 
-export function Toast({ message, isVisible, onClose, duration = 3000 }: ToastProps) {
-  const haptic = useHaptic();
+const TYPE_ICON: Record<string, string> = {
+  success: 'check_circle',
+  error: 'cancel',
+  info: 'info',
+};
+const TYPE_COLOR: Record<string, string> = {
+  success: 'text-success',
+  error: 'text-danger',
+  info: 'text-primary',
+};
 
+export function Toast({ message, isVisible, onClose, duration = 3000, type = 'success' }: ToastProps) {
   React.useEffect(() => {
     if (isVisible) {
-      haptic.notification('success');
       const timer = setTimeout(onClose, duration);
       return () => clearTimeout(timer);
     }
@@ -23,11 +32,9 @@ export function Toast({ message, isVisible, onClose, duration = 3000 }: ToastPro
 
   return (
     <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="bg-[var(--color-bg-content)] text-[var(--color-text-primary)] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2">
-        <svg className="w-5 h-5 text-[#34c759]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-        <span className="text-sm font-medium">{message}</span>
+      <div className="bg-content1 border border-default-100 text-foreground px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 min-w-[220px]">
+        <MSIcon name={TYPE_ICON[type]} size={20} filled className={TYPE_COLOR[type]} />
+        <span className="text-sm font-semibold">{message}</span>
       </div>
     </div>
   );

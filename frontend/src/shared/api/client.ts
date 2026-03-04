@@ -28,11 +28,14 @@ export async function apiFetch<T>(
 ): Promise<T> {
     const url = `${API_URL}${endpoint}`;
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
+    const headers: Record<string, string> = {
         'X-Telegram-Init-Data': getInitData(),
-        ...options.headers,
+        ...(options.headers as Record<string, string>),
     };
+
+    if (!(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     const response = await fetch(url, {
         ...options,
@@ -93,14 +96,14 @@ export interface ClubDetails extends Club {
     payment_day: number | null;
     rules: string | null;
     telegram_group_link: string | null;
+    my_status: 'pending' | 'active' | 'approved' | 'left' | 'kicked' | null;
 }
 
 export interface CreateClubRequest {
-    subscription_id: string;
+    service_id?: string;         // Catalog slug e.g. 'netflix'
+    subscription_id?: string;    // Legacy UUID (optional)
     price_total: number;
     max_members: number;
-    login?: string;
-    password?: string;
     payment_method: string;
     payment_details: string;
     payment_day?: number;
@@ -108,6 +111,16 @@ export interface CreateClubRequest {
     rules?: string;
     approval_mode?: 'manual' | 'auto';
     min_trust_score?: number;
+    telegram_group_link?: string;
+}
+
+export interface ClubMember {
+    member_id: string;
+    user: User;
+    status: 'pending' | 'active' | 'approved' | 'left' | 'kicked';
+    phone_number: string | null;
+    joined_at: string;
+    last_payment_at: string | null;
 }
 
 export interface GigabyteOffer {
@@ -142,9 +155,12 @@ export interface Deal {
     status: string;
     amount: number;
     created_at: string;
+    updated_at: string;
     paid_at?: string;
     dispute_reason?: string;
     proof_screenshot_id?: string;
+    gb_offer_id?: string;
+    club_id?: string;
 }
 
 export interface CreateDealRequest {
@@ -206,9 +222,10 @@ export const api = {
         });
     },
 
-    async joinClub(clubId: string): Promise<void> {
-        return apiFetch<void>(`/clubs/${clubId}/join`, {
+    async joinClub(clubId: string, phoneNumber?: string): Promise<{ status: string; message: string }> {
+        return apiFetch<{ status: string; message: string }>(`/clubs/${clubId}/join`, {
             method: 'POST',
+            body: JSON.stringify(phoneNumber ? { phone_number: phoneNumber } : {}),
         });
     },
 
@@ -216,6 +233,26 @@ export const api = {
         return apiFetch<void>(`/clubs/${clubId}/leave`, {
             method: 'POST',
         });
+    },
+
+    async cancelJoinRequest(clubId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/join`, { method: 'DELETE' });
+    },
+
+    async remindHost(clubId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/remind`, { method: 'POST' });
+    },
+
+    async getPendingMembers(clubId: string): Promise<ClubMember[]> {
+        return apiFetch<ClubMember[]>(`/clubs/${clubId}/pending`);
+    },
+
+    async approveMember(clubId: string, memberId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/${memberId}/approve`, { method: 'POST' });
+    },
+
+    async rejectMember(clubId: string, memberId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/${memberId}/reject`, { method: 'POST' });
     },
 
     // My clubs
@@ -250,10 +287,18 @@ export const api = {
         });
     },
 
-    async payDeal(dealId: string): Promise<Deal> {
-        return apiFetch<Deal>(`/deals/${dealId}/pay`, {
-            method: 'POST',
-        });
+    async getDeal(dealId: string): Promise<Deal> {
+        return apiFetch<Deal>(`/deals/${dealId}`);
+    },
+
+    async payDeal(dealId: string, proof?: File): Promise<Deal> {
+        const options: RequestInit = { method: 'POST' };
+        if (proof) {
+            const formData = new FormData();
+            formData.append('proof', proof);
+            options.body = formData;
+        }
+        return apiFetch<Deal>(`/deals/${dealId}/pay`, options);
     },
 
     async confirmDeal(dealId: string): Promise<Deal> {

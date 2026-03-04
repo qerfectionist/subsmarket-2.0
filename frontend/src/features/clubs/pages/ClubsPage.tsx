@@ -3,14 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import { api, Club } from '@/shared/api';
 import { t } from '@/shared/i18n';
 import { useHaptic } from '@/shared/hooks/useHaptic';
+import { EmptyState } from '@/shared/ui/EmptyState';
+import { Link, useNavigate } from 'react-router-dom';
+import { Card, CardBody, Skeleton, Button, Chip, Navbar, NavbarContent, NavbarItem } from '@heroui/react';
+import { cn } from '@/shared/lib/utils';
+import { MSIcon } from '@/shared/ui/MSIcon';
 
 type Filter = 'all' | 'digital' | 'telecom';
 
 export function ClubsPage() {
     const [filter, setFilter] = useState<Filter>('all');
     const haptic = useHaptic();
+    const navigate = useNavigate();
 
-    const { data: clubs, isLoading, error } = useQuery({
+    const { data: clubs, isLoading, error, refetch } = useQuery({
         queryKey: ['clubs', filter],
         queryFn: () => api.getClubs(filter === 'all' ? {} : { category: filter }),
     });
@@ -21,99 +27,121 @@ export function ClubsPage() {
     };
 
     return (
-        <div className="p-4 space-y-6 pb-28">
-            {/* Header */}
-            <header className="px-1 pt-2">
-                <h1 className="text-[34px] font-bold tracking-tight leading-none text-white">{t('clubs', 'title')}</h1>
-                <p className="text-white/50 text-[13px] font-medium mt-1 tracking-wide">{t('clubs', 'subtitle')}</p>
-            </header>
+        <div className="flex flex-col min-h-[100dvh] bg-background text-foreground pb-28">
+            {/* Header Sticky Bar */}
+            <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-divider pb-2">
+                <Navbar isBlurred={false} className="bg-transparent px-0">
+                    <NavbarContent justify="start" className="px-4">
+                        <NavbarItem className="flex flex-col items-start">
+                            <span className="text-xl font-bold leading-tight">{t('clubs', 'title')}</span>
+                            <span className="text-xs text-default-500 font-medium">
+                                {t('clubs', 'subtitle')}
+                            </span>
+                        </NavbarItem>
+                    </NavbarContent>
+                </Navbar>
 
-            {/* Filters */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar px-1">
-                <FilterButton
-                    active={filter === 'all'}
-                    onClick={() => handleFilterChange('all')}
-                >
-                    All
-                </FilterButton>
-                <FilterButton
-                    active={filter === 'digital'}
-                    onClick={() => handleFilterChange('digital')}
-                >
-                    Digital
-                </FilterButton>
-                <FilterButton
-                    active={filter === 'telecom'}
-                    onClick={() => handleFilterChange('telecom')}
-                >
-                    Telecom
-                </FilterButton>
+                {/* Filters */}
+                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar px-4">
+                    <Chip
+                        variant={filter === 'all' ? 'solid' : 'flat'}
+                        color={filter === 'all' ? 'primary' : 'default'}
+                        className="cursor-pointer flex-shrink-0"
+                        size="md"
+                        onClick={() => handleFilterChange('all')}
+                    >
+                        Все
+                    </Chip>
+                    <Chip
+                        variant={filter === 'digital' ? 'solid' : 'flat'}
+                        color={filter === 'digital' ? 'primary' : 'default'}
+                        className="cursor-pointer flex-shrink-0"
+                        size="md"
+                        onClick={() => handleFilterChange('digital')}
+                    >
+                        Сервисы
+                    </Chip>
+                    <Chip
+                        variant={filter === 'telecom' ? 'solid' : 'flat'}
+                        color={filter === 'telecom' ? 'primary' : 'default'}
+                        className="cursor-pointer flex-shrink-0"
+                        size="md"
+                        onClick={() => handleFilterChange('telecom')}
+                    >
+                        Связь
+                    </Chip>
+                </div>
             </div>
 
-            {/* Content */}
-            {isLoading && (
-                <div className="text-center py-24 text-white/30 text-[13px] font-medium tracking-wide animate-pulse">
-                    Loading Clubs...
-                </div>
-            )}
+            <main className="flex-1 p-4 max-w-lg mx-auto w-full">
+                {/* Content */}
+                {isLoading && (
+                    <div className="space-y-3">
+                        {[1, 2, 3].map(i => (
+                            <Card key={i} className="bg-content1 shadow-sm">
+                                <CardBody className="p-4 flex-row gap-4 items-center">
+                                    <Skeleton className="w-12 h-12 rounded-xl flex-shrink-0" />
+                                    <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-5 w-32 rounded-lg" />
+                                        <Skeleton className="h-3 w-24 rounded-md" />
+                                    </div>
+                                    <Skeleton className="h-8 w-16 rounded-lg" />
+                                </CardBody>
+                            </Card>
+                        ))}
+                    </div>
+                )}
 
-            {error && (
-                <div className="text-center py-24 glass-card p-6 mx-1">
-                    <p className="text-red-400 font-medium mb-4 text-sm">Failed to load content</p>
-                    <button
-                        className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[13px] font-semibold transition-all active:scale-95"
-                        onClick={() => window.location.reload()}
-                    >
-                        Retry
-                    </button>
-                </div>
-            )}
+                {error && (
+                    <Card className="mx-1 mt-4 border-none bg-danger/10 shadow-sm">
+                        <CardBody className="py-12 items-center justify-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-danger/20 text-danger flex items-center justify-center mb-4">
+                                <MSIcon name="cancel" size={32} filled />
+                            </div>
+                            <p className="text-danger font-semibold text-lg mb-1">Ошибка загрузки</p>
+                            <p className="text-default-500 text-sm mb-6">Проверьте подключение к интернету</p>
+                            <Button
+                                color="danger"
+                                variant="flat"
+                                onPress={() => refetch()}
+                                className="font-medium"
+                            >
+                                Повторить
+                            </Button>
+                        </CardBody>
+                    </Card>
+                )}
 
-            {clubs && clubs.length === 0 && (
-                <div className="text-center py-24 text-white/30 text-[13px] font-medium tracking-wide">
-                    No clubs found
-                </div>
-            )}
+                {clubs && clubs.length === 0 && (
+                    <div className="pt-8">
+                        <EmptyState
+                            title="Клубы не найдены"
+                            description={filter !== 'all' ? 'Попробуйте другой фильтр или создайте свой клуб' : 'Станьте первым — создайте клуб!'}
+                            iconName="grid_view"
+                            actionLabel="Создать клуб"
+                            onAction={() => navigate('/clubs/create')}
+                        />
+                    </div>
+                )}
 
-            {clubs && clubs.length > 0 && (
-                <div className="space-y-3">
-                    {clubs.map((club) => (
-                        <ClubCard key={club.club_id} club={club} />
-                    ))}
-                </div>
-            )}
+                {clubs && clubs.length > 0 && (
+                    <div className="space-y-3">
+                        {clubs.map((club) => (
+                            <ClubCard key={club.club_id} club={club} />
+                        ))}
+                    </div>
+                )}
+            </main>
 
-            {/* Create button */}
-            <a
-                href="/clubs/create"
-                className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-blue-600 text-white shadow-[0_8px_30px_rgba(37,99,235,0.4)] flex items-center justify-center text-3xl leading-none transition-transform active:scale-90 active:rotate-90 duration-300 z-50 hover:bg-blue-500"
+            {/* Floating Action Button */}
+            <Link
+                to="/clubs/create"
+                className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-5 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform active:scale-95 duration-200 z-50 hover:bg-primary/90"
                 onClick={() => haptic.impact('medium')}
             >
-                <span className="mb-1 font-light">+</span>
-            </a>
+                <MSIcon name="add" size={24} weight={600} />
+            </Link>
         </div>
-    );
-}
-
-function FilterButton({
-    active,
-    onClick,
-    children,
-}: {
-    active: boolean;
-    onClick: () => void;
-    children: React.ReactNode;
-}) {
-    return (
-        <button
-            onClick={onClick}
-            className={`px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all border active:scale-95 ${active
-                ? 'bg-white text-black border-white shadow-lg shadow-white/10'
-                : 'bg-white/5 text-white/60 border-white/5 hover:bg-white/10'
-                }`}
-        >
-            {children}
-        </button>
     );
 }
 
@@ -121,61 +149,85 @@ function ClubCard({ club }: { club: Club }) {
     const haptic = useHaptic();
     const isFull = club.status === 'full';
     const isFrozen = club.status === 'frozen';
+    const isDigital = club.category === 'digital';
+    const spotsFree = club.max_members - club.current_members;
 
     return (
-        <a
-            href={`/clubs/${club.club_id}`}
-            onClick={() => haptic.impact('light')}
-            className="glass-card p-5 flex gap-5 items-center group active:scale-[0.98] transition-all"
+        <Card
+            as={Link}
+            to={`/clubs/${club.club_id}`}
+            isPressable
+            className="w-full"
+            onPress={() => haptic.impact('light')}
+            shadow="sm"
         >
-            {/* Icon */}
-            <div className={`w-[56px] h-[56px] shrink-0 rounded-[18px] flex items-center justify-center text-xl font-bold border ${club.category === 'digital'
-                ? 'bg-blue-500/10 text-blue-400 border-blue-500/10'
-                : 'bg-purple-500/10 text-purple-400 border-purple-500/10'
-                }`}>
-                {club.subscription.icon_url ? (
-                    <img
-                        src={club.subscription.icon_url}
-                        alt={club.subscription.service_name}
-                        className="w-10 h-10 rounded-xl"
-                    />
-                ) : (
-                    <span className="text-xl">{club.category === 'digital' ? 'S' : 'T'}</span>
-                )}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0 py-1">
-                <h3 className="font-semibold text-[17px] truncate leading-tight tracking-tight text-white mb-1.5">
-                    {club.subscription.service_name}
-                </h3>
-                <div className="flex items-center gap-2">
-                    <p className="text-[11px] text-white/50 font-medium tracking-wide">
-                        {club.current_members}/{club.max_members} Members
-                    </p>
-                    <div className="w-0.5 h-0.5 rounded-full bg-white/20" />
-                    <p className="text-[11px] text-white/50 font-medium tracking-wide">
-                        {club.category === 'digital' ? 'Digital' : 'Telecom'}
-                    </p>
-                </div>
-            </div>
-
-            {/* Price & Status */}
-            <div className="text-right flex flex-col items-end gap-1.5">
-                <div className="bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/5">
-                    <span className="font-semibold text-[15px] leading-none text-white/90">{Math.round(club.price_per_member)} ₸</span>
+            <CardBody className="p-3 flex flex-row items-center gap-4 overflow-hidden">
+                {/* Icon */}
+                <div className={cn(
+                    "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center overflow-hidden",
+                    isDigital ? "bg-blue-500/10 text-blue-500" : "bg-purple-500/10 text-purple-500"
+                )}>
+                    {club.subscription.icon_url ? (
+                        <img
+                            src={club.subscription.icon_url}
+                            alt={club.subscription.service_name}
+                            className="w-8 h-8 rounded-lg object-cover"
+                        />
+                    ) : (
+                        <span className="text-xl font-bold">
+                            {club.subscription.service_name.charAt(0)}
+                        </span>
+                    )}
                 </div>
 
-                {isFull && (
-                    <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-md border border-yellow-500/10 uppercase tracking-wide">Full</span>
-                )}
-                {isFrozen && (
-                    <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md border border-red-500/10 uppercase tracking-wide">Paused</span>
-                )}
-                {!isFull && !isFrozen && (
-                    <span className="text-[11px] text-white/30 font-medium pr-1">/mo</span>
-                )}
-            </div>
-        </a>
+                {/* Info */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <h3 className="font-semibold text-sm truncate leading-tight text-foreground mb-1">
+                        {club.subscription.service_name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 overflow-hidden">
+                        <div className="flex items-center text-xs font-medium text-default-500 gap-1 truncate shrink-0">
+                            <MSIcon name="group" size={14} className="shrink-0" />
+                            {club.current_members}/{club.max_members}
+                        </div>
+
+                        {!isFull && !isFrozen && spotsFree > 0 && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-default-300 shrink-0 mx-0.5" />
+                                <span className="text-xs font-medium text-success truncate shrink-0 block">
+                                    {spotsFree} мест
+                                </span>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Price & Status */}
+                <div className="text-right flex flex-col items-end gap-1.5 shrink-0 pl-2">
+                    <div className="font-bold text-base leading-none text-foreground flex items-center gap-0.5">
+                        {Math.round(club.price_per_member)}
+                        <span className="text-xs font-semibold text-default-500 relative top-[1px]">₸</span>
+                    </div>
+
+                    <div className="flex justify-end h-5">
+                        {isFull && (
+                            <Chip size="sm" color="warning" variant="flat" className="h-5 text-[10px] px-1 font-bold tracking-wider uppercase border-none">
+                                Full
+                            </Chip>
+                        )}
+                        {isFrozen && (
+                            <Chip size="sm" color="danger" variant="flat" className="h-5 text-[10px] px-1 font-bold tracking-wider uppercase border-none">
+                                Paused
+                            </Chip>
+                        )}
+                        {!isFull && !isFrozen && (
+                            <span className="text-[10px] text-default-400 font-semibold uppercase tracking-wider relative top-[2px]">
+                                /мес
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
     );
 }

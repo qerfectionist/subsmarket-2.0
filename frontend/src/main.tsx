@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from '@/app/App';
+// Nunito Variable — rounded-шрифт с поддержкой RU + KZ кириллицы (Ә, Ғ, Қ, Ң, Ө, Ұ, Ү, Һ)
+import '@fontsource-variable/nunito';
 import '@/app/styles/index.css';
 
 // Initialize Telegram WebApp

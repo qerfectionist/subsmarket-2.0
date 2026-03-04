@@ -6,6 +6,7 @@ export type {
     Subscription,
     Club,
     ClubDetails,
+    ClubMember,
     CreateClubRequest,
     GigabyteOffer,
     CreateGigabyteOfferRequest,

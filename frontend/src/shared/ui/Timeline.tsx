@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Check, Circle } from 'lucide-react';
+import { Card, CardBody } from '@heroui/react';
 
 export interface TimelineItem {
     id: string;
@@ -8,6 +9,7 @@ export interface TimelineItem {
     description?: string;
     time?: string;
     status: 'completed' | 'current' | 'pending';
+    color?: 'primary' | 'success' | 'warning' | 'danger' | 'default';
 }
 
 export interface TimelineProps {
@@ -17,60 +19,72 @@ export interface TimelineProps {
 
 export const Timeline: React.FC<TimelineProps> = ({ items, className }) => {
     return (
-        <div className={cn('glass-card p-0 overflow-hidden', className)}>
-            {items.map((item, index) => {
-                const isLast = index === items.length - 1;
+        <Card shadow="sm" className={cn("bg-content1 border-none", className)}>
+            <CardBody className="p-0 overflow-hidden">
+                {items.map((item, index) => {
+                    const isLast = index === items.length - 1;
+                    const isCompleted = item.status === 'completed';
+                    const isCurrent = item.status === 'current';
+                    const isPending = item.status === 'pending';
+                    const color = item.color || 'primary';
 
-                return (
-                    <div key={item.id} className="relative flex gap-4 p-4">
-                        {/* Line */}
-                        {!isLast && (
-                            <div className="absolute left-[29px] top-10 bottom-0 w-[2px] bg-[var(--color-border)]" />
-                        )}
+                    return (
+                        <div key={item.id} className="relative flex gap-4 p-4">
+                            {/* Line */}
+                            {!isLast && (
+                                <div className="absolute left-[30px] top-10 bottom-0 w-[2px] bg-default-100" />
+                            )}
 
-                        {/* Icon */}
-                        <div className="relative z-10 flex-shrink-0">
-                            {item.status === 'completed' && (
-                                <div className="w-7 h-7 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                                    <Check size={14} strokeWidth={3} />
-                                </div>
-                            )}
-                            {item.status === 'current' && (
-                                <div className="w-7 h-7 rounded-full bg-[var(--color-accent)]/20 border-2 border-[var(--color-accent)] flex items-center justify-center">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
-                                </div>
-                            )}
-                            {item.status === 'pending' && (
-                                <div className="w-7 h-7 rounded-full border-2 border-[var(--color-text-tertiary)] flex items-center justify-center opacity-50">
-                                    <Circle size={8} fill="currentColor" className="text-transparent" />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                            <div className="flex justify-between items-start gap-2">
-                                <h4 className={cn(
-                                    "text-[15px] font-semibold leading-tight",
-                                    item.status === 'pending' ? 'text-[var(--color-text-secondary)]' : 'text-white'
-                                )}>
-                                    {item.title}
-                                </h4>
-                                {item.time && (
-                                    <span className="text-[12px] text-[var(--color-text-tertiary)] font-medium">
-                                        {item.time}
-                                    </span>
+                            {/* Icon */}
+                            <div className="relative z-10 flex-shrink-0 mt-0.5">
+                                {isCompleted && (
+                                    <div className={cn(
+                                        "w-7 h-7 rounded-full flex items-center justify-center text-white",
+                                        `bg-${color}`
+                                    )}>
+                                        <Check size={14} strokeWidth={3} />
+                                    </div>
+                                )}
+                                {isCurrent && (
+                                    <div className={cn(
+                                        "w-7 h-7 rounded-full flex items-center justify-center border-2",
+                                        `border-${color} bg-${color}/10`
+                                    )}>
+                                        <div className={cn("w-2.5 h-2.5 rounded-full animate-pulse", `bg-${color}`)} />
+                                    </div>
+                                )}
+                                {isPending && (
+                                    <div className="w-7 h-7 rounded-full border-2 border-default-200 flex items-center justify-center bg-transparent">
+                                        <Circle size={8} fill="currentColor" className="text-transparent" />
+                                    </div>
                                 )}
                             </div>
-                            {item.description && (
-                                <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 leading-snug">
-                                    {item.description}
-                                </p>
-                            )}
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0 pt-0.5">
+                                <div className="flex justify-between items-start gap-2">
+                                    <h4 className={cn(
+                                        "text-sm font-semibold leading-tight",
+                                        isPending ? 'text-default-400' : 'text-foreground'
+                                    )}>
+                                        {item.title}
+                                    </h4>
+                                    {item.time && (
+                                        <span className="text-xs text-default-400 font-medium">
+                                            {item.time}
+                                        </span>
+                                    )}
+                                </div>
+                                {item.description && (
+                                    <p className="text-xs text-default-500 mt-1 leading-snug">
+                                        {item.description}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
-        </div>
+                    );
+                })}
+            </CardBody>
+        </Card>
     );
 };

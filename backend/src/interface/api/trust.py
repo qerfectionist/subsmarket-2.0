@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, HTTPException, Body
+from fastapi import APIRouter, Depends, Query, HTTPException, Body, UploadFile, File
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,8 +17,33 @@ from src.infrastructure.telegram.auth import get_current_user, TelegramUser
 from src.domain.entities.user import User
 from src.domain.entities.trust import TrustEvent, Complaint, JoinRequest
 from src.domain.entities.club import Club
+from src.domain.services.trust_service import TrustService
+from src.domain.services.ai_service import AIService
+
 
 router = APIRouter(prefix="/trust", tags=["trust"])
+
+
+@router.post("/verify-proof", summary="Verify payment proof with AI")
+async def verify_proof(
+    file: UploadFile = File(...),
+    current_user: TelegramUser = Depends(get_current_user)
+):
+    """
+    AI Analyze payment receipt image.
+    """
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400,
+            detail="File must be an image"
+        )
+    
+    content = await file.read()
+    
+    ai_service = AIService()
+    result = await ai_service.analyze_receipt(content)
+    
+    return result
 
 
 # === Pydantic Schemas ===
@@ -103,7 +128,8 @@ async def get_trust_score(
 @router.get("/score/{user_id}/history")
 async def get_trust_history(
     user_id: int,
-    limit: int = Query(20, le=100),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -114,6 +140,7 @@ async def get_trust_history(
         .where(TrustEvent.user_id == user_id)
         .order_by(TrustEvent.created_at.desc())
         .limit(limit)
+        .offset(offset)
     )
     
     result = await db.execute(query)
@@ -142,12 +169,19 @@ async def get_trust_history(
 @router.post("/complaints")
 async def create_complaint(
     request: ComplaintCreateRequest,
-    reporter_id: int = Query(..., description="Reporter's user ID"),
+    tg_user: TelegramUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Create a new complaint against a user.
+    Reporter is determined from authenticated Telegram user.
     """
+    reporter_id = tg_user.id
+
+    # Prevent self-complaint
+    if reporter_id == request.target_id:
+        raise HTTPException(status_code=400, detail="Cannot file a complaint against yourself")
+
     # Validate reporter exists
     reporter = await db.get(User, reporter_id)
     if not reporter:
@@ -198,25 +232,38 @@ async def create_complaint(
 
 @router.get("/complaints")
 async def list_complaints(
+    tg_user: TelegramUser = Depends(get_current_user),
     user_id: Optional[int] = Query(None, description="Filter by reporter or target"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    limit: int = Query(20, le=100),
+    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     """
     List complaints (filtered by user or status).
+    Requires authentication. Regular users can only see their own complaints.
     """
+    from src.config import get_settings
+    settings = get_settings()
+    is_admin = tg_user.id in settings.admin_ids
+
     query = select(Complaint).order_by(Complaint.created_at.desc())
-    
-    if user_id:
+
+    # Non-admins can only see complaints they are involved in
+    if not is_admin:
+        effective_user_id = user_id if user_id == tg_user.id else tg_user.id
+        query = query.where(
+            (Complaint.reporter_id == effective_user_id) | (Complaint.target_id == effective_user_id)
+        )
+    elif user_id:
         query = query.where(
             (Complaint.reporter_id == user_id) | (Complaint.target_id == user_id)
         )
     
-    if status:
-        query = query.where(Complaint.status == status)
+    if status_filter:
+        query = query.where(Complaint.status == status_filter)
     
-    query = query.limit(limit)
+    query = query.limit(limit).offset(offset)
     
     result = await db.execute(query)
     complaints = result.scalars().all()
@@ -242,12 +289,15 @@ async def list_complaints(
 @router.post("/join-requests")
 async def create_join_request(
     request: JoinRequestCreate,
-    user_id: int = Query(..., description="User ID requesting to join"),
+    tg_user: TelegramUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Create a request to join a club.
+    User is determined from authenticated Telegram user.
     """
+    user_id = tg_user.id
+
     # Validate user exists
     user = await db.get(User, user_id)
     if not user:
@@ -292,21 +342,34 @@ async def create_join_request(
 @router.get("/join-requests/club/{club_id}")
 async def get_club_join_requests(
     club_id: uuid.UUID,
-    status: Optional[str] = Query(None),
+    tg_user: TelegramUser = Depends(get_current_user),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Get all join requests for a club (for host view).
+    Get all join requests for a club.
+    Only the club host can view join requests.
     """
+    # Verify requester is the club host
+    club = await db.get(Club, club_id)
+    if not club:
+        raise HTTPException(status_code=404, detail="Club not found")
+    if club.host_id != tg_user.id:
+        raise HTTPException(status_code=403, detail="Only the club host can view join requests")
+
     query = (
         select(JoinRequest)
         .where(JoinRequest.club_id == club_id)
         .order_by(JoinRequest.created_at.desc())
     )
     
-    if status:
-        query = query.where(JoinRequest.status == status)
+    if status_filter:
+        query = query.where(JoinRequest.status == status_filter)
     
+    query = query.limit(limit).offset(offset)
+
     result = await db.execute(query)
     requests = result.scalars().all()
     
@@ -330,15 +393,22 @@ async def get_club_join_requests(
 async def action_join_request(
     request_id: uuid.UUID,
     action: JoinRequestAction,
+    tg_user: TelegramUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Approve or reject a join request.
+    Only the club host can perform this action.
     """
     join_request = await db.get(JoinRequest, request_id)
     if not join_request:
         raise HTTPException(status_code=404, detail="Join request not found")
-    
+
+    # Verify requester is the club host
+    club = await db.get(Club, join_request.club_id)
+    if not club or club.host_id != tg_user.id:
+        raise HTTPException(status_code=403, detail="Only the club host can manage join requests")
+
     if join_request.status != "pending":
         raise HTTPException(status_code=400, detail="Request already processed")
     
@@ -357,6 +427,8 @@ async def action_join_request(
             "Заявка одобрена" if action.action == "approve" else "Заявка отклонена"
         )
     }
+
+
 class ComplaintAction(BaseModel):
     """Action on a complaint."""
     action: str = Field(..., description="confirm or reject")

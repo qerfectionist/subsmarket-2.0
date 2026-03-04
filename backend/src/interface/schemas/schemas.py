@@ -112,6 +112,7 @@ class ClubDetails(ClubListItem):
     rules: Optional[str] = None
     telegram_group_link: Optional[str] = None
     min_trust_score: Optional[Decimal] = None  # Specific detail
+    my_status: Optional[str] = None  # 'pending' | 'active' | 'approved' | 'left' | null
 
 
 # ============================================

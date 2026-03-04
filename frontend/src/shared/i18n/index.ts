@@ -91,6 +91,65 @@ type TranslationKeys = {
         about: string;
         logout: string;
     };
+    market: {
+        title: string;
+        subtitle: string;
+        buy: string;
+        sell: string;
+        history: string;
+        live: string;
+        no_offers: string;
+        good_deal: string;
+        hot: string;
+        seller: string;
+        buyer: string;
+        buy_action: string;
+    };
+    listing: {
+        title: string;
+        operator: string;
+        amount: string;
+        price: string;
+        recommended: string;
+        warn_operator: string;
+        warn_manual: string;
+        submit: string;
+        publishing: string;
+        error_amount_msg: string;
+        error_price_msg: string;
+        error_create_msg: string;
+    };
+    deal: {
+        title: string;
+        status_created: string;
+        status_paid: string;
+        status_completed: string;
+        status_disputed: string;
+        payment_pending: string;
+        waiting_seller: string;
+        deal_completed: string;
+        dispute_open: string;
+        pay_title: string;
+        pay_desc: string;
+        upload_receipt: string;
+        confirm_title: string;
+        confirm_desc: string;
+        confirm_action: string;
+        dispute_action: string;
+        open_dispute: string;
+        protection_ends: string;
+        status_cancelled: string;
+        status_paid_by_buyer: string;
+        pay_btn: string;
+        confirm_btn: string;
+        item_id: string;
+        type: string;
+        current_status: string;
+        confirm_without_receipt: string;
+        confirm_fund_received: string;
+        buyer_id: string;
+        seller_id: string;
+    };
 };
 
 const translations: Record<Language, TranslationKeys> = {
@@ -180,6 +239,65 @@ const translations: Record<Language, TranslationKeys> = {
             about: 'О приложении',
             logout: 'Выйти',
         },
+        market: {
+            title: 'GB Маркет',
+            subtitle: 'Обмен трафиком мгновенно',
+            buy: 'Купить',
+            sell: 'Продать',
+            history: 'История',
+            live: 'Live',
+            no_offers: 'Нет предложений...',
+            good_deal: 'Выгодная цена!',
+            hot: 'HOT',
+            seller: 'Продавец',
+            buyer: 'Покупатель',
+            buy_action: 'Купить',
+        },
+        listing: {
+            title: 'Продать ГБ',
+            operator: 'Оператор',
+            amount: 'Количество ГБ',
+            price: 'Цена (₸)',
+            recommended: 'Рекомендуемая цена',
+            warn_operator: 'Внимательно выбирайте оператора.',
+            warn_manual: 'Сделка проходит в ручном режиме.',
+            submit: 'Создать объявление',
+            publishing: 'Публикация...',
+            error_amount_msg: 'Введите корректный объем ГБ',
+            error_price_msg: 'Минимальная цена 100 ₸',
+            error_create_msg: 'Ошибка при создании объявления',
+        },
+        deal: {
+            title: 'Детали сделки',
+            status_created: 'Создана',
+            status_paid: 'Оплачена',
+            status_completed: 'Завершена',
+            status_disputed: 'Спор',
+            payment_pending: 'Ожидает оплаты',
+            waiting_seller: 'Ожидает продавца',
+            deal_completed: 'Сделка завершена',
+            dispute_open: 'Открыт спор',
+            pay_title: 'Оплата сделки',
+            pay_desc: 'Переведите сумму на карту продавца',
+            upload_receipt: 'Загрузить чек',
+            confirm_title: 'Подтверждение',
+            confirm_desc: 'Проверьте поступление средств',
+            confirm_action: 'Подтвердить оплату',
+            dispute_action: 'Открыть спор',
+            open_dispute: 'Открыть спор',
+            protection_ends: 'Защита истекает через',
+            status_cancelled: 'Отменена',
+            status_paid_by_buyer: 'Оплачена',
+            pay_btn: 'Я оплатил',
+            confirm_btn: 'Подтвердить получение',
+            item_id: 'ID товара',
+            type: 'Тип',
+            current_status: 'Статус',
+            confirm_without_receipt: 'Вы уверены, что хотите отметить как оплаченное без чека?',
+            confirm_fund_received: 'Подтверждаете получение средств? Это действие нельзя отменить.',
+            buyer_id: 'ID Покупателя',
+            seller_id: 'ID Продавца',
+        },
     },
     kk: {
         common: {
@@ -266,6 +384,65 @@ const translations: Record<Language, TranslationKeys> = {
             language: 'Тіл',
             about: 'Қолданба туралы',
             logout: 'Шығу',
+        },
+        market: {
+            title: 'GB Маркет',
+            subtitle: 'Мобильді трафикті алмасу',
+            buy: 'Сатып алу',
+            sell: 'Сату',
+            history: 'Тарих',
+            live: 'Live',
+            no_offers: 'Ұсыныстар жоқ...',
+            good_deal: 'Тиімді баға!',
+            hot: 'HOT',
+            seller: 'Сатушы',
+            buyer: 'Сатып алушы',
+            buy_action: 'Сатып алу',
+        },
+        listing: {
+            title: 'ГБ Сату',
+            operator: 'Оператор',
+            amount: 'ГБ саны',
+            price: 'Бағасы (₸)',
+            recommended: 'Ұсынылатын баға',
+            warn_operator: 'Операторды мұқият таңдаңыз.',
+            warn_manual: 'Мәміле қолмен жүргізіледі.',
+            submit: 'Хабарландыру құру',
+            publishing: 'Жариялануда...',
+            error_amount_msg: 'ГБ санын дұрыс енгізіңіз',
+            error_price_msg: 'Ең төменгі баға 100 ₸',
+            error_create_msg: 'Хабарландыру құру қатесі',
+        },
+        deal: {
+            title: 'Мәміле мәліметтері',
+            status_created: 'Құрылды',
+            status_paid: 'Төленді',
+            status_completed: 'Аяқталды',
+            status_disputed: 'Дау',
+            payment_pending: 'Төлем күтілуде',
+            waiting_seller: 'Сатушыны күту',
+            deal_completed: 'Мәміле аяқталды',
+            dispute_open: 'Дау ашық',
+            pay_title: 'Мәміле төлемі',
+            pay_desc: 'Сатушының картасына аударыңыз',
+            upload_receipt: 'Чекті жүктеу',
+            confirm_title: 'Растау',
+            confirm_desc: 'Ақша түскенін тексеріңіз',
+            confirm_action: 'Төлемді растау',
+            dispute_action: 'Дау ашу',
+            open_dispute: 'Дау ашу',
+            protection_ends: 'Қорғау аяқталады',
+            status_cancelled: 'Болдырылмады',
+            status_paid_by_buyer: 'Төленді',
+            pay_btn: 'Мен төледім',
+            confirm_btn: 'Алуды растау',
+            item_id: 'Тауар ID',
+            type: 'Түрі',
+            current_status: 'Мәртебе',
+            confirm_without_receipt: 'Чексіз төленді деп белгілегіңіз келе ме?',
+            confirm_fund_received: 'Ақша түскенін растайсыз ба? Бұл әрекетті болдырмау мүмкін емес.',
+            buyer_id: 'Сатып алушы ID',
+            seller_id: 'Сатушы ID',
         },
     },
 };

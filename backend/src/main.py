@@ -6,15 +6,12 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from src.interface.api import api_router
 from src.config import get_settings
-
-# Rate limiter instance
-limiter = Limiter(key_func=get_remote_address)
+from src.security import limiter
 
 
 @asynccontextmanager

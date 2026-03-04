@@ -8,7 +8,7 @@ export { Avatar } from './Avatar';
 export { AvatarGroup } from './AvatarGroup';
 export { Badge } from './Badge';
 export { BankCard } from './BankCard';
-export { BottomSheet, Modal, useDisclosure } from './Modal';
+export { BottomSheet, Modal } from './Modal';
 export { Breadcrumbs } from './Breadcrumbs';
 export { Button } from './Button';
 export { Calendar } from './Calendar';
@@ -51,4 +51,6 @@ export { Table, TableBase, HeroTableColumn, TableHeader, TableBody, TableRow, Ta
 export { Textarea } from './Textarea';
 export { Timeline } from './Timeline';
 export { Toast } from './Toast';
-
+export { TrustBadge, TrustBadgeDetailed } from './TrustBadge';
+export { TrustHistoryModal } from './TrustHistoryModal';
+export { ComplaintForm } from './ComplaintForm';

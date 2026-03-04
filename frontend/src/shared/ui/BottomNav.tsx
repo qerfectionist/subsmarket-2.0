@@ -1,76 +1,78 @@
-import { NavLink } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { t } from '@/shared/i18n';
+import { cn } from '@/shared/lib/utils';
+import { MSIcon } from './MSIcon';
 
-// Simple SVG Icons for Navigation
-const Icons = {
-    Home: ({ isActive }: { isActive?: boolean }) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" stroke={isActive ? "black" : "currentColor"} strokeWidth={isActive ? "2" : "2"} />
-        </svg>
-    ),
-    Clubs: ({ isActive }: { isActive?: boolean }) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="2" />
-            <rect x="14" y="3" width="7" height="7" rx="2" />
-            <rect x="14" y="14" width="7" height="7" rx="2" />
-            <rect x="3" y="14" width="7" height="7" rx="2" />
-        </svg>
-    ),
-    Market: ({ isActive }: { isActive?: boolean }) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-    ),
-    Profile: ({ isActive }: { isActive?: boolean }) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill={isActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isActive ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-        </svg>
-    )
-};
+// ─── Route config ─────────────────────────────────────────────────────────────
 
-const navItems = [
-    { path: '/', label: () => t('nav', 'home'), Icon: Icons.Home },
-    { path: '/clubs', label: () => t('nav', 'clubs'), Icon: Icons.Clubs },
-    { path: '/gb-market', label: () => 'Market', Icon: Icons.Market },
-    { path: '/profile', label: () => t('nav', 'profile'), Icon: Icons.Profile },
-];
+const ROUTES = [
+    { key: 'home', path: '/', label: () => t('nav', 'home'), icon: 'home' },
+    { key: 'clubs', path: '/clubs', label: () => t('nav', 'clubs'), icon: 'grid_view' },
+    { key: 'gb', path: '/gb-market', label: () => t('nav', 'gb_market'), icon: 'storefront' },
+    { key: 'profile', path: '/profile', label: () => t('nav', 'profile'), icon: 'person' },
+] as const;
+
+function pathToKey(pathname: string): string {
+    if (pathname === '/') return 'home';
+    if (pathname.startsWith('/clubs')) return 'clubs';
+    if (pathname.startsWith('/gb-market')) return 'gb';
+    if (pathname.startsWith('/profile')) return 'profile';
+    return 'home';
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function BottomNav() {
+    const location = useLocation();
+    const navigate = useNavigate();
     const haptic = useHaptic();
+    const activeKey = pathToKey(location.pathname);
 
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-secondary)]/90 backdrop-blur-xl border-t border-[var(--color-separator)] z-[100]"
+            className="fixed bottom-0 left-0 right-0 z-[100] flex justify-center"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-            <div className="flex justify-around items-center h-[52px]">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => haptic.selection()}
-                        className={({ isActive }) =>
-                            `flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-200 active:scale-95 ${isActive
-                                ? 'text-white'
-                                : 'text-white/40 hover:text-white/60'
-                            }`
-                        }
-                    >
-                        {({ isActive }) => (
-                            <>
-                                <item.Icon isActive={isActive} />
-                                <span className={`text-[10px] font-medium leading-none mt-1 tracking-wide ${isActive ? 'font-bold' : ''}`}>
-                                    {item.label()}
-                                </span>
-                            </>
-                        )}
-                    </NavLink>
-                ))}
+            {/* Floating pill */}
+            <div className="mb-3 mx-4 w-full max-w-sm bg-content1 border border-default-100 rounded-2xl shadow-lg flex items-center h-[60px] px-1">
+                {ROUTES.map(({ key, path, label, icon }) => {
+                    const isActive = activeKey === key;
+                    return (
+                        <button
+                            key={key}
+                            onClick={() => {
+                                if (!isActive) {
+                                    haptic.selection();
+                                    navigate(path);
+                                }
+                            }}
+                            className={cn(
+                                'relative flex flex-col items-center justify-center flex-1 h-[48px] rounded-xl gap-[2px]',
+                                'transition-colors duration-200 active:scale-90 select-none',
+                                isActive ? 'text-primary' : 'text-default-400',
+                            )}
+                        >
+                            {/* Soft bg pill on active */}
+                            {isActive && (
+                                <span className="absolute inset-0 bg-primary/10 rounded-xl animate-in fade-in zoom-in-95 duration-200" />
+                            )}
+
+                            {/* Always filled icon — shared MSIcon with filled=true default */}
+                            <MSIcon
+                                name={icon}
+                                size={22}
+                                className="relative z-10"
+                            />
+                            <span className={cn(
+                                'relative z-10 text-[10px] leading-none tracking-wide transition-all duration-200',
+                                isActive ? 'font-bold' : 'font-medium',
+                            )}>
+                                {label()}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
         </nav>
     );

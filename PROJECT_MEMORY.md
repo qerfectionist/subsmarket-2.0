@@ -20,8 +20,8 @@
 **Технологии:**
 
 - **Frontend**: React + Vite, TypeScript.
-- **Styling**: Tailwind CSS v4 + HeroUI (версия **2.8.8 stable**).
-  - *Правило*: Не использовать v3 beta (нестабильно).
+- **Styling**: Tailwind CSS **v3.4.19 (Stable)** + HeroUI (версия **2.8.8 stable**).
+  - *Решение*: Отказ от Tailwind v4 beta из-за несовместимости с `@heroui/theme` и багов парсера. Используется `--legacy-peer-deps`.
   - *Стили*: Тёмная тема, iOS/xAI минимализм, стекломорфизм.
 - **Backend**: Python (FastAPI) + SQLAlchemy (Async).
 - **Database**: PostgreSQL (Neon.tech).
@@ -30,25 +30,52 @@
 
 ## 3. 🚧 Текущий Контекст (The State)
 
-- **UI Health Check (Success)**: Страница "Создание клуба" проверена и исправлена. Устранены наложения меток (labels) за счет рефакторинга компонентов в паттерн "Standalone Label".
-- **API & Backend**: Исправлены критические ошибки CORS (добавлены порты 5174/5175). Стандартизировано именование API клиента (`client` вместо `instance`). Реализован `pricingApi`.
-- **Code Quality**: Применены cursor-rules (TypeScript Expert) к shared UI компонентам. Рефакторинг Modal.tsx: arrow functions, FC types, type imports.
-- **Инструменты**: Установлены `power-ranger-toolkit` (Hive Mode) и `namnam-skills` (Semantic Mode). Проведено полное индексирование кодовой базы.
-- **Следующий фокус**: Интеграция Gemini Vision для анализа скриншотов оплаты.
+- **Rescue Mission Completed**: Проект восстановлен после инцидента с `git stash`. Все файлы возвращены, зависимости переустановлены.
+- **Infrastructure Stabilized**:
+  - Frontend работает на <http://localhost:5174> (Tailwind v3, PostCSS, HeroUI 2.8.8).
+  - Backend работает на <http://localhost:8000> (FastAPI, Uvicorn).
+- **Trust Score System UI**: Полностью реализован фронтенд (TrustBadge, History, Complaints). Бэкенд подключен.
+- **Работающих сервисов**: 2 (Frontend, Backend).
 
 ## 4. 📝 История Решений (Change Log)
 
-- [2026-02-07] **Успешный UI Audit**: Исправлена верстка `Input`, `Select`, `Textarea` и `Autocomplete`. Наложений больше нет.
+- [2026-02-07] **Infrastructure Fix**: Откат Tailwind CSS с v4 beta на v3.4.19. Настройка `postcss.config.js` и `tailwind.config.js` для совместимости с HeroUI. Исправление `vite.config.ts`.
+- [2026-02-07] **Resurrection**: Восстановление кодовой базы из `git stash` после случайной очистки рабочей директории.
+- [2026-02-07] **UI Audit**: Исправлена верстка `Input`, `Select`, `Textarea` и `Autocomplete`. Наложений больше нет. Standalone Label паттерн внедрен.
+- [2026-02-07] **AI Integration**: Интегрированы Hive Mode и Semantic Mode для улучшения автономности.
 - [2026-02-07] **Code Quality**: Применены cursor-rules (TypeScript Expert). Рефакторинг Modal.tsx для соответствия best practices.
 - [2026-02-07] **Backend Fix**: Обновлены CORS Origins для поддержки локальной разработки на портах 5174/5175.
-- [2026-02-07] **API Refactoring**: Создан `pricing.ts`, исправлен экспорт в `client.ts`, обновлены все зависимые API-модули (trust, pricing).
-- [2026-02-07] **AI Integration**: Интегрированы Hive Mode и Semantic Mode для улучшения автономности и понимания контекста.
-- [2026-02-06] **HeroUI Rollback**: Откат с v3 beta на стабильную v2.8.8.
-- [2026-02-06] **Design**: Внедрена дизайн-система в стиле минимализма iOS 18 / xAI.
+- [2026-02-07] **API Refactoring**: Создан `pricing.ts`, исправлен экспорт в `client.ts`.
+- [2026-02-09] **Trust System UI**: Реализованы компоненты рейтинга, истории и жалоб. Интегрированы TanStack Query хуки. Создана документация `docs/TRUST_SYSTEM.md`.
+- [2026-02-09] **GB Market P2P**: Реализован полный цикл сделок (Backend + Frontend). Созданы `DealPage`, `DealsListPage`. Подключен `AIService` для проверки чеков.
 
 ## 5. 🔜 План действий
 
-1. **Gemini Vision**: Разработать прототип анализа скриншотов оплаты для автоматического подтверждения сделок.
-2. **GB Market**: Интегрировать `OperatorSelect` в форму предложения гигабайт с валидацией цены.
-3. **Profile**: Реализовать страницу профиля с детальным Trust Score и списком значков (badges).
-4. **Data Consistency**: Согласовать типы данных (UUID vs String) в `ClubService` для поддержки новых и старых ID сервисов.
+1. [Done] **GB Market P2P Flow**: ✅ Полная реализация сделок (Create -> List -> Reserve -> Pay -> Confirm).
+2. [Done] **AI Deal Automation**: ✅ Интеграция `verifyProof` в процесс сделки (AI Verdict).
+3. [Done] **Trust System UI**: ✅ Реализован UI и API.
+4. [Done] **Gemini Vision**: ✅ Сервис `AIService` и эндпоинт `/verify-proof` созданы. Инструмент тестирования `/tools/receipt-analyzer` доступен.
+5. [Done] **Notification Service**: ✅ Реализован сервис уведомлений через Telegram Bot API.
+6. [Done] **Create Listing**: ✅ Форма создания объявления подключена к API.
+7. [Done] **UI Polish**: ✅ Skeleton loaders, empty states, status badges, BottomNav active dot, progress timelines.
+8. [Done] **Security Hardening**: ✅ Rate limiting (slowapi), anti-spam (max active offers), credential removal, disclaimer.
+
+### Модель монетизации (определена 2026-02-24)
+
+- Плата за создание клуба
+- Плата за размещение объявления на маркете ГБ
+- Плата за размещение объявления о продаже аккаунтов
+
+### Правовая позиция
+
+- SubsMarket — площадка (marketplace), не сторона сделки
+- Нет хранения credentials (login/password) — передача через Telegram напрямую
+- Нет эскроу — все сделки на риск пользователей
+- Документ: `docs/TERMS.md`
+
+### Next Steps
+
+1. **Monetization Implementation**: Добавить paywall на создание клуба/объявления (Kaspi/Stars).
+2. **Testing**: Manual E2E testing всего flow.
+3. **Deployment**: Deploy на staging (Vercel + Fly.io/Railway).
+4. **Telegram Bot**: Настроить WebApp menu button для бота.
