@@ -1,136 +1,203 @@
-import { t } from '@/shared/i18n';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/shared/api';
-import { Card, CardBody, Skeleton } from '@heroui/react';
-import { MSIcon } from '@/shared/ui/MSIcon';
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    CardActionArea,
+    Chip,
+    Stack,
+    Typography,
+} from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import CreditScoreRoundedIcon from '@mui/icons-material/CreditScoreRounded';
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import WifiRoundedIcon from '@mui/icons-material/WifiRounded';
+
+const serviceTiles = [
+    { title: 'Подписки', subtitle: 'семейные места', to: '/clubs', icon: GridViewRoundedIcon, color: '#FFE36E' },
+    { title: 'ГБ', subtitle: 'трафик и тарифы', to: '/gb-market', icon: WifiRoundedIcon, color: '#B9F27D' },
+    { title: 'Доступы', subtitle: 'инвайты и аккаунты', to: '/accounts', icon: StorefrontRoundedIcon, color: '#D8C7FF' },
+    { title: 'Сделки', subtitle: 'чек и статус', to: '/deals', icon: ShieldRoundedIcon, color: '#BFE7FF' },
+];
+
+const liveOffers = [
+    { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', to: '/clubs?type=digital' },
+    { title: 'Beeline / Tele2', meta: 'ГБ и семейные тарифы', price: 'от 500 ₸', to: '/gb-market' },
+    { title: 'Яндекс Плюс', meta: '1 место · актуально', price: '900 ₸', to: '/clubs?type=digital' },
+];
 
 export function HomePage() {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-    const { data: profile, isLoading } = useQuery({
-        queryKey: ['me'],
-        queryFn: () => api.getMe(),
-    });
-
-    const clubCount = (profile as any)?.clubs_count ?? 0;
-    const trustScore = (profile as any)?.trust_score ?? 5.0;
-    const dealsCount = (profile as any)?.p2p_deals_count ?? 0;
-
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-background text-foreground pb-28">
-            <main className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6">
-                {/* Header */}
-                <header className="pt-2">
-                    <div className="text-[10px] text-default-400 uppercase tracking-[0.25em] font-bold mb-2 flex items-center gap-2">
-                        <span className="inline-block w-1 h-1 rounded-full bg-success animate-pulse" />
-                        Welcome Back
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight leading-none text-foreground">
-                        {user?.first_name || 'User'}
-                    </h1>
-                    <p className="text-default-500 mt-1.5 text-xs font-medium tracking-wide">
-                        {t('home', 'subtitle')}
-                    </p>
-                </header>
+        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', px: 2, pt: 1.6, pb: 2 }}>
+            <Box sx={{ maxWidth: 430, mx: 'auto' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                        <Avatar src={user?.photo_url} sx={{ width: 38, height: 38, bgcolor: '#111', color: '#fff', fontWeight: 700 }}>
+                            {(user?.first_name ?? 'S').charAt(0)}
+                        </Avatar>
+                        <Box>
+                            <Typography fontSize={17} fontWeight={760} lineHeight={1.05}>
+                                SubsMarket
+                            </Typography>
+                            <Typography fontSize={12.5} fontWeight={520} color="#74716A">
+                                подписки, тарифы, ГБ
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Chip label="KZ" sx={{ height: 34, bgcolor: '#fff', color: '#111', fontWeight: 650 }} />
+                </Box>
 
-                {/* Action Hub */}
-                <section className="grid grid-cols-2 gap-3">
-                    <Card as={Link} to="/clubs?type=digital" isPressable shadow="sm" className="h-full">
-                        <CardBody className="p-4 flex flex-col justify-between min-h-[140px]">
-                            <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-                                <MSIcon name="grid_view" size={22} filled />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-base leading-tight mb-1 text-foreground">{t('home', 'subscriptions')}</h3>
-                                <p className="text-xs text-default-500 font-medium leading-relaxed line-clamp-2">
-                                    {t('home', 'subscriptions_desc')}
-                                </p>
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    <Card as={Link} to="/clubs?type=telecom" isPressable shadow="sm" className="h-full">
-                        <CardBody className="p-4 flex flex-col justify-between min-h-[140px]">
-                            <div className="w-11 h-11 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-3">
-                                <MSIcon name="wifi" size={22} filled />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-base leading-tight mb-1 text-foreground">{t('home', 'telecom')}</h3>
-                                <p className="text-xs text-default-500 font-medium leading-relaxed line-clamp-2">
-                                    {t('home', 'telecom_desc')}
-                                </p>
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    <Card as={Link} to="/gb-market" isPressable shadow="sm" className="col-span-2">
-                        <CardBody className="p-4 flex flex-row items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-xl bg-success/10 text-success flex items-center justify-center">
-                                    <MSIcon name="storefront" size={22} filled />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-base leading-tight text-foreground">{t('home', 'gb_market')}</h3>
-                                    <p className="text-xs text-default-500 font-medium mt-0.5">
-                                        {t('home', 'gb_market_desc')}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="w-8 h-8 rounded-full bg-default-100 flex items-center justify-center text-default-400">
-                                <MSIcon name="chevron_right" size={16} />
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    {/* Coming Soon */}
-                    <Card className="col-span-2 bg-content2/50 border-dashed border-1 border-default-200 opacity-60">
-                        <CardBody className="p-4 flex flex-row items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-default-200/50 text-default-400 flex items-center justify-center">
-                                <MSIcon name="person_add" size={18} filled />
-                            </div>
-                            <div className="flex-1 flex items-center gap-2">
-                                <h3 className="font-semibold text-sm text-default-500 tracking-tight">{t('home', 'accounts')}</h3>
-                                <span className="text-[10px] bg-default-200 text-default-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                    Soon
-                                </span>
-                            </div>
-                        </CardBody>
-                    </Card>
-                </section>
-
-                {/* Stats */}
-                <Card shadow="sm">
-                    {isLoading ? (
-                        <CardBody className="p-5 grid grid-cols-3 gap-4 text-center divide-x divide-default-100">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="flex flex-col items-center gap-2">
-                                    <Skeleton className="h-7 w-12 rounded-lg" />
-                                    <Skeleton className="h-3 w-16 rounded" />
-                                </div>
-                            ))}
-                        </CardBody>
-                    ) : (
-                        <CardBody className="p-5 grid grid-cols-3 gap-4 text-center divide-x divide-default-100">
-                            <div className="flex flex-col gap-1">
-                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">{clubCount}</div>
-                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_clubs')}</div>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">
-                                    {typeof trustScore === 'number' ? trustScore.toFixed(1) : trustScore}
-                                </div>
-                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_rating')}</div>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <div className="text-2xl font-bold tracking-tight tabular-nums text-foreground">{dealsCount}</div>
-                                <div className="text-[10px] text-default-400 uppercase tracking-widest font-medium">{t('home', 'stats_deals')}</div>
-                            </div>
-                        </CardBody>
-                    )}
+                <Card sx={{ bgcolor: '#fff', color: '#111', borderRadius: '28px', border: '0', mb: 1.2 }}>
+                    <CardActionArea component={Link} to="/clubs" sx={{ p: 1.2 }}>
+                        <Box
+                            sx={{
+                                height: 48,
+                                borderRadius: '18px',
+                                bgcolor: '#F2F1EC',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.1,
+                                px: 1.4,
+                            }}
+                        >
+                            <SearchRoundedIcon sx={{ color: '#77736B', fontSize: 21 }} />
+                            <Typography fontSize={15} fontWeight={560} color="#77736B">
+                                Найти YouTube, Яндекс, Beeline...
+                            </Typography>
+                        </Box>
+                    </CardActionArea>
                 </Card>
-            </main>
-        </div>
+
+                <Card sx={{ bgcolor: '#FFE15A', color: '#111', borderRadius: '32px', border: 0, mb: 1.4 }}>
+                    <CardActionArea component={Link} to="/clubs" sx={{ p: 2.2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontSize: 30, lineHeight: 1.04, fontWeight: 760, letterSpacing: 0, mb: 1 }}>
+                                    Свободные места без хаоса в чате
+                                </Typography>
+                                <Typography fontSize={15} lineHeight={1.42} fontWeight={520} color="rgba(0,0,0,0.58)">
+                                    Цена, условия и продавец сразу видны в карточке.
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    width: 54,
+                                    height: 54,
+                                    borderRadius: '18px',
+                                    bgcolor: '#111',
+                                    color: '#FFE15A',
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <BoltRoundedIcon />
+                            </Box>
+                        </Box>
+                    </CardActionArea>
+                </Card>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2.1 }}>
+                    {serviceTiles.map(({ title, subtitle, to, icon: Icon, color }) => (
+                        <Card key={title} sx={{ bgcolor: '#fff', color: '#111', borderRadius: '26px', border: 0 }}>
+                            <CardActionArea component={Link} to={to} sx={{ p: 1.45, minHeight: 112 }}>
+                                <Box
+                                    sx={{
+                                        width: 42,
+                                        height: 42,
+                                        borderRadius: '16px',
+                                        bgcolor: color,
+                                        display: 'grid',
+                                        placeItems: 'center',
+                                        mb: 1.35,
+                                    }}
+                                >
+                                    <Icon sx={{ color: '#111', fontSize: 22 }} />
+                                </Box>
+                                <Typography fontSize={16} fontWeight={720} lineHeight={1.15}>
+                                    {title}
+                                </Typography>
+                                <Typography fontSize={12.5} fontWeight={520} color="#77736B" noWrap>
+                                    {subtitle}
+                                </Typography>
+                            </CardActionArea>
+                        </Card>
+                    ))}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography fontSize={21} fontWeight={760} lineHeight={1.15}>
+                        Сейчас в маркете
+                    </Typography>
+                    <Button component={Link} to="/clubs" endIcon={<ArrowForwardRoundedIcon />} sx={{ color: '#111', px: 1 }}>
+                        Все
+                    </Button>
+                </Box>
+
+                <Stack spacing={1}>
+                    {liveOffers.map((item, index) => (
+                        <Card key={item.title} sx={{ bgcolor: '#fff', color: '#111', borderRadius: '24px', border: 0 }}>
+                            <CardActionArea component={Link} to={item.to} sx={{ p: 1.45, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                                <Box
+                                    sx={{
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: '16px',
+                                        bgcolor: index === 0 ? '#FFE15A' : '#F2F1EC',
+                                        display: 'grid',
+                                        placeItems: 'center',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    {index === 1 ? <WifiRoundedIcon sx={{ fontSize: 21 }} /> : <CreditScoreRoundedIcon sx={{ fontSize: 21 }} />}
+                                </Box>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Typography fontSize={15.5} fontWeight={720} lineHeight={1.2} noWrap>
+                                        {item.title}
+                                    </Typography>
+                                    <Typography fontSize={12.5} fontWeight={520} color="#77736B" noWrap>
+                                        {item.meta}
+                                    </Typography>
+                                </Box>
+                                <Typography fontSize={15} fontWeight={760}>
+                                    {item.price}
+                                </Typography>
+                            </CardActionArea>
+                        </Card>
+                    ))}
+                </Stack>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1.2 }}>
+                    <Button
+                        component={Link}
+                        to="/clubs/create"
+                        size="large"
+                        startIcon={<AddRoundedIcon />}
+                        sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}
+                    >
+                        Создать
+                    </Button>
+                    <Button
+                        component={Link}
+                        to="/tools/receipt-analyzer"
+                        size="large"
+                        startIcon={<ReceiptLongRoundedIcon />}
+                        sx={{ bgcolor: '#fff', color: '#111', '&:hover': { bgcolor: '#fff' } }}
+                    >
+                        Чек
+                    </Button>
+                </Box>
+            </Box>
+        </Box>
     );
 }
 

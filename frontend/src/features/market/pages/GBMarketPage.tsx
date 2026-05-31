@@ -1,12 +1,28 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, CreateGigabyteOfferRequest, GigabyteOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { useTelegram } from '@/shared/hooks/useTelegram';
-import { api, GigabyteOffer, CreateGigabyteOfferRequest } from '@/shared/api';
-import { t } from '@/shared/i18n';
-import { Tab, Tabs, Slider, Card, CardBody, Button, Chip, Input, Divider, Skeleton, Tooltip, Navbar, NavbarContent, NavbarItem } from "@heroui/react";
 import DealsListPage from '@/features/deals/pages/DealsListPage';
-import { MSIcon } from '@/shared/ui/MSIcon';
+import {
+    Box,
+    Button,
+    Card,
+    CardActionArea,
+    CardContent,
+    Chip,
+    Divider,
+    Skeleton,
+    Slider,
+    Stack,
+    Tab,
+    Tabs,
+    TextField,
+    Typography,
+} from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
 type TabKey = 'buy' | 'sell' | 'my';
 
@@ -40,186 +56,124 @@ export function GBMarketPage() {
         onError: () => haptic.notification('error'),
     });
 
-    const handleTabChange = (key: React.Key) => {
-        haptic.selection();
-        setTab(key as TabKey);
-    };
-
     const handleBuyOffer = async (offer: GigabyteOffer) => {
-        haptic.impact('heavy');
-        const confirmed = await showConfirm(`Buy ${offer.amount_gb} GB for ${offer.price} ₸?`);
-        if (confirmed) {
-            createDealMutation.mutate({
-                offer_type: 'gigabyte',
-                offer_id: offer.offer_id,
-                amount: offer.price
-            });
-        }
+        haptic.impact('medium');
+        const confirmed = await showConfirm(`Купить ${offer.amount_gb} ГБ за ${offer.price} ₸?`);
+        if (confirmed) createDealMutation.mutate({ offer_type: 'gigabyte', offer_id: offer.offer_id, amount: offer.price });
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-background text-foreground pb-24">
-            {/* Header Sticky */}
-            <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-divider pb-3">
-                <Navbar isBlurred={false} className="bg-transparent px-0">
-                    <NavbarContent justify="start" className="px-4">
-                        <NavbarItem className="flex flex-col items-start gap-0.5">
-                            <span className="text-xl font-bold leading-tight">{t('market', 'title')}</span>
-                            <span className="text-xs text-default-500 font-medium">{t('market', 'subtitle')}</span>
-                        </NavbarItem>
-                    </NavbarContent>
-                    <NavbarContent justify="end">
-                        <NavbarItem>
-                            <Chip color="success" variant="flat" size="sm" className="font-bold tracking-wider uppercase text-[10px]">
-                                {t('market', 'live')}
-                            </Chip>
-                        </NavbarItem>
-                    </NavbarContent>
-                </Navbar>
+        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
+            <Box sx={{ position: 'sticky', top: 0, zIndex: 40, bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)', px: 2, pt: 1.8, pb: 1.2 }}>
+                <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.4 }}>
+                        <Box>
+                            <Typography fontSize={28} fontWeight={760} lineHeight={1.05}>
+                                ГБ маркет
+                            </Typography>
+                            <Typography fontSize={13.5} fontWeight={520} color="#77736B">
+                                трафик, семейные тарифы и быстрые сделки
+                            </Typography>
+                        </Box>
+                        <Chip label="live" sx={{ bgcolor: '#B9F27D', color: '#111' }} />
+                    </Box>
 
-                <div className="px-4 mt-2">
-                    <Tabs
-                        fullWidth
-                        size="md"
-                        selectedKey={tab}
-                        onSelectionChange={handleTabChange}
-                        color="primary"
-                        variant="solid"
-                        radius="lg"
-                    >
-                        <Tab key="buy" title={t('market', 'buy')} />
-                        <Tab key="sell" title={t('market', 'sell')} />
-                        <Tab key="my" title={t('market', 'history')} />
+                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); }} sx={{ minHeight: 40 }}>
+                        <Tab value="buy" label="Купить" />
+                        <Tab value="sell" label="Продать" />
+                        <Tab value="my" label="Сделки" />
                     </Tabs>
-                </div>
-            </div>
+                </Box>
+            </Box>
 
-            <main className="flex-1 p-4 max-w-lg mx-auto w-full space-y-4">
-                {/* Operator Filters (only on Buy tab) */}
+            <Box sx={{ px: 2, pt: 1.4, width: '100%', maxWidth: 600, mx: 'auto' }}>
                 {tab === 'buy' && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4">
-                        <Chip
-                            size="md"
-                            className="cursor-pointer font-medium flex-shrink-0"
-                            color={!selectedOperator ? 'primary' : 'default'}
-                            variant={!selectedOperator ? 'solid' : 'flat'}
-                            onClick={() => {
-                                haptic.selection();
-                                setSelectedOperator(null);
-                            }}
-                        >
-                            Все
-                        </Chip>
-                        {operators.map(op => (
-                            <Chip
-                                key={op.id}
-                                size="md"
-                                color={selectedOperator === op.id ? 'primary' : 'default'}
-                                variant={selectedOperator === op.id ? 'solid' : 'flat'}
-                                className="cursor-pointer font-medium flex-shrink-0"
-                                onClick={() => {
-                                    haptic.selection();
-                                    setSelectedOperator(op.id);
-                                }}
-                            >
-                                {op.name}
-                            </Chip>
-                        ))}
-                    </div>
+                    <>
+                        <Box sx={{ display: 'flex', gap: 0.8, overflowX: 'auto', pb: 1.4, mx: -2, px: 2 }}>
+                            {[{ id: null, name: 'Все' }, ...operators].map(op => (
+                                <Chip
+                                    key={op.id ?? 'all'}
+                                    label={op.name}
+                                    clickable
+                                    onClick={() => { haptic.selection(); setSelectedOperator(op.id); }}
+                                    sx={{
+                                        bgcolor: selectedOperator === op.id ? '#111' : '#fff',
+                                        color: selectedOperator === op.id ? '#fff' : '#111',
+                                        flexShrink: 0,
+                                    }}
+                                />
+                            ))}
+                        </Box>
+
+                        <Stack spacing={1}>
+                            {isLoading && [1, 2, 3].map(i => <OfferSkeleton key={i} />)}
+                            {!isLoading && offers.length === 0 && (
+                                <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
+                                    <StorefrontRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
+                                    <Typography fontSize={18} fontWeight={720}>Предложений пока нет</Typography>
+                                    <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Можно создать первое предложение на продажу ГБ.</Typography>
+                                    <Button onClick={() => setTab('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>
+                                        Продать ГБ
+                                    </Button>
+                                </Box>
+                            )}
+                            {!isLoading && offers.map(offer => <OfferCard key={offer.offer_id} offer={offer} onBuy={() => handleBuyOffer(offer)} />)}
+                        </Stack>
+                    </>
                 )}
 
-                {/* Content */}
-                <div className="min-h-[300px]">
-                    {tab === 'buy' && (
-                        <div className="space-y-3">
-                            {isLoading ? (
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map(i => (
-                                        <Card key={i} shadow="sm">
-                                            <CardBody className="p-4 space-y-3">
-                                                <div className="flex justify-between items-start">
-                                                    <Skeleton className="h-6 w-24 rounded-lg" />
-                                                    <Skeleton className="h-8 w-20 rounded-lg" />
-                                                </div>
-                                                <Skeleton className="h-4 w-32 rounded-lg" />
-                                            </CardBody>
-                                        </Card>
-                                    ))}
-                                </div>
-                            ) : offers.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-24 space-y-3">
-                                    <div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center text-default-400">
-                                        <MSIcon name="storefront" size={32} />
-                                    </div>
-                                    <p className="text-sm font-medium text-default-500">{t('market', 'no_offers')}</p>
-                                </div>
-                            ) : (
-                                offers.map(offer => (
-                                    <OfferCard
-                                        key={offer.offer_id}
-                                        offer={offer}
-                                        onBuy={() => handleBuyOffer(offer)}
-                                    />
-                                ))
-                            )}
-                        </div>
-                    )}
-
-                    {tab === 'sell' && (
-                        <div className="pt-2">
-                            <SellForm onSuccess={() => {
-                                setTab('my');
-                            }} />
-                        </div>
-                    )}
-
-                    {tab === 'my' && (
-                        <DealsListPage />
-                    )}
-                </div>
-            </main>
-        </div>
+                {tab === 'sell' && <SellForm onSuccess={() => setTab('my')} />}
+                {tab === 'my' && <DealsListPage />}
+            </Box>
+        </Box>
     );
 }
 
-function OfferCard({ offer, onBuy }: { offer: GigabyteOffer, onBuy: () => void }) {
+function OfferCard({ offer, onBuy }: { offer: GigabyteOffer; onBuy: () => void }) {
     const op = operators.find(o => o.id === offer.operator.toLowerCase());
     const pricePerGb = offer.price / offer.amount_gb;
-    const isGoodDeal = pricePerGb < 100;
+    const isHot = pricePerGb < 100;
 
     return (
-        <Card isPressable shadow="sm" className="bg-content1 hover:bg-default-50 border-1 border-transparent hover:border-default-200 transition-colors w-full" onPress={onBuy}>
-            <CardBody className="p-4 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center w-[52px] h-[52px] bg-content2 text-primary rounded-xl font-semibold text-xl border border-default-100">
-                        <span>{offer.amount_gb}</span>
-                        <span className="text-[9px] uppercase -mt-1 font-bold">GB</span>
-                    </div>
+        <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '24px' }}>
+            <CardActionArea onClick={onBuy} sx={{ p: 1.55, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+                    <Box sx={{ width: 52, height: 52, borderRadius: '18px', bgcolor: '#B9F27D', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography fontWeight={760} fontSize={18} lineHeight={1}>{offer.amount_gb}</Typography>
+                            <Typography fontSize={10} fontWeight={650} lineHeight={1}>ГБ</Typography>
+                        </Box>
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.7 }}>
+                            <Typography fontWeight={720} fontSize={15.5} noWrap>{op?.name ?? offer.operator}</Typography>
+                            {isHot && <Chip icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: '14px !important' }} />} label="выгодно" size="small" sx={{ height: 22, bgcolor: '#FFE15A' }} />}
+                        </Box>
+                        <Typography fontSize={12.5} color="#77736B" fontWeight={520}>
+                            продавец #{offer.seller_id}
+                        </Typography>
+                    </Box>
+                </Box>
+                <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                    <Typography fontWeight={760} fontSize={18} lineHeight={1.15}>{offer.price} ₸</Typography>
+                    <Typography fontSize={12} color="#77736B" fontWeight={520}>{Math.round(pricePerGb)} ₸ / ГБ</Typography>
+                </Box>
+            </CardActionArea>
+        </Card>
+    );
+}
 
-                    <div className="flex flex-col items-start gap-1">
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm tracking-tight">{op?.name || offer.operator}</h3>
-                            {isGoodDeal && (
-                                <Tooltip content={t('market', 'good_deal')}>
-                                    <Chip color="success" size="sm" variant="flat" className="h-5 text-[10px] px-1 uppercase shrink-0 font-bold border-none">
-                                        {t('market', 'hot')}
-                                    </Chip>
-                                </Tooltip>
-                            )}
-                        </div>
-                        <p className="text-default-400 text-[10px] uppercase font-semibold">
-                            {t('market', 'seller')} #{offer.seller_id}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="text-right flex flex-col items-end gap-1">
-                    <div className="font-bold text-lg tracking-tight">{offer.price} ₸</div>
-                    <span className="text-[10px] font-bold text-primary uppercase bg-primary-50 px-2 py-1 rounded-md">
-                        {t('market', 'buy_action')}
-                    </span>
-                </div>
-            </CardBody>
+function OfferSkeleton() {
+    return (
+        <Card sx={{ bgcolor: '#fff', border: 0, borderRadius: '24px' }}>
+            <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.4, p: 1.5 }}>
+                <Skeleton variant="rounded" width={52} height={52} sx={{ borderRadius: '18px' }} />
+                <Box sx={{ flex: 1 }}>
+                    <Skeleton variant="text" width={120} height={22} />
+                    <Skeleton variant="text" width={90} height={16} />
+                </Box>
+                <Skeleton variant="rounded" width={72} height={34} />
+            </CardContent>
         </Card>
     );
 }
@@ -238,106 +192,69 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
             queryClient.invalidateQueries({ queryKey: ['gb-offers'] });
             onSuccess();
         },
-        onError: () => haptic.notification('error')
+        onError: () => haptic.notification('error'),
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        haptic.impact('heavy');
-        createOfferMutation.mutate({
-            operator,
-            amount_gb: gb,
-            price: parseInt(price)
-        });
+        haptic.impact('medium');
+        createOfferMutation.mutate({ operator, amount_gb: gb, price: parseInt(price, 10) });
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-                <label className="text-xs font-semibold text-default-500 uppercase tracking-widest px-1">
-                    {t('listing', 'operator')}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                    {operators.map(op => (
-                        <Button
-                            key={op.id}
-                            size="md"
-                            radius="md"
-                            className="font-medium"
-                            color={operator === op.id ? 'primary' : 'default'}
-                            variant={operator === op.id ? 'flat' : 'light'}
-                            onPress={() => {
-                                haptic.selection();
-                                setOperator(op.id);
-                            }}
-                        >
-                            {op.name}
-                        </Button>
-                    ))}
-                </div>
-            </div>
-
-            <Card className="bg-content1 shadow-sm">
-                <CardBody className="p-0">
-                    <div className="p-4 space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium">{t('listing', 'amount')} (GB)</label>
-                            <span className="text-base font-bold text-primary">{gb}</span>
-                        </div>
-                        <Slider
-                            step={1}
-                            maxValue={50}
-                            minValue={1}
-                            value={gb}
-                            onChange={(val) => {
-                                haptic.selection();
-                                const v = Array.isArray(val) ? val[0] : val;
-                                setGb(v);
-                                setPrice((v * 50).toString());
-                            }}
-                            aria-label="GB"
-                            color="primary"
-                            className="max-w-md"
-                        />
-                    </div>
-                    <Divider />
-                    <div className="p-4 flex justify-between items-center">
-                        <div className="flex flex-col justify-center">
-                            <label className="text-sm font-medium">{t('listing', 'price')} (₸)</label>
-                            <span className="text-xs text-default-500 mt-0.5">
-                                ~ {Math.round(parseInt(price || '0') / gb)} ₸ / GB
-                            </span>
-                        </div>
-                        <Input
-                            type="number"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            className="w-32"
-                            variant="flat"
-                            color="primary"
-                            classNames={{
-                                input: "text-right font-bold text-lg",
-                            }}
-                            endContent={
-                                <span className="text-lg font-medium text-default-400">₸</span>
-                            }
-                        />
-                    </div>
-                </CardBody>
+        <Stack spacing={1.2} component="form" onSubmit={handleSubmit}>
+            <Card sx={{ bgcolor: '#FFE15A', color: '#111', border: 0, borderRadius: '30px' }}>
+                <CardContent sx={{ p: 2.2 }}>
+                    <Typography fontSize={25} fontWeight={760} lineHeight={1.06}>Продать свободные ГБ</Typography>
+                    <Typography fontSize={14} color="rgba(0,0,0,0.58)" sx={{ mt: 0.8 }}>Укажите оператор, объем и цену. Покупатель начнет сделку из карточки.</Typography>
+                </CardContent>
             </Card>
 
-            <Button
-                type="submit"
-                color="primary"
-                size="lg"
-                fullWidth
-                className="font-bold text-base mt-4"
-                isDisabled={createOfferMutation.isPending}
-                isLoading={createOfferMutation.isPending}
-            >
-                {createOfferMutation.isPending ? t('listing', 'publishing') : t('listing', 'submit')}
+            <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px' }}>
+                <CardContent sx={{ p: 2 }}>
+                    <Typography fontSize={13} fontWeight={650} color="#77736B" sx={{ mb: 1 }}>Оператор</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                        {operators.map(op => (
+                            <Chip key={op.id} label={op.name} clickable onClick={() => { haptic.selection(); setOperator(op.id); }} sx={{ bgcolor: operator === op.id ? '#111' : '#F2F1EC', color: operator === op.id ? '#fff' : '#111' }} />
+                        ))}
+                    </Box>
+
+                    <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography fontSize={15} fontWeight={650}>Объем</Typography>
+                        <Typography fontSize={15} fontWeight={760}>{gb} ГБ</Typography>
+                    </Box>
+                    <Slider
+                        value={gb}
+                        min={1}
+                        max={50}
+                        step={1}
+                        onChange={(_, val) => {
+                            haptic.selection();
+                            const v = Array.isArray(val) ? val[0] : val;
+                            setGb(v);
+                            setPrice((v * 50).toString());
+                        }}
+                        sx={{ color: '#111' }}
+                    />
+
+                    <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                        <Box>
+                            <Typography fontSize={15} fontWeight={650}>Цена</Typography>
+                            <Typography fontSize={12.5} color="#77736B">~ {Math.round(parseInt(price || '0', 10) / gb)} ₸ / ГБ</Typography>
+                        </Box>
+                        <TextField value={price} onChange={e => setPrice(e.target.value)} type="number" size="small" sx={{ width: 128 }} InputProps={{ endAdornment: <Typography color="#77736B" ml={0.5}>₸</Typography> }} inputProps={{ style: { textAlign: 'right', fontWeight: 720, fontSize: 18 } }} />
+                    </Box>
+                </CardContent>
+            </Card>
+
+            <Button type="submit" size="large" disabled={createOfferMutation.isPending} startIcon={<AddRoundedIcon />} sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>
+                {createOfferMutation.isPending ? 'Публикуем...' : 'Опубликовать'}
             </Button>
-        </form>
+        </Stack>
     );
 }
 

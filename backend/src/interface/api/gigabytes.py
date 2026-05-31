@@ -70,6 +70,7 @@ async def create_gigabyte_offer(
     
     return offer
 
+@router.get("", response_model=List[GigabyteOfferResponse])
 @router.get("/", response_model=List[GigabyteOfferResponse])
 async def get_gigabyte_offers(
     operator: Optional[str] = None,

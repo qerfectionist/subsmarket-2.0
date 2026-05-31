@@ -1,18 +1,42 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api, Club } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
-import { EmptyState } from '@/shared/ui/EmptyState';
-import { Link, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Skeleton, Button, Chip } from '@heroui/react';
-import { cn } from '@/shared/lib/utils';
-import { MSIcon } from '@/shared/ui/MSIcon';
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    CardActionArea,
+    CardContent,
+    Chip,
+    Fab,
+    InputBase,
+    Skeleton,
+    Stack,
+    Tab,
+    Tabs,
+    Typography,
+} from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 type Filter = 'all' | 'digital' | 'telecom';
-type Tab = 'market' | 'my';
+type PageTab = 'market' | 'my';
+
+const filters: Array<{ id: Filter; label: string }> = [
+    { id: 'all', label: 'Все' },
+    { id: 'digital', label: 'Сервисы' },
+    { id: 'telecom', label: 'Связь' },
+];
 
 export function ClubsPage() {
-    const [tab, setTab] = useState<Tab>('market');
+    const [tab, setTab] = useState<PageTab>('market');
     const [filter, setFilter] = useState<Filter>('all');
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +47,7 @@ export function ClubsPage() {
     const handleSearchChange = (val: string) => {
         setSearchInput(val);
         if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-        searchTimerRef.current = setTimeout(() => setSearchQuery(val.trim()), 400);
+        searchTimerRef.current = setTimeout(() => setSearchQuery(val.trim()), 350);
     };
 
     const clearSearch = () => {
@@ -33,10 +57,7 @@ export function ClubsPage() {
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['clubs', filter, searchQuery],
-        queryFn: () => api.getClubs({
-            ...(filter !== 'all' && { category: filter }),
-            ...(searchQuery && { search: searchQuery }),
-        }),
+        queryFn: () => api.getClubs({ ...(filter !== 'all' && { category: filter }), ...(searchQuery && { search: searchQuery }) }),
         enabled: tab === 'market',
     });
 
@@ -49,227 +70,94 @@ export function ClubsPage() {
     const clubs = data?.items ?? [];
     const total = data?.total ?? 0;
 
-    const handleFilterChange = (newFilter: Filter) => {
-        haptic.selection();
-        setFilter(newFilter);
-    };
-
-    const handleTabChange = (newTab: Tab) => {
-        haptic.selection();
-        setTab(newTab);
-        if (newTab === 'market') { setFilter('all'); clearSearch(); }
-    };
-
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-background text-foreground pb-28">
-            {/* ── Header ── */}
-            <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl">
+        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
+            <Box sx={{ position: 'sticky', top: 0, zIndex: 40, bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)', px: 2, pt: 1.8, pb: 1.2 }}>
+                <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 1.4 }}>
+                        <Box>
+                            <Typography fontSize={28} fontWeight={760} lineHeight={1.05}>
+                                Места
+                            </Typography>
+                            <Typography fontSize={13.5} fontWeight={520} color="#77736B">
+                                подписки и семейные слоты
+                            </Typography>
+                        </Box>
+                        {tab === 'market' && total > 0 && <Chip label={`${total} сейчас`} sx={{ bgcolor: '#fff', color: '#111' }} />}
+                    </Box>
 
-                {/* Title */}
-                <div className="flex items-baseline gap-2 px-5 pt-5 pb-3">
-                    <h1 className="text-[28px] font-bold tracking-tight leading-none">Клубы</h1>
-                    {tab === 'market' && total > 0 && (
-                        <span className="text-[13px] text-default-400 font-medium">{total}</span>
-                    )}
-                </div>
+                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); if (v === 'market') { setFilter('all'); clearSearch(); } }} sx={{ minHeight: 40, mb: 1.2 }}>
+                        <Tab value="market" label="Маркет" />
+                        <Tab value="my" label="Мои" />
+                    </Tabs>
 
-                {/* Tab switcher */}
-                <div className="px-5 pb-3">
-                    <div className="flex p-[3px] bg-default-100 rounded-2xl">
-                        {([
-                            { id: 'market' as Tab, label: 'Все клубы' },
-                            { id: 'my' as Tab, label: 'Мои клубы' },
-                        ]).map(({ id, label }) => (
-                            <button
-                                key={id}
-                                onClick={() => handleTabChange(id)}
-                                className={cn(
-                                    'flex-1 py-2 text-[13px] font-semibold rounded-[13px] transition-all duration-150',
-                                    tab === id
-                                        ? 'bg-primary text-white shadow-sm'
-                                        : 'text-default-400'
+                    {tab === 'market' && (
+                        <Stack spacing={1}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#fff', borderRadius: '20px', px: 1.4, height: 48 }}>
+                                <SearchRoundedIcon sx={{ fontSize: 21, color: '#77736B' }} />
+                                <InputBase value={searchInput} onChange={e => handleSearchChange(e.target.value)} placeholder="YouTube, Яндекс, Beeline..." sx={{ flex: 1, fontSize: 15, '& input': { p: 0 } }} />
+                                {searchInput && (
+                                    <Box onClick={clearSearch} sx={{ cursor: 'pointer', display: 'grid', placeItems: 'center', width: 24, height: 24, borderRadius: '50%', bgcolor: '#F2F1EC' }}>
+                                        <CloseRoundedIcon sx={{ fontSize: 15 }} />
+                                    </Box>
                                 )}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            </Box>
 
-                {/* Search + filters — market only */}
-                {tab === 'market' && (
-                    <div className="px-5 pb-3 space-y-2.5">
-                        {/* Search bar */}
-                        <div className="flex items-center gap-2 bg-default-100 rounded-2xl px-3.5 h-10">
-                            <MSIcon name="search" size={17} className="text-default-400 flex-shrink-0" />
-                            <input
-                                type="text"
-                                value={searchInput}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                                placeholder="YouTube, Spotify, Beeline..."
-                                className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-default-400 outline-none min-w-0"
-                            />
-                            {searchInput && (
-                                <button onClick={clearSearch} className="flex-shrink-0 w-5 h-5 rounded-full bg-default-300 flex items-center justify-center">
-                                    <MSIcon name="close" size={12} className="text-default-600" />
-                                </button>
+                            {!searchInput && (
+                                <Box sx={{ display: 'flex', gap: 0.8, overflowX: 'auto', pb: 0.2 }}>
+                                    {filters.map(item => (
+                                        <Chip
+                                            key={item.id}
+                                            label={item.label}
+                                            clickable
+                                            onClick={() => { haptic.selection(); setFilter(item.id); }}
+                                            sx={{
+                                                bgcolor: filter === item.id ? '#111' : '#fff',
+                                                color: filter === item.id ? '#fff' : '#111',
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
                             )}
-                        </div>
+                        </Stack>
+                    )}
+                </Box>
+            </Box>
 
-                        {/* Category pills — hide during search */}
-                        {!searchInput && (
-                            <div className="flex gap-2">
-                                {([
-                                    { id: 'all', label: 'Все' },
-                                    { id: 'digital', label: 'Сервисы' },
-                                    { id: 'telecom', label: 'Связь' },
-                                ] as { id: Filter; label: string }[]).map(({ id, label }) => (
-                                    <button
-                                        key={id}
-                                        onClick={() => handleFilterChange(id)}
-                                        className={cn(
-                                            'px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150',
-                                            filter === id
-                                                ? 'bg-primary text-white'
-                                                : 'bg-default-100 text-default-400'
-                                        )}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="h-px bg-divider" />
-            </div>
-
-            <main className="flex-1 px-4 pt-4 w-full">
-                {/* ── Маркет ── */}
+            <Box sx={{ px: 2, pt: 1.4, maxWidth: 600, mx: 'auto' }}>
                 {tab === 'market' && (
-                    <>
-                        {isLoading && (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map(i => (
-                                    <Card key={i} className="bg-content1 shadow-sm">
-                                        <CardBody className="p-4 flex-row gap-4 items-center">
-                                            <Skeleton className="w-12 h-12 rounded-xl flex-shrink-0" />
-                                            <div className="flex-1 space-y-2">
-                                                <Skeleton className="h-5 w-32 rounded-lg" />
-                                                <Skeleton className="h-3 w-24 rounded-md" />
-                                            </div>
-                                            <Skeleton className="h-8 w-16 rounded-lg" />
-                                        </CardBody>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-
-                        {error && (
-                            <Card className="mx-1 mt-4 border-none bg-danger/10 shadow-sm">
-                                <CardBody className="py-12 items-center justify-center text-center">
-                                    <div className="w-16 h-16 rounded-full bg-danger/20 text-danger flex items-center justify-center mb-4">
-                                        <MSIcon name="cancel" size={32} filled />
-                                    </div>
-                                    <p className="text-danger font-semibold text-lg mb-1">Ошибка загрузки</p>
-                                    <p className="text-default-500 text-sm mb-6">Проверьте подключение к интернету</p>
-                                    <Button color="danger" variant="flat" onPress={() => refetch()} className="font-medium">
-                                        Повторить
-                                    </Button>
-                                </CardBody>
-                            </Card>
-                        )}
-
+                    <Stack spacing={1}>
+                        {isLoading && [1, 2, 3].map(i => <ClubCardSkeleton key={i} />)}
+                        {error && <ErrorState title="Не загрузили предложения" action="Повторить" onClick={() => refetch()} />}
                         {!isLoading && !error && clubs.length === 0 && (
-                            <div className="pt-8">
-                                <EmptyState
-                                    title="Клубы не найдены"
-                                    description={searchQuery ? `Нет клубов по запросу «${searchQuery}»` : filter !== 'all' ? 'Попробуйте другой фильтр или создайте свой клуб' : 'Станьте первым — создайте клуб!'}
-                                    iconName="grid_view"
-                                    actionLabel="Создать клуб"
-                                    onAction={() => navigate('/clubs/create')}
-                                />
-                            </div>
+                            <EmptyState
+                                title="Пока ничего нет"
+                                body={searchQuery ? `Нет предложений по запросу «${searchQuery}»` : 'Попробуйте другой фильтр или создайте первое предложение.'}
+                                action="Создать"
+                                onClick={() => navigate('/clubs/create')}
+                            />
                         )}
-
-                        {!isLoading && !error && clubs.length > 0 && (
-                            <div className="space-y-3">
-                                {clubs.map((club) => (
-                                    <ClubCard key={club.club_id} club={club} />
-                                ))}
-                            </div>
-                        )}
-                    </>
+                        {!isLoading && !error && clubs.map(club => <ClubCard key={club.club_id} club={club} />)}
+                    </Stack>
                 )}
 
-                {/* ── Мои клубы ── */}
                 {tab === 'my' && (
-                    <>
-                        {myLoading && (
-                            <div className="space-y-3">
-                                {[1, 2].map(i => (
-                                    <Card key={i} className="bg-content1 shadow-sm">
-                                        <CardBody className="p-4 flex-row gap-4 items-center">
-                                            <Skeleton className="w-12 h-12 rounded-xl flex-shrink-0" />
-                                            <div className="flex-1 space-y-2">
-                                                <Skeleton className="h-5 w-32 rounded-lg" />
-                                                <Skeleton className="h-3 w-24 rounded-md" />
-                                            </div>
-                                            <Skeleton className="h-8 w-16 rounded-lg" />
-                                        </CardBody>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-
-                        {myError && (
-                            <Card className="mx-1 mt-4 border-none bg-danger/10 shadow-sm">
-                                <CardBody className="py-12 items-center justify-center text-center">
-                                    <div className="w-16 h-16 rounded-full bg-danger/20 text-danger flex items-center justify-center mb-4">
-                                        <MSIcon name="cancel" size={32} filled />
-                                    </div>
-                                    <p className="text-danger font-semibold text-lg mb-1">Ошибка загрузки</p>
-                                    <p className="text-default-500 text-sm mb-6">Проверьте подключение к интернету</p>
-                                    <Button color="danger" variant="flat" onPress={() => myRefetch()} className="font-medium">
-                                        Повторить
-                                    </Button>
-                                </CardBody>
-                            </Card>
-                        )}
-
+                    <Stack spacing={1}>
+                        {myLoading && [1, 2].map(i => <ClubCardSkeleton key={i} />)}
+                        {myError && <ErrorState title="Не загрузили ваши места" action="Повторить" onClick={() => myRefetch()} />}
                         {!myLoading && !myError && (!myClubs || myClubs.length === 0) && (
-                            <div className="pt-8">
-                                <EmptyState
-                                    title="Нет клубов"
-                                    description="Вступите в клуб или создайте свой"
-                                    iconName="group"
-                                    actionLabel="Найти клуб"
-                                    onAction={() => handleTabChange('market')}
-                                />
-                            </div>
+                            <EmptyState title="Мест пока нет" body="Вступите в клуб или создайте свое предложение." action="Открыть маркет" onClick={() => setTab('market')} />
                         )}
-
-                        {!myLoading && !myError && myClubs && myClubs.length > 0 && (
-                            <div className="space-y-3">
-                                {myClubs.map((club) => (
-                                    <ClubCard key={club.club_id} club={club} />
-                                ))}
-                            </div>
-                        )}
-                    </>
+                        {!myLoading && !myError && myClubs?.map(club => <ClubCard key={club.club_id} club={club} />)}
+                    </Stack>
                 )}
-            </main>
+            </Box>
 
-            {/* FAB — создать клуб */}
-            <Link
-                to="/clubs/create"
-                className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-5 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform active:scale-95 duration-200 z-50 hover:bg-primary/90"
-                onClick={() => haptic.impact('medium')}
-            >
-                <MSIcon name="add" size={24} weight={600} />
-            </Link>
-        </div>
+            <Fab component={Link} to="/clubs/create" onClick={() => haptic.impact('medium')} sx={{ position: 'fixed', bottom: 'calc(84px + env(safe-area-inset-bottom))', right: 20, zIndex: 50, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }} size="medium">
+                <AddRoundedIcon />
+            </Fab>
+        </Box>
     );
 }
 
@@ -277,85 +165,79 @@ function ClubCard({ club }: { club: Club }) {
     const haptic = useHaptic();
     const isFull = club.status === 'full';
     const isFrozen = club.status === 'frozen';
-    const isDigital = club.category === 'digital';
     const spotsFree = club.max_members - club.current_members;
 
     return (
-        <Card
-            as={Link}
-            to={`/clubs/${club.club_id}`}
-            isPressable
-            className="w-full"
-            onPress={() => haptic.impact('light')}
-            shadow="sm"
-        >
-            <CardBody className="p-3 flex flex-row items-center gap-4 overflow-hidden">
-                {/* Icon */}
-                <div className={cn(
-                    "w-12 h-12 shrink-0 rounded-xl flex items-center justify-center overflow-hidden",
-                    isDigital ? "bg-blue-500/10 text-blue-500" : "bg-purple-500/10 text-purple-500"
-                )}>
-                    {club.subscription.icon_url ? (
-                        <img
-                            src={club.subscription.icon_url}
-                            alt={club.subscription.service_name}
-                            className="w-8 h-8 rounded-lg object-cover"
-                        />
-                    ) : (
-                        <span className="text-xl font-bold">
-                            {club.subscription.service_name.charAt(0)}
-                        </span>
-                    )}
-                </div>
+        <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '24px' }}>
+            <CardActionArea component={Link} to={`/clubs/${club.club_id}`} onClick={() => haptic.impact('light')} sx={{ p: 1.45, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <Avatar src={club.subscription.icon_url || undefined} alt={club.subscription.service_name} variant="rounded" sx={{ width: 48, height: 48, borderRadius: '17px', bgcolor: '#FFE15A', color: '#111', fontSize: 20, fontWeight: 720, '& img': { objectFit: 'contain' } }}>
+                    {club.subscription.service_name.charAt(0)}
+                </Avatar>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <h3 className="font-semibold text-sm truncate leading-tight text-foreground mb-1">
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography fontWeight={720} fontSize={15.5} lineHeight={1.2} noWrap>
                         {club.subscription.service_name}
-                    </h3>
-                    <div className="flex items-center gap-1.5 overflow-hidden">
-                        <div className="flex items-center text-xs font-medium text-default-500 gap-1 truncate shrink-0">
-                            <MSIcon name="group" size={14} className="shrink-0" />
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.65, mt: 0.45 }}>
+                        <GroupRoundedIcon sx={{ fontSize: 14, color: '#77736B' }} />
+                        <Typography fontSize={12.5} color="#77736B" fontWeight={520}>
                             {club.current_members}/{club.max_members}
-                        </div>
-
+                        </Typography>
                         {!isFull && !isFrozen && spotsFree > 0 && (
-                            <>
-                                <span className="w-1 h-1 rounded-full bg-default-300 shrink-0 mx-0.5" />
-                                <span className="text-xs font-medium text-success truncate shrink-0 block">
-                                    {spotsFree} мест
-                                </span>
-                            </>
+                            <Typography fontSize={12.5} color="#2E7D32" fontWeight={650}>
+                                · {spotsFree} мест
+                            </Typography>
                         )}
-                    </div>
-                </div>
+                    </Box>
+                </Box>
 
-                {/* Price & Status */}
-                <div className="text-right flex flex-col items-end gap-1.5 shrink-0 pl-2">
-                    <div className="font-bold text-base leading-none text-foreground flex items-center gap-0.5">
-                        {Math.round(club.price_per_member)}
-                        <span className="text-xs font-semibold text-default-500 relative top-[1px]">₸</span>
-                    </div>
-
-                    <div className="flex justify-end h-5">
-                        {isFull && (
-                            <Chip size="sm" color="warning" variant="flat" className="h-5 text-[10px] px-1 font-bold tracking-wider uppercase border-none">
-                                Full
-                            </Chip>
-                        )}
-                        {isFrozen && (
-                            <Chip size="sm" color="danger" variant="flat" className="h-5 text-[10px] px-1 font-bold tracking-wider uppercase border-none">
-                                Paused
-                            </Chip>
-                        )}
-                        {!isFull && !isFrozen && (
-                            <span className="text-[10px] text-default-400 font-semibold uppercase tracking-wider relative top-[2px]">
-                                /мес
-                            </span>
-                        )}
-                    </div>
-                </div>
-            </CardBody>
+                <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                    <Typography fontWeight={760} fontSize={16} lineHeight={1.1}>
+                        {Math.round(club.price_per_member)} ₸
+                    </Typography>
+                    {isFull && <Chip label="занято" size="small" sx={{ mt: 0.4, height: 20, bgcolor: '#F2F1EC' }} />}
+                    {isFrozen && <Chip label="пауза" size="small" sx={{ mt: 0.4, height: 20, bgcolor: '#FFE0D6' }} />}
+                    {!isFull && !isFrozen && <Typography fontSize={11.5} color="#77736B" fontWeight={520}>/мес</Typography>}
+                </Box>
+            </CardActionArea>
         </Card>
     );
 }
+
+function ClubCardSkeleton() {
+    return (
+        <Card sx={{ bgcolor: '#fff', border: 0, borderRadius: '24px' }}>
+            <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.4, p: 1.5 }}>
+                <Skeleton variant="rounded" width={48} height={48} sx={{ borderRadius: '17px' }} />
+                <Box sx={{ flex: 1 }}>
+                    <Skeleton variant="text" width={140} height={22} />
+                    <Skeleton variant="text" width={90} height={16} />
+                </Box>
+                <Skeleton variant="rounded" width={64} height={34} />
+            </CardContent>
+        </Card>
+    );
+}
+
+function EmptyState({ title, body, action, onClick }: { title: string; body: string; action: string; onClick: () => void }) {
+    return (
+        <Box sx={{ textAlign: 'center', py: 7, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
+            <GridViewRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
+            <Typography fontSize={18} fontWeight={720}>{title}</Typography>
+            <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5, mb: 2 }}>{body}</Typography>
+            <Button onClick={onClick} sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>{action}</Button>
+        </Box>
+    );
+}
+
+function ErrorState({ title, action, onClick }: { title: string; action: string; onClick: () => void }) {
+    return (
+        <Box sx={{ textAlign: 'center', py: 7, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
+            <ErrorOutlineRoundedIcon sx={{ fontSize: 44, color: '#D84315', mb: 1 }} />
+            <Typography fontSize={18} fontWeight={720}>{title}</Typography>
+            <Button onClick={onClick} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>{action}</Button>
+        </Box>
+    );
+}
+
+export default ClubsPage;

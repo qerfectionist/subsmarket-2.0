@@ -4,11 +4,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TelegramProvider } from '@/app/providers/TelegramProvider';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Layout } from '@/shared/ui/Layout';
-import { HeroUIProvider } from '@heroui/react';
-import { useNavigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { muiTheme } from '@/app/muiTheme';
 
-// Lazy loaded pages for code splitting
+// Lazy loaded pages
 const HomePage = lazy(() => import('@/features/home/pages/HomePage').then(m => ({ default: m.HomePage })));
+const OnboardingPage = lazy(() => import('@/features/home/pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(m => ({ default: m.ClubsPage })));
 const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(m => ({ default: m.ClubDetailsPage })));
 const CreateClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateClubPage })));
@@ -25,12 +26,10 @@ const DealsListPage = lazy(() => import('@/features/deals/pages/DealsListPage'))
 const AdminPanelPage = lazy(() => import('@/pages/Admin/AdminPanelPage'));
 const ClubRequestsPage = lazy(() => import('@/features/clubs/pages/ClubRequestsPage').then(m => ({ default: m.ClubRequestsPage })));
 
-
-// Loading fallback component
 function PageLoader() {
     return (
-        <div className="flex items-center justify-center min-h-[50vh]">
-            <div className="animate-pulse text-secondary">Загрузка...</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
+            Загрузка...
         </div>
     );
 }
@@ -38,8 +37,8 @@ function PageLoader() {
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 60 * 1000,         // 1 minute
-            gcTime: 5 * 60 * 1000,        // 5 minutes
+            staleTime: 60 * 1000,
+            gcTime: 5 * 60 * 1000,
             refetchOnWindowFocus: false,
             retry: 1,
         },
@@ -47,42 +46,39 @@ const queryClient = new QueryClient({
 });
 
 function AppRoutes() {
-    const navigate = useNavigate();
-
     return (
-        <HeroUIProvider navigate={navigate} useHref={(href) => href}>
-            <Suspense fallback={<PageLoader />}>
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={<HomePage />} />
-                        <Route path="clubs" element={<ClubsPage />} />
-                        <Route path="clubs/create" element={<CreateClubPage />} />
-                        <Route path="clubs/:id" element={<ClubDetailsPage />} />
-                        <Route path="clubs/:id/requests" element={<ClubRequestsPage />} />
-                        <Route path="gb-market" element={<GBMarketPage />} />
-                        <Route path="gb-market/create" element={<CreateListingPage />} />
-                        <Route path="accounts" element={<AccountsPage />} />
-                        <Route path="profile" element={<ProfilePage />} />
-                        <Route path="report" element={<ReportUserPage />} />
-                        <Route path="demo" element={<DemoPage />} />
-                        <Route path="tools/receipt-analyzer" element={<ReceiptAnalyzerPage />} />
-                        <Route path="my-clubs" element={<ClubsPage />} /> {/* Reuse with filter */}
-                        <Route path="admin/complaints" element={<ComplaintsPage />} />
-                        <Route path="admin" element={<AdminPanelPage />} />
-                        {/* Deals */}
-                        <Route path="deals" element={<DealsListPage />} />
-                        <Route path="deals/:dealId" element={<DealPage />} />
-                    </Route>
-                </Routes>
-            </Suspense>
-        </HeroUIProvider>
+        <Suspense fallback={<PageLoader />}>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="onboarding" element={<OnboardingPage />} />
+                    <Route path="clubs" element={<ClubsPage />} />
+                    <Route path="clubs/create" element={<CreateClubPage />} />
+                    <Route path="clubs/:id" element={<ClubDetailsPage />} />
+                    <Route path="clubs/:id/requests" element={<ClubRequestsPage />} />
+                    <Route path="gb-market" element={<GBMarketPage />} />
+                    <Route path="gb-market/create" element={<CreateListingPage />} />
+                    <Route path="accounts" element={<AccountsPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="report" element={<ReportUserPage />} />
+                    <Route path="demo" element={<DemoPage />} />
+                    <Route path="tools/receipt-analyzer" element={<ReceiptAnalyzerPage />} />
+                    <Route path="my-clubs" element={<ClubsPage />} />
+                    <Route path="admin/complaints" element={<ComplaintsPage />} />
+                    <Route path="admin" element={<AdminPanelPage />} />
+                    <Route path="deals" element={<DealsListPage />} />
+                    <Route path="deals/:dealId" element={<DealPage />} />
+                </Route>
+            </Routes>
+        </Suspense>
     );
 }
 
 function App() {
     return (
         <ErrorBoundary>
-            <div className="dark bg-background text-foreground min-h-screen font-sans antialiased">
+            <ThemeProvider theme={muiTheme}>
+                <CssBaseline />
                 <TelegramProvider>
                     <QueryClientProvider client={queryClient}>
                         <BrowserRouter>
@@ -90,7 +86,7 @@ function App() {
                         </BrowserRouter>
                     </QueryClientProvider>
                 </TelegramProvider>
-            </div>
+            </ThemeProvider>
         </ErrorBoundary>
     );
 }

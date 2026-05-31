@@ -1,11 +1,29 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, AccountOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { useTelegram } from '@/shared/hooks/useTelegram';
-import { Tabs, Tab, Button, Card, CardBody, Input, Select, SelectItem, Textarea, Chip } from "@heroui/react";
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    MenuItem,
+    Stack,
+    Tab,
+    Tabs,
+    TextField,
+    Typography,
+} from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import KeyRoundedIcon from '@mui/icons-material/KeyRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
 type TabKey = 'buy' | 'sell';
+
+const categoryOptions = ['Streaming', 'Cloud', 'AI', 'Gaming', 'VPN', 'Other'];
 
 export function AccountsPage() {
     const [tab, setTab] = useState<TabKey>('buy');
@@ -13,73 +31,58 @@ export function AccountsPage() {
     const { webapp } = useTelegram();
     const user = webapp?.initDataUnsafe?.user;
 
-    // Fetch offers
     const { data: offers = [], isLoading, refetch } = useQuery({
         queryKey: ['account-offers'],
         queryFn: () => api.getAccountOffers(),
         refetchInterval: 10000,
     });
 
-    const handleTabChange = (key: React.Key) => {
-        haptic.selection();
-        setTab(key as TabKey);
-    };
-
     return (
-        <div className="p-4 pb-28 min-h-[100dvh] bg-background text-foreground">
-            {/* Header */}
-            <header className="mb-6 pt-2">
-                <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 text-foreground">
-                    🔐 Accounts Market
-                </h1>
-                <p className="text-default-500 text-sm mt-1 font-medium tracking-wide">
-                    Buy and sell digital accounts safely.
-                </p>
-            </header>
+        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
+            <Box sx={{ position: 'sticky', top: 0, zIndex: 40, bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)', px: 2, pt: 1.8, pb: 1.2 }}>
+                <Box sx={{ maxWidth: 600, mx: 'auto' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.4 }}>
+                        <Box>
+                            <Typography fontSize={28} fontWeight={760} lineHeight={1.05}>
+                                Доступы
+                            </Typography>
+                            <Typography fontSize={13.5} fontWeight={520} color="#77736B">
+                                инвайты, слоты и цифровые предложения
+                            </Typography>
+                        </Box>
+                        <Chip label="safe" sx={{ bgcolor: '#D8C7FF', color: '#111' }} />
+                    </Box>
 
-            {/* Tabs */}
-            <Tabs
-                fullWidth
-                size="md"
-                selectedKey={tab}
-                onSelectionChange={handleTabChange}
-                className="mb-6"
-                color="primary"
-                variant="bordered"
-            >
-                <Tab key="buy" title="Buy" />
-                <Tab key="sell" title="Sell" />
-            </Tabs>
+                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); }} sx={{ minHeight: 40 }}>
+                        <Tab value="buy" label="Маркет" />
+                        <Tab value="sell" label="Создать" />
+                    </Tabs>
+                </Box>
+            </Box>
 
-            {/* Content */}
-            {tab === 'buy' && (
-                <div className="space-y-3">
-                    {isLoading && <div className="text-center py-10 text-default-400 font-medium">Loading offers...</div>}
+            <Box sx={{ px: 2, pt: 1.4, maxWidth: 600, mx: 'auto' }}>
+                {tab === 'buy' && (
+                    <Stack spacing={1}>
+                        {isLoading && (
+                            <Box sx={{ textAlign: 'center', py: 8 }}>
+                                <CircularProgress size={32} sx={{ color: '#111' }} />
+                            </Box>
+                        )}
+                        {!isLoading && offers.length === 0 && (
+                            <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
+                                <KeyRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
+                                <Typography fontSize={18} fontWeight={720}>Пока нет предложений</Typography>
+                                <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Создайте первое предложение по сервису или инвайту.</Typography>
+                                <Button onClick={() => setTab('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>Создать</Button>
+                            </Box>
+                        )}
+                        {offers.map(offer => <AccountCard key={offer.offer_id} offer={offer} currentUserId={user?.id} />)}
+                    </Stack>
+                )}
 
-                    {!isLoading && offers.length === 0 && (
-                        <div className="text-center py-12 text-default-400 bg-content1 rounded-2xl border border-default-100 shadow-sm">
-                            <div className="text-4xl mb-3 text-default-300">📭</div>
-                            <span className="font-semibold text-sm">No active offers found.</span>
-                        </div>
-                    )}
-
-                    {offers.map(offer => (
-                        <AccountCard
-                            key={offer.offer_id}
-                            offer={offer}
-                            currentUserId={user?.id}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {tab === 'sell' && (
-                <SellAccountForm onSuccess={() => {
-                    handleTabChange('buy');
-                    refetch();
-                }} />
-            )}
-        </div>
+                {tab === 'sell' && <SellAccountForm onSuccess={() => { setTab('buy'); refetch(); }} />}
+            </Box>
+        </Box>
     );
 }
 
@@ -89,183 +92,113 @@ function AccountCard({ offer, currentUserId }: { offer: AccountOffer; currentUse
     const queryClient = useQueryClient();
 
     const buyMutation = useMutation({
-        mutationFn: () => api.createDeal({
-            offer_type: 'account',
-            offer_id: offer.offer_id,
-            amount: offer.price
-        }),
+        mutationFn: () => api.createDeal({ offer_type: 'account', offer_id: offer.offer_id, amount: offer.price }),
         onSuccess: (deal) => {
             haptic.notification('success');
-            alert(`Deal #${deal.deal_id.slice(0, 8)} created!\nCheck "My Deals" tab.`);
+            alert(`Сделка #${deal.deal_id.slice(0, 8)} создана. Проверьте раздел сделок.`);
             queryClient.invalidateQueries({ queryKey: ['account-offers'] });
         },
         onError: (e) => {
             haptic.notification('error');
             console.error(e);
-            alert('Failed to create deal');
-        }
+            alert('Не удалось создать сделку');
+        },
     });
 
     const handleBuy = async () => {
         haptic.impact('medium');
-        const confirmed = await showConfirm(`Buy "${offer.title}" for ${offer.price} ₸?`);
-        if (!confirmed) return;
-        buyMutation.mutate();
+        const confirmed = await showConfirm(`Оформить "${offer.title}" за ${offer.price} ₸?`);
+        if (confirmed) buyMutation.mutate();
     };
 
     const isOwner = currentUserId === offer.seller_id;
 
     return (
-        <Card shadow="sm" className="bg-content1 border-none mb-3">
-            <CardBody className="p-4">
-                <div className="flex justify-between items-start mb-3">
-                    <div>
-                        <Chip size="sm" variant="flat" color="primary" className="mb-2 font-bold tracking-wider uppercase text-[9px]">
-                            {offer.service_category}
-                        </Chip>
-                        <h3 className="font-bold text-base leading-tight text-foreground line-clamp-2">{offer.title}</h3>
-                    </div>
-                    <div className="text-lg font-bold text-foreground bg-default-100 px-2 py-1 rounded-lg tabular-nums tracking-tight flex-shrink-0">
-                        {offer.price} <span className="text-sm font-medium text-default-400">₸</span>
-                    </div>
-                </div>
+        <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '24px' }}>
+            <CardContent sx={{ p: 1.6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.2, mb: 1.2 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                        <Chip label={offer.service_category} size="small" sx={{ height: 22, bgcolor: '#D8C7FF', color: '#111', mb: 0.8 }} />
+                        <Typography fontWeight={720} fontSize={16} lineHeight={1.25}>
+                            {offer.title}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ bgcolor: '#F2F1EC', px: 1.3, py: 0.75, borderRadius: '16px', flexShrink: 0 }}>
+                        <Typography fontWeight={760} fontSize={16}>{offer.price} ₸</Typography>
+                    </Box>
+                </Box>
 
-                <p className="text-sm text-default-500 mb-4 line-clamp-3 bg-content2 p-3 rounded-xl border-none leading-relaxed">
+                <Typography fontSize={13.5} color="#77736B" lineHeight={1.45} sx={{ mb: 1.4, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
                     {offer.description}
-                </p>
+                </Typography>
 
-                <div className="flex justify-between items-center mt-2 pt-3 border-t border-default-100">
-                    <span className="text-[10px] font-mono text-default-400">SELLER #{offer.seller_id}</span>
-
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, pt: 1.2, borderTop: '1px solid #F0EEE8' }}>
+                    <Typography fontSize={12} color="#77736B" fontWeight={520}>продавец #{offer.seller_id}</Typography>
                     {!isOwner && (
-                        <Button
-                            onPress={handleBuy}
-                            color="primary"
-                            variant="flat"
-                            size="sm"
-                            className="font-bold tracking-wide"
-                            isLoading={buyMutation.isPending}
-                        >
-                            Buy Now
+                        <Button size="small" disabled={buyMutation.isPending} onClick={handleBuy} sx={{ bgcolor: '#111', color: '#fff', px: 1.6, '&:hover': { bgcolor: '#222' } }}>
+                            {buyMutation.isPending ? 'Создаем...' : 'Оформить'}
                         </Button>
                     )}
-                    {isOwner && (
-                        <Chip size="sm" variant="dot" color="success" className="font-medium text-xs border-none">
-                            Your Offer
-                        </Chip>
-                    )}
-                </div>
-            </CardBody>
+                    {isOwner && <Chip size="small" label="ваше" sx={{ bgcolor: '#B9F27D' }} />}
+                </Box>
+            </CardContent>
         </Card>
     );
 }
 
 function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
     const [title, setTitle] = useState('');
-    const [category, setCategory] = useState('Gaming');
+    const [category, setCategory] = useState('Streaming');
     const [price, setPrice] = useState('');
     const [desc, setDesc] = useState('');
     const haptic = useHaptic();
 
     const createMutation = useMutation({
-        mutationFn: () => api.createAccountOffer({
-            title,
-            service_category: category,
-            price: Number(price),
-            description: desc
-        }),
+        mutationFn: () => api.createAccountOffer({ title, service_category: category, price: Number(price), description: desc }),
         onSuccess: () => {
             haptic.notification('success');
-            alert('Offer created successfully!');
+            alert('Предложение опубликовано');
             onSuccess();
         },
         onError: (e) => {
             haptic.notification('error');
-            alert('Error creating offer');
+            alert('Не удалось создать предложение');
             console.error(e);
-        }
+        },
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        createMutation.mutate();
-    };
-
-    const categoryOptions = [
-        { value: 'Gaming', label: 'Gaming' },
-        { value: 'VPN', label: 'VPN' },
-        { value: 'Streaming', label: 'Streaming' },
-        { value: 'Social', label: 'Social Media' },
-        { value: 'Other', label: 'Other' },
-    ];
-
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <Card shadow="sm" className="bg-content1 pb-4">
-                <CardBody className="p-5 space-y-4">
-                    <Input
-                        label="Title"
-                        value={title}
-                        onValueChange={setTitle}
-                        placeholder="e.g. Steam GTA V"
-                        isRequired
-                        variant="bordered"
-                    />
-
-                    <Select
-                        label="Category"
-                        selectedKeys={[category]}
-                        onChange={(e) => setCategory(e.target.value)}
-                        variant="bordered"
-                    >
-                        {categoryOptions.map(opt => (
-                            <SelectItem key={opt.value}>
-                                {opt.label}
-                            </SelectItem>
-                        ))}
-                    </Select>
-
-                    <Input
-                        type="number"
-                        label="Price"
-                        value={price}
-                        onValueChange={setPrice}
-                        placeholder="5000"
-                        min="100"
-                        isRequired
-                        variant="bordered"
-                        endContent={<span className="text-default-400 text-sm">₸</span>}
-                    />
-
-                    <Textarea
-                        label="Description"
-                        value={desc}
-                        onValueChange={setDesc}
-                        placeholder="Describe what is included..."
-                        isRequired
-                        variant="bordered"
-                        minRows={3}
-                        maxRows={5}
-                    />
-
-                    <Button
-                        type="submit"
-                        isLoading={createMutation.isPending}
-                        className="w-full text-base font-bold mt-2"
-                        color="primary"
-                        size="lg"
-                    >
-                        {createMutation.isPending ? 'Publishing...' : 'Publish Offer'}
-                    </Button>
-
-                    <div className="bg-warning-50 border-none p-3 rounded-xl mt-4">
-                        <p className="text-[11px] text-warning-600 font-medium text-center leading-relaxed">
-                            Credentials are shared via chat after payment.
-                            <br />Do not share passwords here!
-                        </p>
-                    </div>
-                </CardBody>
+        <Stack spacing={1.2} component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); createMutation.mutate(); }}>
+            <Card sx={{ bgcolor: '#D8C7FF', color: '#111', border: 0, borderRadius: '30px' }}>
+                <CardContent sx={{ p: 2.2 }}>
+                    <Typography fontSize={25} fontWeight={760} lineHeight={1.06}>Создать доступ</Typography>
+                    <Typography fontSize={14} color="rgba(0,0,0,0.58)" sx={{ mt: 0.8 }}>Опишите сервис, срок и условия. Логины и коды передавайте только после сделки.</Typography>
+                </CardContent>
             </Card>
-        </form>
+
+            <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px' }}>
+                <CardContent sx={{ p: 2 }}>
+                    <Stack spacing={1.4}>
+                        <TextField label="Название" value={title} onChange={e => setTitle(e.target.value)} placeholder="Google One 2 ТБ, инвайт" required fullWidth />
+                        <TextField select label="Категория" value={category} onChange={e => setCategory(e.target.value)} fullWidth>
+                            {categoryOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+                        </TextField>
+                        <TextField type="number" label="Цена" value={price} onChange={e => setPrice(e.target.value)} placeholder="5000" required fullWidth InputProps={{ endAdornment: <Typography color="#77736B" ml={0.5}>₸</Typography> }} />
+                        <TextField label="Описание" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Что входит, срок, условия передачи" required fullWidth multiline minRows={3} maxRows={5} />
+                    </Stack>
+                </CardContent>
+            </Card>
+
+            <Box sx={{ p: 1.6, bgcolor: '#fff', borderRadius: '22px', display: 'flex', gap: 1.1 }}>
+                <ShieldRoundedIcon sx={{ color: '#77736B', mt: 0.1 }} />
+                <Typography fontSize={12.5} color="#77736B" lineHeight={1.4}>Не публикуйте логины, пароли и коды в описании. Детали передаются после создания сделки.</Typography>
+            </Box>
+
+            <Button type="submit" size="large" disabled={createMutation.isPending} startIcon={<AddRoundedIcon />} sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>
+                {createMutation.isPending ? 'Публикуем...' : 'Опубликовать'}
+            </Button>
+        </Stack>
     );
 }
+
+export default AccountsPage;

@@ -3,23 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+    html,
+    #root {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, Arial, sans-serif;
+    }
+
     body {
-        @apply bg-black text-white antialiased;
-        /* ui-rounded = SF Pro Rounded на iOS/macOS                             */
-        /* Nunito Variable = единственный visibly-rounded + RU/KZ Cyrillic       */
-        font-family: ui-rounded, 'Nunito Variable', 'Nunito', system-ui, sans-serif;
+        @apply antialiased;
+        background: #F5F4EF;
+        color: #111111;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, Arial, sans-serif;
+        font-synthesis-weight: none;
+        font-optical-sizing: auto;
+        text-rendering: optimizeLegibility;
     }
 }
 
-
-/* Telegram Overrides */
 :root {
-    --tg-theme-bg-color: #000000;
-    --tg-theme-secondary-bg-color: #000000;
-    --tg-theme-text-color: #ffffff;
+    --tg-theme-bg-color: #F5F4EF;
+    --tg-theme-secondary-bg-color: #ffffff;
+    --tg-theme-text-color: #111111;
 }
 
-/* Material Symbols Rounded */
 .material-symbols-rounded {
     font-family: 'Material Symbols Rounded', sans-serif;
     font-style: normal;
@@ -33,7 +38,6 @@
     user-select: none;
 }
 
-/* Hide scrollbar but keep scroll */
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
