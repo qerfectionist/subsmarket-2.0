@@ -36,3 +36,4 @@ htmlcov/
 
 # Telegram exports (large HTML files)
 ChatExport_*/messages*.html
+.vercel
