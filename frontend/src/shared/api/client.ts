@@ -3,7 +3,7 @@
  * Uses Telegram initData for authentication.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1');
 
 /**
  * Get Telegram initData for authentication

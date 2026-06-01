@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd frontend && npm ci",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/**/*.py": {
+      "excludeFiles": "{data/**,docs/**,tools/**,vite-template/**,ChatExport_*/**,stash_content.txt,backend/tests/**,backend/test_*.py,frontend/node_modules/**,frontend/dist/**,**/*.tsbuildinfo}"
+    }
+  }
+}
