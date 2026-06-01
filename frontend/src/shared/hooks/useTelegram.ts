@@ -81,6 +81,7 @@ interface LocalTelegramWebApp {
     }, callback?: (buttonId: string) => void) => void;
     showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void;
     showAlert: (message: string, callback?: () => void) => void;
+    isVersionAtLeast?: (version: string) => boolean;
 }
 
 /**
@@ -97,8 +98,8 @@ export function useTelegram() {
             webapp.expand();
 
             // Set theme colors
-            webapp.setHeaderColor('#000000');
-            webapp.setBackgroundColor('#000000');
+            webapp.setHeaderColor('#F5F4EF');
+            webapp.setBackgroundColor('#F5F4EF');
         }
     }, [webapp]);
 
@@ -161,7 +162,7 @@ export function useTelegram() {
     // Popup
     const showPopup = useCallback((message: string, title?: string) => {
         return new Promise<string>((resolve) => {
-            if (webapp) {
+            if (webapp?.showPopup && webapp.isVersionAtLeast?.('6.2')) {
                 webapp.showPopup({
                     title,
                     message,
@@ -177,7 +178,7 @@ export function useTelegram() {
     // Confirm
     const showConfirm = useCallback((message: string) => {
         return new Promise<boolean>((resolve) => {
-            if (webapp) {
+            if (webapp?.showConfirm && webapp.isVersionAtLeast?.('6.2')) {
                 webapp.showConfirm(message, (confirmed: boolean) => resolve(confirmed));
             } else {
                 resolve(confirm(message));
