@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useHaptic } from '@/shared/hooks/useHaptic';
+import { preloadTab } from '@/app/routePreload';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
@@ -19,6 +20,12 @@ export function BottomNav() {
     const navigate = useNavigate();
     const haptic = useHaptic();
     const value = pathToValue(location.pathname);
+    const navItems = [
+        { value: 'home', label: 'Главная', icon: <HomeRoundedIcon /> },
+        { value: 'clubs', label: 'Места', icon: <GridViewRoundedIcon /> },
+        { value: 'gb', label: 'ГБ', icon: <StorefrontRoundedIcon /> },
+        { value: 'profile', label: 'Профиль', icon: <PersonRoundedIcon /> },
+    ];
 
     const handleChange = (_: React.SyntheticEvent, newValue: string) => {
         const paths: Record<string, string> = {
@@ -52,10 +59,16 @@ export function BottomNav() {
             elevation={0}
         >
             <BottomNavigation value={value} onChange={handleChange} showLabels>
-                <BottomNavigationAction value="home" label="Главная" icon={<HomeRoundedIcon />} />
-                <BottomNavigationAction value="clubs" label="Места" icon={<GridViewRoundedIcon />} />
-                <BottomNavigationAction value="gb" label="ГБ" icon={<StorefrontRoundedIcon />} />
-                <BottomNavigationAction value="profile" label="Профиль" icon={<PersonRoundedIcon />} />
+                {navItems.map(item => (
+                    <BottomNavigationAction
+                        key={item.value}
+                        value={item.value}
+                        label={item.label}
+                        icon={item.icon}
+                        onMouseEnter={() => preloadTab(item.value)}
+                        onTouchStart={() => preloadTab(item.value)}
+                    />
+                ))}
             </BottomNavigation>
         </Paper>
     );

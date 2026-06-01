@@ -34,7 +34,8 @@ export function AccountsPage() {
     const { data: offers = [], isLoading, refetch } = useQuery({
         queryKey: ['account-offers'],
         queryFn: () => api.getAccountOffers(),
-        refetchInterval: 10000,
+        staleTime: 2 * 60 * 1000,
+        refetchInterval: 60 * 1000,
     });
 
     return (

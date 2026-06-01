@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TelegramProvider } from '@/app/providers/TelegramProvider';
@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Layout } from '@/shared/ui/Layout';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { muiTheme } from '@/app/muiTheme';
+import { routePreloads, warmupCoreData } from '@/app/routePreload';
 
 // Lazy loaded pages
 const HomePage = lazy(() => import('@/features/home/pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -28,7 +29,7 @@ const ClubRequestsPage = lazy(() => import('@/features/clubs/pages/ClubRequestsP
 
 function PageLoader() {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', color: '#77736B', fontSize: 14 }}>
             Загрузка...
         </div>
     );
@@ -75,6 +76,19 @@ function AppRoutes() {
 }
 
 function App() {
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            routePreloads.clubs();
+            routePreloads.gb();
+            routePreloads.profile();
+            routePreloads.accounts();
+            routePreloads.deals();
+            warmupCoreData(queryClient);
+        }, 350);
+
+        return () => window.clearTimeout(timer);
+    }, []);
+
     return (
         <ErrorBoundary>
             <ThemeProvider theme={muiTheme}>

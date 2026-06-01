@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, Club } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import {
@@ -59,12 +59,15 @@ export function ClubsPage() {
         queryKey: ['clubs', filter, searchQuery],
         queryFn: () => api.getClubs({ ...(filter !== 'all' && { category: filter }), ...(searchQuery && { search: searchQuery }) }),
         enabled: tab === 'market',
+        placeholderData: keepPreviousData,
+        staleTime: 2 * 60 * 1000,
     });
 
     const { data: myClubs, isLoading: myLoading, error: myError, refetch: myRefetch } = useQuery({
         queryKey: ['clubs', 'my'],
         queryFn: () => api.getMyClubs(),
         enabled: tab === 'my',
+        staleTime: 2 * 60 * 1000,
     });
 
     const clubs = data?.items ?? [];

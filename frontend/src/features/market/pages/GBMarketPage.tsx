@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, CreateGigabyteOfferRequest, GigabyteOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { useTelegram } from '@/shared/hooks/useTelegram';
@@ -44,6 +44,8 @@ export function GBMarketPage() {
     const { data: offers = [], isLoading } = useQuery({
         queryKey: ['gb-offers', selectedOperator],
         queryFn: () => api.getGigabyteOffers(selectedOperator ? { operator: selectedOperator } : undefined),
+        placeholderData: keepPreviousData,
+        staleTime: 2 * 60 * 1000,
     });
 
     const createDealMutation = useMutation({
