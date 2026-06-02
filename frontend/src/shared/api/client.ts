@@ -240,11 +240,15 @@ export const api = {
         });
     },
 
-    async createTelegramGroupRequest(): Promise<{ request_id: string }> {
-        return apiFetch<{ request_id: string }>('/telegram/prepared-group-request', {
+    async createTelegramGroupRequest(): Promise<{ prepared_id: string; request_id: string }> {
+        return apiFetch<{ prepared_id: string; request_id: string }>('/telegram/prepared-group-request', {
             method: 'POST',
             body: JSON.stringify({}),
         });
+    },
+
+    async resolveTelegramGroupRequest(requestId: string): Promise<{ status: 'pending' | 'ready'; link: string | null }> {
+        return apiFetch<{ status: 'pending' | 'ready'; link: string | null }>(`/telegram/group-request/${requestId}`);
     },
 
     async joinClub(clubId: string, phoneNumber?: string): Promise<{ status: string; message: string }> {

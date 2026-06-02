@@ -395,6 +395,23 @@ export function CreateClubPage() {
         else window.open(url, '_blank');
     };
 
+    const waitForTelegramGroupLink = async (requestId: string): Promise<boolean> => {
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+            if (attempt > 0) {
+                await new Promise(resolve => window.setTimeout(resolve, 1500));
+            }
+
+            const resolved = await api.resolveTelegramGroupRequest(requestId);
+            if (resolved.status === 'ready' && resolved.link) {
+                setTgLink(resolved.link);
+                setBotAdmin(true);
+                return true;
+            }
+        }
+
+        return false;
+    };
+
     const requestTelegramGroup = async () => {
         const tg = (window as any).Telegram?.WebApp;
         haptic.impact('medium');
@@ -407,18 +424,33 @@ export function CreateClubPage() {
         setGroupRequesting(true);
         try {
             const prepared = await api.createTelegramGroupRequest();
-            tg.requestChat(prepared.request_id, (success: boolean) => {
-                if (success) {
-                    haptic.notification('success');
+            tg.requestChat(prepared.prepared_id, async (success: boolean) => {
+                if (!success) {
+                    setGroupRequesting(false);
+                    return;
+                }
+
+                try {
+                    const linked = await waitForTelegramGroupLink(prepared.request_id);
+                    if (linked) {
+                        haptic.notification('success');
+                    } else {
+                        haptic.notification('warning');
+                        setBotAdmin(true);
+                        tg.showAlert?.('Группа выбрана. Telegram пока не отдал ссылку автоматически — вставьте invite-ссылку вручную ниже.');
+                    }
+                } catch {
+                    haptic.notification('warning');
                     setBotAdmin(true);
-                    tg.showAlert?.('Группа выбрана или создана. Теперь скопируйте invite-ссылку группы и вставьте ее ниже.');
+                    tg.showAlert?.('Группа выбрана. Не удалось получить ссылку автоматически — вставьте invite-ссылку вручную ниже.');
+                } finally {
+                    setGroupRequesting(false);
                 }
             });
         } catch (e) {
             haptic.notification('error');
-            showAlert('Не удалось открыть создание группы. Обновите Telegram и попробуйте еще раз.');
-        } finally {
             setGroupRequesting(false);
+            showAlert('Не удалось открыть создание группы. Обновите Telegram и попробуйте еще раз.');
         }
     };
 
@@ -1038,10 +1070,10 @@ export function CreateClubPage() {
                                                     className="w-full h-13 rounded-[24px] bg-[#111] text-white flex items-center justify-center gap-2 text-sm font-black active:scale-[0.98] transition-transform disabled:opacity-60"
                                                 >
                                                     <MSIcon name="group_add" size={20} className="text-white" />
-                                                    {groupRequesting ? 'Открываем Telegram...' : 'Создать или выбрать группу'}
+                                                    {groupRequesting ? 'Получаем ссылку...' : 'Создать или выбрать группу'}
                                                 </button>
                                                 <p className="mt-2 text-[11px] text-[#77736B] font-semibold leading-relaxed">
-                                                    Telegram откроет окно, где можно выбрать существующую группу или создать новую. После этого вставьте invite-ссылку ниже.
+                                                    Telegram откроет окно, где можно выбрать существующую группу или создать новую. Ссылка подтянется автоматически.
                                                 </p>
                                             </div>
 
@@ -1052,7 +1084,7 @@ export function CreateClubPage() {
                                                 {[
                                                     ['Откройте окно Telegram', 'Кнопка выше откроет выбор или создание группы'],
                                                     ['Назначьте бота администратором', 'С правом отправки сообщений'],
-                                                    ['Скопируйте invite-ссылку', 'Вставьте ее ниже, чтобы участники могли войти'],
+                                                    ['Дождитесь ссылки', 'Мы вставим invite-ссылку в поле ниже'],
                                                 ].map(([title, sub], i) => (
                                                     <div key={i} className="flex items-start gap-3">
                                                         <div className="w-6 h-6 rounded-full bg-[#F2F1EC] flex items-center justify-center flex-shrink-0 mt-0.5">
