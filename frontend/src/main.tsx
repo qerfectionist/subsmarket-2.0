@@ -10,8 +10,8 @@ const tg = (window as any).Telegram?.WebApp as any;
 if (tg) {
     tg.ready();
     tg.expand();
-    tg.setHeaderColor('#000000');
-    tg.setBackgroundColor('#000000');
+    tg.setHeaderColor('#F5F4EF');
+    tg.setBackgroundColor('#F5F4EF');
 }
 
 createRoot(document.getElementById('root')!).render(
@@ -19,4 +19,3 @@ createRoot(document.getElementById('root')!).render(
         <App />
     </StrictMode>
 );
-
