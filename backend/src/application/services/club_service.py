@@ -379,7 +379,7 @@ class ClubService:
         await NotificationService().send_to_user(
             club.host_id,
             message,
-            buttons=[[{"text": "Открыть заявки", "url": app_url}]],
+            buttons=[[{"text": "Открыть заявки", "web_app": app_url}]],
         )
 
     async def leave_club(self, club_id: UUID, user_id: int) -> str:

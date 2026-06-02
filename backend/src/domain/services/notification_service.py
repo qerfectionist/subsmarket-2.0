@@ -1,7 +1,7 @@
 from typing import List, Optional, Union, Dict
 import logging
 import os
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.error import TelegramError
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ class NotificationService:
         """
         Отправляет сообщение пользователю.
         buttons format: [[{"text": "Button 1", "url": "..."}]]
+        Use {"web_app": "..."} for Telegram Mini App buttons.
         """
         bot = self.get_bot()
         if not bot:
@@ -43,7 +44,9 @@ class NotificationService:
             for row in buttons:
                 keyboard_row = []
                 for btn in row:
-                    if "url" in btn:
+                    if "web_app" in btn:
+                        keyboard_row.append(InlineKeyboardButton(text=btn["text"], web_app=WebAppInfo(url=btn["web_app"])))
+                    elif "url" in btn:
                         keyboard_row.append(InlineKeyboardButton(text=btn["text"], url=btn["url"]))
                     elif "callback_data" in btn:
                         keyboard_row.append(InlineKeyboardButton(text=btn["text"], callback_data=btn["callback_data"]))
