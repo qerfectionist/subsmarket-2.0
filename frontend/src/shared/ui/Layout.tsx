@@ -10,7 +10,7 @@ export function Layout() {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#F5F4EF] text-[#111111]">
-            <main className={`flex-1 pt-[env(safe-area-inset-top)] ${showNav ? 'pb-28' : 'pb-0'} relative`}>
+            <main className={`flex-1 pt-[env(safe-area-inset-top)] ${showNav ? 'pb-[calc(84px+env(safe-area-inset-bottom))]' : 'pb-0'} relative`}>
                 <Outlet />
             </main>
 

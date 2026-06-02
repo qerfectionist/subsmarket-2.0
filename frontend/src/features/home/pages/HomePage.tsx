@@ -37,7 +37,7 @@ export function HomePage() {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
     return (
-        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', px: 2, pt: 1.6, pb: 2 }}>
+        <Box sx={{ bgcolor: '#F5F4EF', color: '#111', px: 2, pt: 1.6, pb: 2 }}>
             <Box sx={{ maxWidth: 430, mx: 'auto' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
