@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Index, Integer, String, Numeric, DateTime
+from sqlalchemy import BigInteger, Index, Integer, String, Numeric, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.domain.entities.base import Base
@@ -16,7 +16,7 @@ class User(Base):
         Index("ix_users_username", "username"),
     )
     
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)  # Telegram ID
+    user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)  # Telegram ID
     username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     first_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     

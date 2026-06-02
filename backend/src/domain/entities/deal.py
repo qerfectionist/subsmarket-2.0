@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import ForeignKey, String, Numeric, DateTime, Index
+from sqlalchemy import BigInteger, ForeignKey, String, Numeric, DateTime, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -27,8 +27,8 @@ class Deal(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     
-    buyer_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
-    seller_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    buyer_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
+    seller_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
     
     # Type of deal
     offer_type: Mapped[str] = mapped_column(String(20), nullable=False)  # 'gigabyte' | 'club' | 'account'

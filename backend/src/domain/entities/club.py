@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import ForeignKey, Index, Integer, String, Text, Numeric, DateTime
+from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text, Numeric, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,7 +26,7 @@ class Club(Base, SoftDeleteMixin):
     )
     
     # Relations
-    host_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    host_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
     subscription_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("subscriptions.subscription_id"), nullable=False
     )
@@ -80,7 +80,7 @@ class ClubMember(Base):
         ForeignKey("clubs.club_id"), nullable=False
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.user_id"), nullable=False
+        BigInteger, ForeignKey("users.user_id"), nullable=False
     )
     
     status: Mapped[str] = mapped_column(String(20), default="pending")

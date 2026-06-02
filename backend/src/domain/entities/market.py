@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, Numeric, DateTime
+from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text, Numeric, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,7 +19,7 @@ class GigabyteOffer(Base, SoftDeleteMixin):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     
-    seller_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    seller_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
     
     operator: Mapped[str] = mapped_column(String(50), nullable=False)  # Beeline, Tele2, etc.
     amount_gb: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -42,7 +42,7 @@ class AccountOffer(Base, SoftDeleteMixin):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     
-    seller_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    seller_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
     
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     service_category: Mapped[str] = mapped_column(String(50), nullable=False)  # Gaming, VPN, Streaming, Other

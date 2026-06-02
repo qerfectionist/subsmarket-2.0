@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import ForeignKey, Index, Integer, String, Text, Numeric, DateTime
+from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text, Numeric, DateTime
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,7 +29,7 @@ class TrustEvent(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
     
     # Event details
@@ -62,8 +62,8 @@ class Complaint(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     
-    reporter_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
-    target_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    reporter_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
+    target_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
     deal_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         ForeignKey("deals.deal_id"), nullable=True
     )
@@ -77,7 +77,7 @@ class Complaint(Base):
     # Resolution
     status: Mapped[str] = mapped_column(String(20), default="pending")
     # Statuses: pending, investigating, confirmed, rejected
-    resolved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.user_id"), nullable=True)
+    resolved_by: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=True)
     resolution_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -105,7 +105,7 @@ class JoinRequest(Base):
         ForeignKey("clubs.club_id", ondelete="CASCADE"), nullable=False
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
     
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
