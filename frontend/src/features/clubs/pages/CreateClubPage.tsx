@@ -267,6 +267,7 @@ export function CreateClubPage() {
     const [useTg, setUseTg] = useState(false);
     const [tgLink, setTgLink] = useState('');
     const [botAdmin, setBotAdmin] = useState(false);
+    const [groupRequesting, setGroupRequesting] = useState(false);
     const [allSheet, setAllSheet] = useState(false);
     const [catFilter, setCatFilter] = useState('all');  // category pill filter
 
@@ -392,6 +393,32 @@ export function CreateClubPage() {
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.openTelegramLink) tg.openTelegramLink(url);
         else window.open(url, '_blank');
+    };
+
+    const requestTelegramGroup = async () => {
+        const tg = (window as any).Telegram?.WebApp;
+        haptic.impact('medium');
+
+        if (!tg?.requestChat) {
+            openTelegramLink(`https://t.me/${BOT_USERNAME}?startgroup=subsmarket`);
+            return;
+        }
+
+        setGroupRequesting(true);
+        try {
+            const prepared = await api.createTelegramGroupRequest();
+            tg.requestChat(prepared.request_id, (success: boolean) => {
+                if (success) {
+                    haptic.notification('success');
+                    setBotAdmin(true);
+                    tg.showAlert?.('Группа выбрана или создана. Теперь скопируйте invite-ссылку группы и вставьте ее ниже.');
+                }
+            });
+        } catch (e) {
+            openTelegramLink(`https://t.me/${BOT_USERNAME}?startgroup=subsmarket`);
+        } finally {
+            setGroupRequesting(false);
+        }
     };
 
     const submit = () => {
@@ -1005,17 +1032,15 @@ export function CreateClubPage() {
 
                                             <div className="px-5 py-4">
                                                 <button
-                                                    onClick={() => {
-                                                        haptic.impact('medium');
-                                                        openTelegramLink(`https://t.me/${BOT_USERNAME}?startgroup=subsmarket`);
-                                                    }}
-                                                    className="w-full h-13 rounded-[24px] bg-[#111] text-white flex items-center justify-center gap-2 text-sm font-black active:scale-[0.98] transition-transform"
+                                                    onClick={requestTelegramGroup}
+                                                    disabled={groupRequesting}
+                                                    className="w-full h-13 rounded-[24px] bg-[#111] text-white flex items-center justify-center gap-2 text-sm font-black active:scale-[0.98] transition-transform disabled:opacity-60"
                                                 >
                                                     <MSIcon name="group_add" size={20} className="text-white" />
-                                                    Создать группу с ботом
+                                                    {groupRequesting ? 'Открываем Telegram...' : 'Создать или выбрать группу'}
                                                 </button>
                                                 <p className="mt-2 text-[11px] text-[#77736B] font-semibold leading-relaxed">
-                                                    Telegram откроет выбор группы. Там можно создать новую группу и сразу добавить @{BOT_USERNAME}.
+                                                    Telegram откроет окно, где можно выбрать существующую группу или создать новую. После этого вставьте invite-ссылку ниже.
                                                 </p>
                                             </div>
 
@@ -1024,7 +1049,7 @@ export function CreateClubPage() {
                                             {/* steps */}
                                             <div className="px-5 py-4 space-y-3">
                                                 {[
-                                                    ['Откройте создание группы', 'Кнопка выше добавит бота в выбранную группу'],
+                                                    ['Откройте окно Telegram', 'Кнопка выше откроет выбор или создание группы'],
                                                     ['Назначьте бота администратором', 'С правом отправки сообщений'],
                                                     ['Скопируйте invite-ссылку', 'Вставьте ее ниже, чтобы участники могли войти'],
                                                 ].map(([title, sub], i) => (

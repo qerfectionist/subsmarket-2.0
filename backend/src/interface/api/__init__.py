@@ -10,6 +10,7 @@ from src.interface.api.deals import router as deals_router
 from src.interface.api.accounts import router as accounts_router
 from src.interface.api.pricing import router as pricing_router
 from src.interface.api.trust import router as trust_router
+from src.interface.api.telegram import router as telegram_router
 
 # Main API router
 api_router = APIRouter(prefix="/api/v1")
@@ -23,5 +24,6 @@ api_router.include_router(deals_router)
 api_router.include_router(accounts_router)
 api_router.include_router(pricing_router)
 api_router.include_router(trust_router)
+api_router.include_router(telegram_router)
 
 __all__ = ["api_router"]

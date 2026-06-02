@@ -240,6 +240,13 @@ export const api = {
         });
     },
 
+    async createTelegramGroupRequest(): Promise<{ request_id: string }> {
+        return apiFetch<{ request_id: string }>('/telegram/prepared-group-request', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    },
+
     async joinClub(clubId: string, phoneNumber?: string): Promise<{ status: string; message: string }> {
         return apiFetch<{ status: string; message: string }>(`/clubs/${clubId}/join`, {
             method: 'POST',

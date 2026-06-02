@@ -96,6 +96,7 @@ interface TelegramWebApp {
     openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
     openTelegramLink: (url: string) => void;
     openInvoice: (url: string, callback?: (status: string) => void) => void;
+    requestChat?: (requestId: string, callback?: (success: boolean) => void) => void;
 }
 
 declare global {
