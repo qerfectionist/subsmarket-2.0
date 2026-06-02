@@ -25,7 +25,8 @@ class DealService:
         buyer_id: int, 
         offer_type: str, 
         offer_id: uuid.UUID, 
-        amount: Decimal
+        amount: Decimal,
+        quantity_gb: Optional[int] = None,
     ) -> Deal:
         """Creates a new deal and notifies the seller."""
         
@@ -48,11 +49,20 @@ class DealService:
             if seller_id == buyer_id:
                 raise HTTPException(status_code=400, detail="Cannot buy your own offer")
 
-            if offer.price != amount:
-                 raise HTTPException(status_code=400, detail=f"Price mismatch. Expected {offer.price}")
+            gb_to_buy = quantity_gb or offer.amount_gb
+            if gb_to_buy <= 0:
+                raise HTTPException(status_code=400, detail="GB quantity must be positive")
+
+            if gb_to_buy > offer.amount_gb:
+                raise HTTPException(status_code=400, detail="Not enough GB available")
+
+            expected_amount = offer.price * Decimal(gb_to_buy)
+            if expected_amount != amount:
+                 raise HTTPException(status_code=400, detail=f"Price mismatch. Expected {expected_amount}")
                  
-            # Mark as inactive since it's now sold
-            offer.is_active = False
+            offer.amount_gb -= gb_to_buy
+            if offer.amount_gb <= 0:
+                offer.is_active = False
 
         elif offer_type == 'club':
              raise HTTPException(status_code=501, detail="Club P2P not implemented yet")

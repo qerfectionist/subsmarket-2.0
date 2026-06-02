@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, CreateGigabyteOfferRequest, GigabyteOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
-import { useTelegram } from '@/shared/hooks/useTelegram';
 import DealsListPage from '@/features/deals/pages/DealsListPage';
 import {
     Box,
@@ -12,6 +11,10 @@ import {
     CardContent,
     Chip,
     Divider,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Skeleton,
     Slider,
     Stack,
@@ -27,18 +30,27 @@ import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 type TabKey = 'buy' | 'sell' | 'my';
 
 const operators = [
-    { id: 'beeline', name: 'Beeline' },
-    { id: 'tele2', name: 'Tele2' },
-    { id: 'altel', name: 'Altel' },
-    { id: 'kcell', name: 'Kcell' },
-    { id: 'activ', name: 'Activ' },
+    { id: 'beeline', name: 'Beeline', lifetime: '3 дня', fee: 99 },
+    { id: 'tele2', name: 'Tele2', lifetime: '7 дней', fee: 100 },
+    { id: 'kcell', name: 'Kcell', lifetime: '7 дней', fee: 100 },
+    { id: 'activ', name: 'Activ', lifetime: '7 дней', fee: 100 },
 ];
+
+const commissionOptions = ['Продавец', 'Покупатель'];
+
+function getOfferMeta(description?: string | null) {
+    const text = description || '';
+    const lifetime = text.match(/Срок:\s*([^\n]+)/)?.[1] || '';
+    const commission = text.match(/Комиссия:\s*([^\n]+)/)?.[1] || '';
+    const transfer = text.match(/Условия:\s*([^\n]+)/)?.[1] || '';
+    return { lifetime, commission, transfer };
+}
 
 export function GBMarketPage() {
     const [tab, setTab] = useState<TabKey>('buy');
     const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
+    const [buyOffer, setBuyOffer] = useState<GigabyteOffer | null>(null);
     const haptic = useHaptic();
-    const { showConfirm } = useTelegram();
     const queryClient = useQueryClient();
 
     const { data: offers = [], isLoading } = useQuery({
@@ -52,17 +64,13 @@ export function GBMarketPage() {
         mutationFn: api.createDeal,
         onSuccess: () => {
             haptic.notification('success');
+            queryClient.invalidateQueries({ queryKey: ['gb-offers'] });
             queryClient.invalidateQueries({ queryKey: ['my-deals'] });
+            setBuyOffer(null);
             setTab('my');
         },
         onError: () => haptic.notification('error'),
     });
-
-    const handleBuyOffer = async (offer: GigabyteOffer) => {
-        haptic.impact('medium');
-        const confirmed = await showConfirm(`Купить ${offer.amount_gb} ГБ за ${offer.price} ₸?`);
-        if (confirmed) createDealMutation.mutate({ offer_type: 'gigabyte', offer_id: offer.offer_id, amount: offer.price });
-    };
 
     return (
         <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
@@ -119,7 +127,7 @@ export function GBMarketPage() {
                                     </Button>
                                 </Box>
                             )}
-                            {!isLoading && offers.map(offer => <OfferCard key={offer.offer_id} offer={offer} onBuy={() => handleBuyOffer(offer)} />)}
+                            {!isLoading && offers.map(offer => <OfferCard key={offer.offer_id} offer={offer} onBuy={() => { haptic.impact('medium'); setBuyOffer(offer); }} />)}
                         </Stack>
                     </>
                 )}
@@ -127,14 +135,27 @@ export function GBMarketPage() {
                 {tab === 'sell' && <SellForm onSuccess={() => setTab('my')} />}
                 {tab === 'my' && <DealsListPage />}
             </Box>
+
+            <BuyGbDialog
+                offer={buyOffer}
+                onClose={() => setBuyOffer(null)}
+                onSubmit={(offer, gb) => createDealMutation.mutate({
+                    offer_type: 'gigabyte',
+                    offer_id: offer.offer_id,
+                    amount: Number(offer.price) * gb,
+                    quantity_gb: gb,
+                })}
+                loading={createDealMutation.isPending}
+            />
         </Box>
     );
 }
 
 function OfferCard({ offer, onBuy }: { offer: GigabyteOffer; onBuy: () => void }) {
     const op = operators.find(o => o.id === offer.operator.toLowerCase());
-    const pricePerGb = offer.price / offer.amount_gb;
+    const pricePerGb = Number(offer.price);
     const isHot = pricePerGb < 100;
+    const meta = getOfferMeta(offer.description);
 
     return (
         <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '24px' }}>
@@ -152,21 +173,83 @@ function OfferCard({ offer, onBuy }: { offer: GigabyteOffer; onBuy: () => void }
                             {isHot && <Chip icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: '14px !important' }} />} label="выгодно" size="small" sx={{ height: 22, bgcolor: '#FFE15A' }} />}
                         </Box>
                         <Typography fontSize={12.5} color="#77736B" fontWeight={520}>
-                            продавец #{offer.seller_id}
+                            {meta.lifetime || op?.lifetime || 'до конца месяца'} · продавец #{offer.seller_id}
                         </Typography>
-                        {offer.description && (
+                        {(meta.commission || meta.transfer) && (
                             <Typography fontSize={12} color="#77736B" fontWeight={520} noWrap sx={{ maxWidth: 190 }}>
-                                {offer.description.replace(/\n/g, ' · ')}
+                                {[meta.commission && `комиссия: ${meta.commission}`, meta.transfer].filter(Boolean).join(' · ')}
                             </Typography>
                         )}
                     </Box>
                 </Box>
                 <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                    <Typography fontWeight={760} fontSize={18} lineHeight={1.15}>{offer.price} ₸</Typography>
-                    <Typography fontSize={12} color="#77736B" fontWeight={520}>{Math.round(pricePerGb)} ₸ / ГБ</Typography>
+                    <Typography fontWeight={760} fontSize={18} lineHeight={1.15}>{Math.round(pricePerGb)} ₸</Typography>
+                    <Typography fontSize={12} color="#77736B" fontWeight={520}>за 1 ГБ</Typography>
                 </Box>
             </CardActionArea>
         </Card>
+    );
+}
+
+function BuyGbDialog({ offer, onClose, onSubmit, loading }: { offer: GigabyteOffer | null; onClose: () => void; onSubmit: (offer: GigabyteOffer, gb: number, phone: string) => void; loading: boolean }) {
+    const [gb, setGb] = useState(1);
+    const [phone, setPhone] = useState('');
+    const op = offer ? operators.find(o => o.id === offer.operator.toLowerCase()) : null;
+    const meta = getOfferMeta(offer?.description);
+    const pricePerGb = Number(offer?.price || 0);
+    const maxGb = offer?.amount_gb || 1;
+    const total = pricePerGb * gb;
+
+    const handleClose = () => {
+        setGb(1);
+        setPhone('');
+        onClose();
+    };
+
+    const phoneReady = phone.replace(/\D/g, '').length >= 10;
+
+    return (
+        <Dialog open={!!offer} onClose={handleClose} PaperProps={{ sx: { borderRadius: '28px', m: 2, maxWidth: 380, width: '100%' } }}>
+            <DialogTitle sx={{ fontWeight: 760, pb: 0.5 }}>Купить ГБ</DialogTitle>
+            <DialogContent>
+                <Typography fontSize={14} color="#77736B" sx={{ mb: 2 }}>
+                    {op?.name} · доступно {maxGb} ГБ · действует {meta.lifetime || op?.lifetime || 'ограниченное время'}
+                </Typography>
+                <Stack spacing={1.5}>
+                    <TextField
+                        label="Номер для получения ГБ"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        placeholder="+7 777 123 45 67"
+                        type="tel"
+                        fullWidth
+                    />
+                    <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography fontWeight={650}>Объем</Typography>
+                            <Typography fontWeight={760}>{gb} ГБ</Typography>
+                        </Box>
+                        <Slider value={gb} min={1} max={maxGb} step={1} onChange={(_, val) => setGb(Array.isArray(val) ? val[0] : val)} sx={{ color: '#111' }} />
+                    </Box>
+                    <Box sx={{ bgcolor: '#F2F1EC', borderRadius: '18px', p: 1.5 }}>
+                        <Typography fontSize={13} color="#77736B">Итого</Typography>
+                        <Typography fontSize={24} fontWeight={800}>{Math.round(total)} ₸</Typography>
+                        <Typography fontSize={12.5} color="#77736B">
+                            {Math.round(pricePerGb)} ₸/ГБ · комиссия: {meta.commission || 'уточнить у продавца'}
+                        </Typography>
+                    </Box>
+                    <Typography fontSize={12.5} color="#77736B">
+                        ГБ переводятся только внутри одного оператора. Убедитесь, что ваш тариф может принимать ГБ.
+                    </Typography>
+                </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
+                <Button onClick={handleClose} sx={{ bgcolor: '#F2F1EC', color: '#111' }}>Отмена</Button>
+                <Button variant="contained" disabled={!phoneReady || loading} onClick={() => offer && onSubmit(offer, gb, phone)}>
+                    {loading ? 'Создаем...' : 'Купить'}
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
 }
 
@@ -190,9 +273,10 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
     const queryClient = useQueryClient();
     const [operator, setOperator] = useState('beeline');
     const [gb, setGb] = useState<number>(10);
-    const [price, setPrice] = useState<string>('500');
-    const [validUntil, setValidUntil] = useState('до конца месяца');
+    const [price, setPrice] = useState<string>('150');
+    const [commissionBy, setCommissionBy] = useState('Покупатель');
     const [transferNote, setTransferNote] = useState('перевод через приложение оператора');
+    const selectedOp = operators.find(o => o.id === operator) || operators[0];
 
     const createOfferMutation = useMutation({
         mutationFn: (data: CreateGigabyteOfferRequest) => api.createGigabyteOffer(data),
@@ -211,7 +295,11 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
             operator,
             amount_gb: gb,
             price: parseInt(price, 10),
-            description: [`Срок: ${validUntil}`, `Условия: ${transferNote}`].join('\n'),
+            description: [
+                `Срок: ${selectedOp.lifetime}`,
+                `Комиссия: ${commissionBy}`,
+                `Условия: ${transferNote}`,
+            ].join('\n'),
         });
     };
 
@@ -232,6 +320,9 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
                             <Chip key={op.id} label={op.name} clickable onClick={() => { haptic.selection(); setOperator(op.id); }} sx={{ bgcolor: operator === op.id ? '#111' : '#F2F1EC', color: operator === op.id ? '#fff' : '#111' }} />
                         ))}
                     </Box>
+                    <Typography fontSize={12.5} color="#77736B" sx={{ mt: 1 }}>
+                        Altel не показываем: прямой перевод ГБ у него не поддерживается.
+                    </Typography>
 
                     <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
 
@@ -248,7 +339,6 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
                             haptic.selection();
                             const v = Array.isArray(val) ? val[0] : val;
                             setGb(v);
-                            setPrice((v * 50).toString());
                         }}
                         sx={{ color: '#111' }}
                     />
@@ -257,8 +347,8 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                         <Box>
-                            <Typography fontSize={15} fontWeight={650}>Цена</Typography>
-                            <Typography fontSize={12.5} color="#77736B">~ {Math.round(parseInt(price || '0', 10) / gb)} ₸ / ГБ</Typography>
+                            <Typography fontSize={15} fontWeight={650}>Цена за 1 ГБ</Typography>
+                            <Typography fontSize={12.5} color="#77736B">лот: ~ {Math.round(parseInt(price || '0', 10) * gb)} ₸</Typography>
                         </Box>
                         <TextField value={price} onChange={e => setPrice(e.target.value)} type="number" size="small" sx={{ width: 128 }} InputProps={{ endAdornment: <Typography color="#77736B" ml={0.5}>₸</Typography> }} inputProps={{ style: { textAlign: 'right', fontWeight: 720, fontSize: 18 } }} />
                     </Box>
@@ -266,13 +356,24 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
                     <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
 
                     <Stack spacing={1.2}>
-                        <TextField
-                            label="Срок жизни ГБ"
-                            value={validUntil}
-                            onChange={e => setValidUntil(e.target.value)}
-                            placeholder="до конца месяца"
-                            fullWidth
-                        />
+                        <Box sx={{ bgcolor: '#F2F1EC', borderRadius: '18px', p: 1.4 }}>
+                            <Typography fontSize={12.5} color="#77736B">Срок жизни после перевода</Typography>
+                            <Typography fontSize={16} fontWeight={760}>{selectedOp.lifetime}</Typography>
+                        </Box>
+                        <Box>
+                            <Typography fontSize={13} fontWeight={650} color="#77736B" sx={{ mb: 1 }}>Комиссию оператора оплачивает</Typography>
+                            <Box sx={{ display: 'flex', gap: 0.8 }}>
+                                {commissionOptions.map(item => (
+                                    <Chip
+                                        key={item}
+                                        label={item}
+                                        clickable
+                                        onClick={() => { haptic.selection(); setCommissionBy(item); }}
+                                        sx={{ bgcolor: commissionBy === item ? '#111' : '#F2F1EC', color: commissionBy === item ? '#fff' : '#111' }}
+                                    />
+                                ))}
+                            </Box>
+                        </Box>
                         <TextField
                             label="Условия перевода"
                             value={transferNote}

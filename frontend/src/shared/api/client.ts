@@ -174,6 +174,7 @@ export interface CreateDealRequest {
     offer_type: 'gigabyte' | 'club' | 'account';
     offer_id: string;
     amount: number;
+    quantity_gb?: number;
 }
 
 export interface AccountOffer {

@@ -29,6 +29,7 @@ class CreateDealRequest(BaseModel):
     offer_type: str  # 'gigabyte' | 'club'
     offer_id: UUID
     amount: Decimal
+    quantity_gb: Optional[int] = None
 
 
 class DealResponse(BaseModel):
@@ -106,7 +107,8 @@ async def create_deal(
         tg_user.id, 
         data.offer_type, 
         data.offer_id, 
-        data.amount
+        data.amount,
+        data.quantity_gb
     )
 
 
