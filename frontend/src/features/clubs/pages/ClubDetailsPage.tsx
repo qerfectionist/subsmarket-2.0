@@ -24,6 +24,7 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
@@ -355,8 +356,8 @@ function renderBottomAction(props: {
         <Box sx={{ position: 'fixed', left: 0, right: 0, bottom: 'calc(73px + env(safe-area-inset-bottom))', zIndex: 45, px: 2, pb: 1.5, pt: 3, background: 'linear-gradient(to top, #F5F4EF 62%, rgba(245,244,239,0))' }}>
             <Box sx={{ maxWidth: pageMaxWidth, mx: 'auto' }}>
                 {props.isHost && (
-                    <Button variant="contained" fullWidth size="large" startIcon={<PersonAddRoundedIcon />} onClick={props.onRequests}>
-                        Заявки на вступление
+                    <Button variant="contained" fullWidth size="large" startIcon={<SettingsRoundedIcon />} onClick={props.onRequests}>
+                        Управление клубом
                     </Button>
                 )}
                 {props.isPending && !props.isHost && (
