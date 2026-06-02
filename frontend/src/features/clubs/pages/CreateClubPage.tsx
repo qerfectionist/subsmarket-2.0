@@ -260,8 +260,6 @@ export function CreateClubPage() {
     const [members, setMembers] = useState(0);
     const [payDay, setPayDay] = useState<number | null>(null);
     const [desc, setDesc] = useState('');
-    const [region, setRegion] = useState('KZ');
-    const [telecomSlot, setTelecomSlot] = useState('Смартфон');
     const [dayOpen, setDayOpen] = useState(false);
 
     /* --- step 2 — payment + tg --- */
@@ -400,10 +398,7 @@ export function CreateClubPage() {
             return;
         }
         haptic.impact('medium');
-        const isTelecom = selected?.category === 'telecom';
         const structuredDesc = [
-            isTelecom ? `Тип места: ${telecomSlot}` : 'Формат: семейная подписка',
-            !isTelecom ? `Регион: ${region}` : null,
             'Оплата: после вступления и проверки доступа',
             desc || null,
         ].filter(Boolean).join('\n');
@@ -678,52 +673,6 @@ export function CreateClubPage() {
                                                 Рынок: {selected.priceRange.min}–{selected.priceRange.max} ₸/мес
                                             </p>
                                         </div>
-                                    </div>
-                                )}
-
-                                {selected && (
-                                    <div className="bg-content1 rounded-3xl px-5 py-4">
-                                        {selected.category === 'telecom' ? (
-                                            <>
-                                                <p className="text-xs font-semibold text-default-400 mb-2">Тип места</p>
-                                                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                                                    {['Смартфон', 'Роутер', 'Часы'].map(item => (
-                                                        <button
-                                                            key={item}
-                                                            type="button"
-                                                            onClick={() => { haptic.selection(); setTelecomSlot(item); }}
-                                                            className={cn(
-                                                                'h-9 px-4 rounded-full text-sm font-semibold whitespace-nowrap',
-                                                                telecomSlot === item ? 'bg-primary text-white' : 'bg-default-100 text-default-500'
-                                                            )}
-                                                        >
-                                                            {item}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <p className="text-[11px] text-default-400 mt-2">Для роутера и часов условия обычно дешевле, чем для смартфона.</p>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="text-xs font-semibold text-default-400 mb-2">Регион семьи</p>
-                                                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                                                    {['KZ', 'US', 'TR', 'Любой'].map(item => (
-                                                        <button
-                                                            key={item}
-                                                            type="button"
-                                                            onClick={() => { haptic.selection(); setRegion(item); }}
-                                                            className={cn(
-                                                                'h-9 px-4 rounded-full text-sm font-semibold whitespace-nowrap',
-                                                                region === item ? 'bg-primary text-white' : 'bg-default-100 text-default-500'
-                                                            )}
-                                                        >
-                                                            {item}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <p className="text-[11px] text-default-400 mt-2">Особенно важно для YouTube, Netflix, PlayStation и других региональных сервисов.</p>
-                                            </>
-                                        )}
                                     </div>
                                 )}
 
