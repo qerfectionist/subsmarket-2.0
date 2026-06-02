@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, Club } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
@@ -37,7 +37,10 @@ const filters: Array<{ id: Filter; label: string }> = [
 
 export function ClubsPage() {
     const [tab, setTab] = useState<PageTab>('market');
-    const [filter, setFilter] = useState<Filter>('all');
+    const [searchParams] = useSearchParams();
+    const categoryParam = searchParams.get('category');
+    const initialFilter: Filter = categoryParam === 'digital' || categoryParam === 'telecom' ? categoryParam : 'all';
+    const [filter, setFilter] = useState<Filter>(initialFilter);
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

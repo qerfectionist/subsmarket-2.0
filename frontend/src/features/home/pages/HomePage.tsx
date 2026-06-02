@@ -12,25 +12,25 @@ import {
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import CellTowerRoundedIcon from '@mui/icons-material/CellTowerRounded';
 import CreditScoreRoundedIcon from '@mui/icons-material/CreditScoreRounded';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import WifiRoundedIcon from '@mui/icons-material/WifiRounded';
 
 const serviceTiles = [
-    { title: 'Подписки', subtitle: 'семейные места', to: '/clubs', icon: GridViewRoundedIcon, color: '#FFE36E' },
-    { title: 'ГБ', subtitle: 'трафик и тарифы', to: '/gb-market', icon: WifiRoundedIcon, color: '#B9F27D' },
-    { title: 'Доступы', subtitle: 'инвайты и аккаунты', to: '/accounts', icon: StorefrontRoundedIcon, color: '#D8C7FF' },
-    { title: 'Сделки', subtitle: 'чек и статус', to: '/deals', icon: ShieldRoundedIcon, color: '#BFE7FF' },
+    { title: 'Подписки', subtitle: 'YouTube, Яндекс', to: '/clubs?category=digital', icon: GridViewRoundedIcon, color: '#FFE36E' },
+    { title: 'Тарифы', subtitle: 'семейные операторы', to: '/clubs?category=telecom', icon: CellTowerRoundedIcon, color: '#B9F27D' },
+    { title: 'Гигабайты', subtitle: 'продажа лишних ГБ', to: '/gb-market', icon: WifiRoundedIcon, color: '#BFE7FF' },
+    { title: 'Аккаунты', subtitle: 'GPT, Canva, Grok', to: '/accounts', icon: StorefrontRoundedIcon, color: '#D8C7FF' },
 ];
 
 const liveOffers = [
-    { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', to: '/clubs?type=digital' },
-    { title: 'Beeline / Tele2', meta: 'ГБ и семейные тарифы', price: 'от 500 ₸', to: '/gb-market' },
-    { title: 'Яндекс Плюс', meta: '1 место · актуально', price: '900 ₸', to: '/clubs?type=digital' },
+    { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', to: '/clubs?category=digital' },
+    { title: 'Beeline / Tele2', meta: 'семейные тарифы', price: 'от 500 ₸', to: '/clubs?category=telecom' },
+    { title: 'Яндекс Плюс', meta: '1 место · актуально', price: '900 ₸', to: '/clubs?category=digital' },
 ];
 
 export function HomePage() {
@@ -49,7 +49,7 @@ export function HomePage() {
                                 SubsMarket
                             </Typography>
                             <Typography fontSize={12.5} fontWeight={520} color="#74716A">
-                                подписки, тарифы, ГБ
+                                подписки, тарифы, аккаунты
                             </Typography>
                         </Box>
                     </Box>
@@ -71,7 +71,7 @@ export function HomePage() {
                         >
                             <SearchRoundedIcon sx={{ color: '#77736B', fontSize: 21 }} />
                             <Typography fontSize={15} fontWeight={560} color="#77736B">
-                                Найти YouTube, Яндекс, Beeline...
+                                Найти YouTube, Beeline, GPT...
                             </Typography>
                         </Box>
                     </CardActionArea>
@@ -82,10 +82,10 @@ export function HomePage() {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
                             <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ fontSize: 30, lineHeight: 1.04, fontWeight: 760, letterSpacing: 0, mb: 1 }}>
-                                    Свободные места без хаоса в чате
+                                    Подписки, тарифы и аккаунты без хаоса
                                 </Typography>
                                 <Typography fontSize={15} lineHeight={1.42} fontWeight={520} color="rgba(0,0,0,0.58)">
-                                    Цена, условия и продавец сразу видны в карточке.
+                                    Видно, что продают: семейное место, тариф, ГБ или аккаунт.
                                 </Typography>
                             </Box>
                             <Box

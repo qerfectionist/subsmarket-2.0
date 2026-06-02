@@ -74,7 +74,7 @@ export function GBMarketPage() {
                                 ГБ маркет
                             </Typography>
                             <Typography fontSize={13.5} fontWeight={520} color="#77736B">
-                                трафик, семейные тарифы и быстрые сделки
+                                лишние гигабайты от людей рядом
                             </Typography>
                         </Box>
                         <Chip label="live" sx={{ bgcolor: '#B9F27D', color: '#111' }} />

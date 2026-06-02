@@ -45,10 +45,10 @@ export function AccountsPage() {
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.4 }}>
                         <Box>
                             <Typography fontSize={28} fontWeight={760} lineHeight={1.05}>
-                                Доступы
+                                Аккаунты
                             </Typography>
                             <Typography fontSize={13.5} fontWeight={520} color="#77736B">
-                                инвайты, слоты и цифровые предложения
+                                GPT, Canva, Grok и другие аккаунты
                             </Typography>
                         </Box>
                         <Chip label="safe" sx={{ bgcolor: '#D8C7FF', color: '#111' }} />
@@ -73,7 +73,7 @@ export function AccountsPage() {
                             <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
                                 <KeyRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
                                 <Typography fontSize={18} fontWeight={720}>Пока нет предложений</Typography>
-                                <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Создайте первое предложение по сервису или инвайту.</Typography>
+                                <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Создайте первое предложение по аккаунту или сервису.</Typography>
                                 <Button onClick={() => setTab('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>Создать</Button>
                             </Box>
                         )}
@@ -172,7 +172,7 @@ function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
         <Stack spacing={1.2} component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); createMutation.mutate(); }}>
             <Card sx={{ bgcolor: '#D8C7FF', color: '#111', border: 0, borderRadius: '30px' }}>
                 <CardContent sx={{ p: 2.2 }}>
-                    <Typography fontSize={25} fontWeight={760} lineHeight={1.06}>Создать доступ</Typography>
+                    <Typography fontSize={25} fontWeight={760} lineHeight={1.06}>Создать аккаунт</Typography>
                     <Typography fontSize={14} color="rgba(0,0,0,0.58)" sx={{ mt: 0.8 }}>Опишите сервис, срок и условия. Логины и коды передавайте только после сделки.</Typography>
                 </CardContent>
             </Card>
@@ -180,7 +180,7 @@ function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
             <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px' }}>
                 <CardContent sx={{ p: 2 }}>
                     <Stack spacing={1.4}>
-                        <TextField label="Название" value={title} onChange={e => setTitle(e.target.value)} placeholder="Google One 2 ТБ, инвайт" required fullWidth />
+                        <TextField label="Название" value={title} onChange={e => setTitle(e.target.value)} placeholder="ChatGPT Pro, Canva Pro" required fullWidth />
                         <TextField select label="Категория" value={category} onChange={e => setCategory(e.target.value)} fullWidth>
                             {categoryOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
                         </TextField>
