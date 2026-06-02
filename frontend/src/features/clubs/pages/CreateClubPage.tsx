@@ -400,7 +400,7 @@ export function CreateClubPage() {
         haptic.impact('medium');
 
         if (!tg?.requestChat) {
-            openTelegramLink(`https://t.me/${BOT_USERNAME}?startgroup=subsmarket`);
+            showAlert('Создание группы работает только внутри Telegram Mini App с обновленным Telegram. В браузере этот экран не поддерживается.');
             return;
         }
 
@@ -415,7 +415,8 @@ export function CreateClubPage() {
                 }
             });
         } catch (e) {
-            openTelegramLink(`https://t.me/${BOT_USERNAME}?startgroup=subsmarket`);
+            haptic.notification('error');
+            showAlert('Не удалось открыть создание группы. Обновите Telegram и попробуйте еще раз.');
         } finally {
             setGroupRequesting(false);
         }
