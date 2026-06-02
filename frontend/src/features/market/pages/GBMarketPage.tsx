@@ -320,10 +320,6 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
                             <Chip key={op.id} label={op.name} clickable onClick={() => { haptic.selection(); setOperator(op.id); }} sx={{ bgcolor: operator === op.id ? '#111' : '#F2F1EC', color: operator === op.id ? '#fff' : '#111' }} />
                         ))}
                     </Box>
-                    <Typography fontSize={12.5} color="#77736B" sx={{ mt: 1 }}>
-                        Altel не показываем: прямой перевод ГБ у него не поддерживается.
-                    </Typography>
-
                     <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
