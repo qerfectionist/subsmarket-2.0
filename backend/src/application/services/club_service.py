@@ -74,6 +74,7 @@ class ClubService:
             status=club.status,
             description=club.description,
             created_at=club.created_at,
+            approval_mode=club.approval_mode,
         )
 
     async def get_club_details(self, club_id: UUID, user_id: int) -> ClubDetails:
@@ -259,6 +260,9 @@ class ClubService:
             payment_day=data.payment_day,
             description=data.description,
             rules=data.rules,
+            approval_mode=data.approval_mode,
+            min_trust_score=data.min_trust_score,
+            telegram_group_link=data.telegram_group_link,
         )
 
         self.db.add(club)
@@ -282,6 +286,7 @@ class ClubService:
         # Lock the club row for this transaction to prevent concurrent joins
         result = await self.db.execute(
             select(Club)
+            .options(selectinload(Club.subscription))
             .where(Club.club_id == club_id)
             .where(Club.is_deleted == False)
             .with_for_update()
@@ -332,7 +337,7 @@ class ClubService:
         new_status = "pending"
         msg = "Join request sent. Awaiting host approval."
 
-        if club.approval_mode == "auto":
+        if club.approval_mode == "auto" and not club.telegram_group_link:
             if club.min_trust_score and user.trust_score < club.min_trust_score:
                 msg = "Trust score too low for auto-approval. Request pending host review."
             else:
@@ -353,7 +358,29 @@ class ClubService:
             club.status = "full"
 
         await self.db.commit()
+
+        if new_status == "pending":
+            await self._notify_host_join_request(club, user)
+
         return msg
+
+    async def _notify_host_join_request(self, club: Club, user: User) -> None:
+        """Notify host about a new pending join request."""
+        from src.domain.services.notification_service import NotificationService
+
+        service_name = club.subscription.service_name if club.subscription else "club"
+        user_name = user.first_name or user.username or f"User {user.user_id}"
+        app_url = f"https://subsmarket-2-0.vercel.app/clubs/{club.club_id}/requests"
+        message = (
+            "<b>Новая заявка на вступление</b>\n\n"
+            f"{user_name} хочет вступить в клуб <b>{service_name}</b>.\n"
+            "Откройте заявки и решите, добавить участника или отклонить."
+        )
+        await NotificationService().send_to_user(
+            club.host_id,
+            message,
+            buttons=[[{"text": "Открыть заявки", "url": app_url}]],
+        )
 
     async def leave_club(self, club_id: UUID, user_id: int) -> str:
         """Leave a club."""
@@ -380,7 +407,7 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Not a member")
             
         member.status = "left"
-        member.left_at = datetime.now(timezone.utc)
+        member.left_at = datetime.utcnow()
         
         # Reopen club if it was full
         if club.status == "full":
@@ -461,7 +488,7 @@ class ClubService:
             raise HTTPException(status_code=400, detail=f"Member is already {member.status}")
 
         member.status = "kicked"
-        member.left_at = datetime.now(timezone.utc)
+        member.left_at = datetime.utcnow()
 
         await self.db.commit()
         return "Member rejected"
@@ -480,7 +507,7 @@ class ClubService:
             raise HTTPException(status_code=404, detail="No pending request found")
 
         member.status = "left"
-        member.left_at = datetime.now(timezone.utc)
+        member.left_at = datetime.utcnow()
 
         await self.db.commit()
         return "Join request cancelled"
@@ -596,7 +623,7 @@ class ClubService:
 
         # Soft delete the club so historical deals and membership references don't break
         club.is_deleted = True
-        club.deleted_at = datetime.now(timezone.utc)
+        club.deleted_at = datetime.utcnow()
         club.status = "deleted"
         
         await self.db.commit()

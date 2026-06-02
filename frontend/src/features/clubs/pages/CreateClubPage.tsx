@@ -478,7 +478,7 @@ export function CreateClubPage() {
             payment_details: phone,
             payment_day: payDay ?? undefined,
             description: structuredDesc || undefined,
-            approval_mode: 'auto',
+            approval_mode: 'manual',
             ...(useTg && tgLinkOk ? { telegram_group_link: tgLink.trim() } : {}),
         });
     };
