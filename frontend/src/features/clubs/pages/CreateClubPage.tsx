@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api, Club, CreateClubRequest, pricingApi, PricingService } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
-import {
-    Navbar, NavbarContent, NavbarItem, Switch,
-} from '@heroui/react';
+import { Box, Switch, Avatar, Snackbar, Alert } from '@mui/material';
+import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
 import { BottomSheet } from '@/shared/ui/Modal';
 import { MSIcon } from '@/shared/ui/MSIcon';
 import { cn } from '@/shared/lib/utils';
 import {
     STATIC_SERVICES,
     SERVICE_COLORS,
+    SERVICE_ICONS,
     CatalogService,
 } from '../data/serviceCatalog';
 
@@ -27,6 +27,7 @@ function getAuthHeaders(): Record<string, string> {
 interface SuccessScreenProps {
     svcName: string;
     svcColor: string;
+    iconUrl?: string;
     pricePerson: number;
     createdClub: Club;
     bank: string;
@@ -40,7 +41,7 @@ interface SuccessScreenProps {
     onUpdated: (updated: Club) => void;
 }
 
-function SuccessScreen({ svcName, svcColor, pricePerson: _pricePerson, createdClub, bank, phone, payDay, desc, onOpen, onAllClubs, haptic, onUpdated }: SuccessScreenProps) {
+function SuccessScreen({ svcName, svcColor, iconUrl, pricePerson: _pricePerson, createdClub, bank, phone, payDay, desc, onOpen, onAllClubs, haptic, onUpdated }: SuccessScreenProps) {
     const [editOpen, setEditOpen] = useState(false);
     const [editPrice, setEditPrice] = useState(String(createdClub.price_total));
     const [editPhone, setEditPhone] = useState(phone);
@@ -91,12 +92,19 @@ function SuccessScreen({ svcName, svcColor, pricePerson: _pricePerson, createdCl
             <div className="flex-1 flex flex-col items-center px-5 pb-8 pt-12 gap-6 overflow-y-auto">
                 {/* Icon */}
                 <div className="relative">
-                    <div
-                        className="w-24 h-24 rounded-3xl flex items-center justify-center text-white text-4xl font-bold shadow-xl"
-                        style={{ background: svcColor }}
+                    <Avatar
+                        src={iconUrl}
+                        alt={svcName}
+                        variant="rounded"
+                        sx={{
+                            width: 96, height: 96, borderRadius: 6,
+                            bgcolor: svcColor, color: 'white', fontSize: 36, fontWeight: 700,
+                            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                            '& img': { objectFit: 'contain' }
+                        }}
                     >
                         {svcName.charAt(0)}
-                    </div>
+                    </Avatar>
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-success flex items-center justify-center shadow-lg">
                         <MSIcon name="check" size={18} className="text-white" filled />
                     </div>
@@ -252,6 +260,8 @@ export function CreateClubPage() {
     const [members, setMembers] = useState(0);
     const [payDay, setPayDay] = useState<number | null>(null);
     const [desc, setDesc] = useState('');
+    const [region, setRegion] = useState('KZ');
+    const [telecomSlot, setTelecomSlot] = useState('Смартфон');
     const [dayOpen, setDayOpen] = useState(false);
 
     /* --- step 2 — payment + tg --- */
@@ -327,10 +337,16 @@ export function CreateClubPage() {
         return g;
     }, [services]);
 
+    const [localError, setLocalError] = useState<string | null>(null);
+
+    const showAlert = (msg: string) => {
+        setLocalError(msg);
+    };
+
     const stepOk = [
         !!svcId,
-        !!price && parseFloat(price) > 0 && members > 0 && !!payDay,
-        !!phone,
+        !!price && parseFloat(price) > 0 && members >= 2 && !!payDay,
+        /^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/.test(phone),
     ];
 
     const createFn = useMutation({
@@ -340,7 +356,10 @@ export function CreateClubPage() {
             setCreatedClub(c);
             setStep(3); // success step
         },
-        onError: () => haptic.notification('error'),
+        onError: (err: any) => {
+            haptic.notification('error');
+            showAlert(err.message || 'Произошла ошибка при создании клуба. Попробуйте еще раз.');
+        },
     });
 
     /* --- handlers --- */
@@ -354,11 +373,40 @@ export function CreateClubPage() {
         setPayDay(null);
     };
 
-    const next = () => { haptic.impact('light'); setStep(x => x + 1); };
+    const next = () => {
+        if (!stepOk[step]) {
+            haptic.notification('error');
+            if (step === 0) showAlert('Пожалуйста, выберите сервис, чтобы продолжить.');
+            else if (step === 1) {
+                if (!price || parseFloat(price) <= 0) showAlert('Пожалуйста, укажите корректную стоимость.');
+                else if (members < 2) showAlert('Количество участников должно быть минимум 2.');
+                else if (!payDay) showAlert('Пожалуйста, выберите день оплаты.');
+            }
+            return;
+        }
+        haptic.impact('light');
+        setStep(x => x + 1);
+    };
+
     const back = () => step > 0 ? (haptic.impact('light'), setStep(x => x - 1)) : navigate(-1);
 
     const submit = () => {
+        if (!stepOk[step]) {
+            haptic.notification('error');
+            if (step === 2) {
+                if (!phone) showAlert('Пожалуйста, укажите реквизиты для оплаты.');
+                else if (!/^\+7 \(\d{3}\) \d{3} \d{2} \d{2}$/.test(phone)) showAlert('Пожалуйста, введите полный номер телефона в правильном формате: +7 (XXX) XXX XX XX');
+            }
+            return;
+        }
         haptic.impact('medium');
+        const isTelecom = selected?.category === 'telecom';
+        const structuredDesc = [
+            isTelecom ? `Тип места: ${telecomSlot}` : 'Формат: семейная подписка',
+            !isTelecom ? `Регион: ${region}` : null,
+            'Оплата: после вступления и проверки доступа',
+            desc || null,
+        ].filter(Boolean).join('\n');
         createFn.mutate({
             service_id: svcId,
             price_total: parseFloat(price),
@@ -366,7 +414,7 @@ export function CreateClubPage() {
             payment_method: bank,
             payment_details: phone,
             payment_day: payDay ?? undefined,
-            description: desc || undefined,
+            description: structuredDesc || undefined,
             approval_mode: 'auto',
             ...(tgLink ? { telegram_group_link: tgLink } : {}),
         });
@@ -380,10 +428,12 @@ export function CreateClubPage() {
     if (step === 3 && createdClub) {
         const svcName = selected?.name ?? createdClub.subscription?.service_name ?? 'Клуб';
         const svcColor = (SERVICE_COLORS as Record<string, string>)[selected?.id ?? ''] || '#6366f1';
+        const iconUrl = selected ? SERVICE_ICONS[selected.logo] : undefined;
         const pricePerson = Math.round(createdClub.price_total / createdClub.max_members);
         return <SuccessScreen
             svcName={svcName}
             svcColor={svcColor}
+            iconUrl={iconUrl}
             pricePerson={pricePerson}
             createdClub={createdClub}
             bank={bank}
@@ -403,29 +453,21 @@ export function CreateClubPage() {
         <div className="min-h-[100dvh] bg-background flex flex-col">
 
             {/* top nav */}
-            <Navbar isBordered isBlurred maxWidth="sm" className="flex-shrink-0">
-                <NavbarContent justify="start">
-                    <NavbarItem>
-                        <button onClick={back} className="w-10 h-10 rounded-full flex items-center justify-center" aria-label="Назад">
-                            <MSIcon name="arrow_back_ios" size={20} className="text-foreground" />
-                        </button>
-                    </NavbarItem>
-                </NavbarContent>
-                <NavbarContent justify="center">
-                    <NavbarItem className="flex flex-col items-center gap-0">
-                        <span className="text-[13px] font-semibold text-foreground">Новый клуб</span>
-                        <span className="text-[11px] text-default-400">
-                            {step === 0 && 'Выберите сервис'}
-                            {step === 1 && 'Параметры'}
-                            {step === 2 && 'Реквизиты'}
-                            {step === 3 && 'Telegram'}
-                        </span>
-                    </NavbarItem>
-                </NavbarContent>
-                <NavbarContent justify="end">
-                    <NavbarItem className="w-10" />
-                </NavbarContent>
-            </Navbar>
+            <Box sx={{ display: 'flex', alignItems: 'center', px: 1, py: 1, borderBottom: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', bgcolor: 'rgba(8,8,8,0.9)', flexShrink: 0 }}>
+                <button onClick={back} className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" aria-label="Назад">
+                    <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18, color: 'text.primary' }} />
+                </button>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600 }}>Новый клуб</p>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                        {step === 0 && 'Выберите сервис'}
+                        {step === 1 && 'Параметры'}
+                        {step === 2 && 'Реквизиты'}
+                        {step === 3 && 'Telegram'}
+                    </p>
+                </div>
+                <div style={{ width: 40, flexShrink: 0 }} />
+            </Box>
 
             {/* progress dots */}
             <div className="flex gap-1.5 justify-center py-3 flex-shrink-0">
@@ -486,12 +528,18 @@ export function CreateClubPage() {
                                                         isActive ? 'bg-primary/10' : ''
                                                     )}
                                                 >
-                                                    <div
-                                                        className="w-8 h-8 rounded-[8px] flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0"
-                                                        style={{ background: color }}
+                                                    <Avatar
+                                                        src={SERVICE_ICONS[s.logo]}
+                                                        alt={s.name}
+                                                        variant="rounded"
+                                                        sx={{
+                                                            width: 32, height: 32, flexShrink: 0, borderRadius: 2,
+                                                            bgcolor: 'transparent', color: color, fontSize: 13, fontWeight: 700,
+                                                            '& img': { objectFit: 'contain' }
+                                                        }}
                                                     >
                                                         {s.name[0]}
-                                                    </div>
+                                                    </Avatar>
                                                     <span className={cn(
                                                         'flex-1 text-[17px] truncate',
                                                         isActive ? 'text-primary font-medium' : 'text-foreground'
@@ -559,12 +607,18 @@ export function CreateClubPage() {
                                                 )}
                                             >
                                                 <div className="flex items-start justify-between">
-                                                    <div
-                                                        className="w-11 h-11 rounded-[12px] flex items-center justify-center text-white text-lg font-bold"
-                                                        style={{ background: color }}
+                                                    <Avatar
+                                                        src={SERVICE_ICONS[s.logo]}
+                                                        alt={s.name}
+                                                        variant="rounded"
+                                                        sx={{
+                                                            width: 44, height: 44, flexShrink: 0, borderRadius: 3,
+                                                            bgcolor: 'transparent', color: color, fontSize: 18, fontWeight: 700,
+                                                            '& img': { objectFit: 'contain' }
+                                                        }}
                                                     >
                                                         {s.name[0]}
-                                                    </div>
+                                                    </Avatar>
                                                     {isActive && (
                                                         <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                                                             <MSIcon name="check" size={12} className="text-white" />
@@ -606,18 +660,70 @@ export function CreateClubPage() {
                                 {/* ── Service badge ── */}
                                 {selected && (
                                     <div className="flex items-center gap-3 px-1">
-                                        <div
-                                            className="w-11 h-11 rounded-2xl flex items-center justify-center text-white text-base font-bold flex-shrink-0"
-                                            style={{ background: SERVICE_COLORS[selected.logo] || '#6366f1' }}
+                                        <Avatar
+                                            src={SERVICE_ICONS[selected.logo]}
+                                            alt={selected.name}
+                                            variant="rounded"
+                                            sx={{
+                                                width: 44, height: 44, flexShrink: 0, borderRadius: 4,
+                                                bgcolor: 'transparent', color: 'white', fontSize: 16, fontWeight: 700,
+                                                '& img': { objectFit: 'contain' }
+                                            }}
                                         >
                                             {selected.name[0]}
-                                        </div>
+                                        </Avatar>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold truncate">{selected.name}</p>
                                             <p className="text-xs text-default-400">
                                                 Рынок: {selected.priceRange.min}–{selected.priceRange.max} ₸/мес
                                             </p>
                                         </div>
+                                    </div>
+                                )}
+
+                                {selected && (
+                                    <div className="bg-content1 rounded-3xl px-5 py-4">
+                                        {selected.category === 'telecom' ? (
+                                            <>
+                                                <p className="text-xs font-semibold text-default-400 mb-2">Тип места</p>
+                                                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                                                    {['Смартфон', 'Роутер', 'Часы'].map(item => (
+                                                        <button
+                                                            key={item}
+                                                            type="button"
+                                                            onClick={() => { haptic.selection(); setTelecomSlot(item); }}
+                                                            className={cn(
+                                                                'h-9 px-4 rounded-full text-sm font-semibold whitespace-nowrap',
+                                                                telecomSlot === item ? 'bg-primary text-white' : 'bg-default-100 text-default-500'
+                                                            )}
+                                                        >
+                                                            {item}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <p className="text-[11px] text-default-400 mt-2">Для роутера и часов условия обычно дешевле, чем для смартфона.</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-xs font-semibold text-default-400 mb-2">Регион семьи</p>
+                                                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                                                    {['KZ', 'US', 'TR', 'Любой'].map(item => (
+                                                        <button
+                                                            key={item}
+                                                            type="button"
+                                                            onClick={() => { haptic.selection(); setRegion(item); }}
+                                                            className={cn(
+                                                                'h-9 px-4 rounded-full text-sm font-semibold whitespace-nowrap',
+                                                                region === item ? 'bg-primary text-white' : 'bg-default-100 text-default-500'
+                                                            )}
+                                                        >
+                                                            {item}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <p className="text-[11px] text-default-400 mt-2">Особенно важно для YouTube, Netflix, PlayStation и других региональных сервисов.</p>
+                                            </>
+                                        )}
                                     </div>
                                 )}
 
@@ -679,7 +785,7 @@ export function CreateClubPage() {
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <button
-                                                    onClick={() => { haptic.selection(); setMembers(m => Math.max(1, m - 1)); }}
+                                                    onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 0 : Math.max(2, m - 1)); }}
                                                     className="w-8 h-8 rounded-full bg-default-100 flex items-center justify-center active:scale-90 transition-transform"
                                                 >
                                                     <MSIcon name="remove" size={16} className="text-foreground" />
@@ -691,7 +797,7 @@ export function CreateClubPage() {
                                                     {members === 0 ? '—' : members}
                                                 </span>
                                                 <button
-                                                    onClick={() => { haptic.selection(); setMembers(m => Math.min(6, m + 1)); }}
+                                                    onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 2 : Math.min(selected?.familySize || 6, m + 1)); }}
                                                     className="w-8 h-8 rounded-full bg-primary flex items-center justify-center active:scale-90 transition-transform"
                                                 >
                                                     <MSIcon name="add" size={16} className="text-white" />
@@ -755,7 +861,7 @@ export function CreateClubPage() {
                                                     Каждый месяц бот напомнит об оплате
                                                 </p>
                                                 <div className="grid grid-cols-7 gap-1.5">
-                                                    {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                                                    {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }, (_, i) => i + 1).map(d => (
                                                         <button
                                                             key={d}
                                                             onClick={() => {
@@ -893,9 +999,9 @@ export function CreateClubPage() {
                                             </p>
                                         </div>
                                         <Switch
-                                            isSelected={useTg}
-                                            onValueChange={v => { haptic.selection(); setUseTg(v); }}
-                                            color="primary" size="sm"
+                                            checked={useTg}
+                                            onChange={e => { haptic.selection(); setUseTg(e.target.checked); }}
+                                            color="primary" size="small"
                                         />
                                     </div>
 
@@ -987,7 +1093,7 @@ export function CreateClubPage() {
                 {
                     step < STEPS.length - 1 ? (
                         <button
-                            onClick={stepOk[step] ? next : undefined}
+                            onClick={next}
                             className={cn(
                                 'w-full h-14 rounded-2xl text-base font-black transition-all',
                                 stepOk[step]
@@ -1001,7 +1107,13 @@ export function CreateClubPage() {
                         <button
                             onClick={!createFn.isPending ? submit : undefined}
                             disabled={createFn.isPending}
-                            className="w-full h-14 rounded-2xl text-base font-black bg-primary text-white active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                            className={cn(
+                                'w-full h-14 rounded-2xl text-base font-black transition-all flex items-center justify-center gap-2',
+                                stepOk[step]
+                                    ? 'bg-primary text-white active:scale-[0.98]'
+                                    : 'bg-default-100 text-default-300 cursor-not-allowed',
+                                createFn.isPending ? 'opacity-60' : ''
+                            )}
                         >
                             {createFn.isPending ? (
                                 'Создаём...'
@@ -1068,6 +1180,29 @@ export function CreateClubPage() {
                         ))}
                 </div>
             </BottomSheet >
+
+            <Snackbar
+                open={!!localError}
+                autoHideDuration={4000}
+                onClose={() => setLocalError(null)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                sx={{ mt: 2, zIndex: 99999 }}
+            >
+                <Alert
+                    severity="error"
+                    onClose={() => setLocalError(null)}
+                    variant="filled"
+                    sx={{
+                        borderRadius: 3,
+                        fontWeight: 600,
+                        backgroundColor: '#f31260',
+                        color: 'white',
+                        boxShadow: '0 10px 20px -5px rgba(243, 18, 96, 0.4)'
+                    }}
+                >
+                    {localError}
+                </Alert>
+            </Snackbar>
         </div >
     );
 }

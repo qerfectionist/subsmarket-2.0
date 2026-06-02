@@ -23,7 +23,9 @@ import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
 type TabKey = 'buy' | 'sell';
 
-const categoryOptions = ['Streaming', 'Cloud', 'AI', 'Gaming', 'VPN', 'Other'];
+const categoryOptions = ['AI', 'Design', 'Cloud', 'Video', 'Gaming', 'Other'];
+const accessTypeOptions = ['Общий аккаунт', 'Личная активация', 'Инвайт / команда'];
+const periodOptions = ['1 месяц', '3 месяца', '6 месяцев', '1 год'];
 
 export function AccountsPage() {
     const [tab, setTab] = useState<TabKey>('buy');
@@ -149,13 +151,25 @@ function AccountCard({ offer, currentUserId }: { offer: AccountOffer; currentUse
 
 function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
     const [title, setTitle] = useState('');
-    const [category, setCategory] = useState('Streaming');
+    const [category, setCategory] = useState('AI');
+    const [accessType, setAccessType] = useState('Общий аккаунт');
+    const [period, setPeriod] = useState('1 месяц');
     const [price, setPrice] = useState('');
     const [desc, setDesc] = useState('');
     const haptic = useHaptic();
 
     const createMutation = useMutation({
-        mutationFn: () => api.createAccountOffer({ title, service_category: category, price: Number(price), description: desc }),
+        mutationFn: () => api.createAccountOffer({
+            title,
+            service_category: category,
+            price: Number(price),
+            description: [
+                `Тип: ${accessType}`,
+                `Срок: ${period}`,
+                'Передача: после сделки',
+                desc,
+            ].filter(Boolean).join('\n'),
+        }),
         onSuccess: () => {
             haptic.notification('success');
             alert('Предложение опубликовано');
@@ -173,7 +187,7 @@ function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
             <Card sx={{ bgcolor: '#D8C7FF', color: '#111', border: 0, borderRadius: '30px' }}>
                 <CardContent sx={{ p: 2.2 }}>
                     <Typography fontSize={25} fontWeight={760} lineHeight={1.06}>Создать аккаунт</Typography>
-                    <Typography fontSize={14} color="rgba(0,0,0,0.58)" sx={{ mt: 0.8 }}>Опишите сервис, срок и условия. Логины и коды передавайте только после сделки.</Typography>
+                    <Typography fontSize={14} color="rgba(0,0,0,0.58)" sx={{ mt: 0.8 }}>Выберите формат: общий логин, личная активация или инвайт в команду.</Typography>
                 </CardContent>
             </Card>
 
@@ -183,6 +197,12 @@ function SellAccountForm({ onSuccess }: { onSuccess: () => void }) {
                         <TextField label="Название" value={title} onChange={e => setTitle(e.target.value)} placeholder="ChatGPT Pro, Canva Pro" required fullWidth />
                         <TextField select label="Категория" value={category} onChange={e => setCategory(e.target.value)} fullWidth>
                             {categoryOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+                        </TextField>
+                        <TextField select label="Тип доступа" value={accessType} onChange={e => setAccessType(e.target.value)} fullWidth>
+                            {accessTypeOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
+                        </TextField>
+                        <TextField select label="Срок" value={period} onChange={e => setPeriod(e.target.value)} fullWidth>
+                            {periodOptions.map(opt => <MenuItem key={opt} value={opt}>{opt}</MenuItem>)}
                         </TextField>
                         <TextField type="number" label="Цена" value={price} onChange={e => setPrice(e.target.value)} placeholder="5000" required fullWidth InputProps={{ endAdornment: <Typography color="#77736B" ml={0.5}>₸</Typography> }} />
                         <TextField label="Описание" value={desc} onChange={e => setDesc(e.target.value)} placeholder="Что входит, срок, условия передачи" required fullWidth multiline minRows={3} maxRows={5} />

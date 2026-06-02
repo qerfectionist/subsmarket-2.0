@@ -154,6 +154,11 @@ function OfferCard({ offer, onBuy }: { offer: GigabyteOffer; onBuy: () => void }
                         <Typography fontSize={12.5} color="#77736B" fontWeight={520}>
                             продавец #{offer.seller_id}
                         </Typography>
+                        {offer.description && (
+                            <Typography fontSize={12} color="#77736B" fontWeight={520} noWrap sx={{ maxWidth: 190 }}>
+                                {offer.description.replace(/\n/g, ' · ')}
+                            </Typography>
+                        )}
                     </Box>
                 </Box>
                 <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
@@ -186,6 +191,8 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
     const [operator, setOperator] = useState('beeline');
     const [gb, setGb] = useState<number>(10);
     const [price, setPrice] = useState<string>('500');
+    const [validUntil, setValidUntil] = useState('до конца месяца');
+    const [transferNote, setTransferNote] = useState('перевод через приложение оператора');
 
     const createOfferMutation = useMutation({
         mutationFn: (data: CreateGigabyteOfferRequest) => api.createGigabyteOffer(data),
@@ -200,7 +207,12 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         haptic.impact('medium');
-        createOfferMutation.mutate({ operator, amount_gb: gb, price: parseInt(price, 10) });
+        createOfferMutation.mutate({
+            operator,
+            amount_gb: gb,
+            price: parseInt(price, 10),
+            description: [`Срок: ${validUntil}`, `Условия: ${transferNote}`].join('\n'),
+        });
     };
 
     return (
@@ -250,6 +262,25 @@ function SellForm({ onSuccess }: { onSuccess: () => void }) {
                         </Box>
                         <TextField value={price} onChange={e => setPrice(e.target.value)} type="number" size="small" sx={{ width: 128 }} InputProps={{ endAdornment: <Typography color="#77736B" ml={0.5}>₸</Typography> }} inputProps={{ style: { textAlign: 'right', fontWeight: 720, fontSize: 18 } }} />
                     </Box>
+
+                    <Divider sx={{ my: 2, borderColor: '#F0EEE8' }} />
+
+                    <Stack spacing={1.2}>
+                        <TextField
+                            label="Срок жизни ГБ"
+                            value={validUntil}
+                            onChange={e => setValidUntil(e.target.value)}
+                            placeholder="до конца месяца"
+                            fullWidth
+                        />
+                        <TextField
+                            label="Условия перевода"
+                            value={transferNote}
+                            onChange={e => setTransferNote(e.target.value)}
+                            placeholder="перевод через приложение оператора"
+                            fullWidth
+                        />
+                    </Stack>
                 </CardContent>
             </Card>
 
