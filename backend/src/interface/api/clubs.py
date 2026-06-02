@@ -1,5 +1,6 @@
 """Club API routes."""
 
+from datetime import datetime
 from decimal import Decimal
 from typing import Annotated, Optional
 from uuid import UUID
@@ -177,9 +178,28 @@ async def create_club(
     request: Request,
     data: ClubCreate,
     tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     service: Annotated[ClubService, Depends(get_service)],
 ) -> ClubListItem:
     """Create a new club. Rate limited: 5 per hour."""
+    user_result = await db.execute(select(User).where(User.user_id == tg_user.id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        user = User(
+            user_id=tg_user.id,
+            username=tg_user.username,
+            first_name=tg_user.first_name,
+            last_active_at=datetime.utcnow(),
+        )
+        db.add(user)
+        await db.flush()
+    else:
+        user.last_active_at = datetime.utcnow()
+        if tg_user.username:
+            user.username = tg_user.username
+        if tg_user.first_name:
+            user.first_name = tg_user.first_name
+
     return await service.create_club(data, tg_user.id)
 
 

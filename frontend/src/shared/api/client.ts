@@ -50,8 +50,15 @@ export async function apiFetch<T>(
             throw new Error('AUTH_EXPIRED');
         }
 
-        const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-        throw new Error(error.detail || `HTTP ${response.status}`);
+        const rawError = await response.text().catch(() => '');
+        let detail = rawError;
+        try {
+            const parsed = rawError ? JSON.parse(rawError) : null;
+            detail = parsed?.detail || parsed?.message || rawError;
+        } catch {
+            detail = rawError;
+        }
+        throw new Error(detail || `HTTP ${response.status}`);
     }
 
     return response.json();
