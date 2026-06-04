@@ -23,6 +23,11 @@ export function ReportUserPage() {
 
     const createComplaint = useCreateComplaint();
 
+    const goBack = useCallback(() => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate('/profile');
+    }, [navigate]);
+
     const handleSubmit = useCallback(async (formData: ComplaintFormData) => {
         haptic.impact('medium');
         const complaintData: ComplaintCreate = {
@@ -34,13 +39,13 @@ export function ReportUserPage() {
         };
         await createComplaint.mutateAsync({ data: complaintData, reporterId: currentUserId });
         haptic.notification('success');
-        navigate(-1);
-    }, [createComplaint, currentUserId, haptic, navigate]);
+        goBack();
+    }, [createComplaint, currentUserId, goBack, haptic]);
 
     const handleCancel = useCallback(() => {
         haptic.impact('light');
-        navigate(-1);
-    }, [haptic, navigate]);
+        goBack();
+    }, [goBack, haptic]);
 
     // Guard
     if (!targetId) {
@@ -49,24 +54,24 @@ export function ReportUserPage() {
                 <Typography fontSize={48} mb={2}>⚠️</Typography>
                 <Typography variant="h6" fontWeight={800} mb={1}>Ошибка</Typography>
                 <Typography color="text.secondary" mb={3}>Не указан пользователь для жалобы</Typography>
-                <Button variant="outlined" onClick={() => navigate(-1)} sx={{ borderRadius: 3 }}>Назад</Button>
+                <Button variant="outlined" onClick={goBack} sx={{ borderRadius: 3 }}>Назад</Button>
             </Box>
         );
     }
 
     return (
-        <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', pb: 10 }}>
+        <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 10 }}>
             {/* Header */}
             <Box sx={{
                 position: 'sticky', top: 0, zIndex: 50,
-                bgcolor: alpha('#080808', 0.92), backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)',
+                borderBottom: '1px solid rgba(17,17,17,0.06)',
                 display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 1,
             }}>
-                <IconButton onClick={handleCancel}><ArrowBackRoundedIcon /></IconButton>
+                <IconButton onClick={handleCancel} aria-label="Назад" sx={{ bgcolor: '#fff', color: '#111' }}><ArrowBackRoundedIcon /></IconButton>
                 <Box>
                     <Typography fontWeight={800} fontSize={16}>Жалоба на пользователя</Typography>
-                    <Typography variant="caption" color="text.secondary">Опишите проблему и приложите доказательства</Typography>
+                    <Typography variant="caption" color="#77736B">Опишите проблему и приложите доказательства</Typography>
                 </Box>
             </Box>
 

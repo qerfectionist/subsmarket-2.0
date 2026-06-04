@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, AccountOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
@@ -21,8 +22,9 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import KeyRoundedIcon from '@mui/icons-material/KeyRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
-type TabKey = 'buy' | 'sell';
+type TabKey = 'buy' | 'sell' | 'my';
 
 type AccountServiceOption = {
     name: string;
@@ -32,6 +34,18 @@ type AccountServiceOption = {
 const accessTypeOptions = ['Готовый аккаунт', 'Личная активация', 'Промокод', 'Инвайт / команда', 'Общий доступ'];
 const periodOptions = ['1 месяц', '2 месяца', '3 месяца', '6 месяцев', '12 месяцев', '18 месяцев', '24 месяца', '36 месяцев'];
 const warrantyOptions = ['Замена при слете', 'Гарантия на срок', 'Без гарантии'];
+
+function normalizeAccountTab(value: string | null): TabKey {
+    if (value === 'sell' || value === 'create') return 'sell';
+    if (value === 'my') return 'my';
+    return 'buy';
+}
+
+function accountTabToQuery(value: TabKey): string {
+    if (value === 'sell') return 'create';
+    if (value === 'my') return 'my';
+    return 'market';
+}
 
 const accountServiceOptions: AccountServiceOption[] = [
     { name: 'ChatGPT Plus', category: 'AI' },
@@ -316,7 +330,8 @@ function getWarrantyBadgeColor(warranty: string | null): string {
 }
 
 export function AccountsPage() {
-    const [tab, setTab] = useState<TabKey>('buy');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [tab, setTab] = useState<TabKey>(() => normalizeAccountTab(searchParams.get('tab')));
     const haptic = useHaptic();
     const { webapp } = useTelegram();
     const user = webapp?.initDataUnsafe?.user;
@@ -327,6 +342,20 @@ export function AccountsPage() {
         staleTime: 2 * 60 * 1000,
         refetchInterval: 60 * 1000,
     });
+    const myOffers = user?.id ? offers.filter(offer => offer.seller_id === user.id) : [];
+
+    useEffect(() => {
+        const nextTab = normalizeAccountTab(searchParams.get('tab'));
+        setTab(current => current === nextTab ? current : nextTab);
+    }, [searchParams]);
+
+    const handleTabChange = (nextTab: TabKey) => {
+        haptic.selection();
+        setTab(nextTab);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('tab', accountTabToQuery(nextTab));
+        setSearchParams(nextParams, { replace: true });
+    };
 
     return (
         <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
@@ -344,9 +373,10 @@ export function AccountsPage() {
                         <Chip label="safe" sx={{ bgcolor: '#D8C7FF', color: '#111' }} />
                     </Box>
 
-                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); }} sx={{ minHeight: 40 }}>
+                    <Tabs value={tab} onChange={(_, v) => handleTabChange(v)} sx={{ minHeight: 40 }}>
                         <Tab value="buy" label="Маркет" />
                         <Tab value="sell" label="Создать" />
+                        <Tab value="my" label="Мои" />
                     </Tabs>
                 </Box>
             </Box>
@@ -364,14 +394,32 @@ export function AccountsPage() {
                                 <KeyRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
                                 <Typography fontSize={18} fontWeight={720}>Пока нет предложений</Typography>
                                 <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Создайте первое предложение по аккаунту или сервису.</Typography>
-                                <Button onClick={() => setTab('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>Создать</Button>
+                                <Button onClick={() => handleTabChange('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>Создать</Button>
                             </Box>
                         )}
                         {offers.map(offer => <AccountCard key={offer.offer_id} offer={offer} currentUserId={user?.id} />)}
                     </Stack>
                 )}
 
-                {tab === 'sell' && <SellAccountForm onSuccess={() => { setTab('buy'); refetch(); }} />}
+                {tab === 'sell' && <SellAccountForm onSuccess={() => { handleTabChange('buy'); refetch(); }} />}
+                {tab === 'my' && (
+                    <Stack spacing={1}>
+                        {isLoading && (
+                            <Box sx={{ textAlign: 'center', py: 8 }}>
+                                <CircularProgress size={32} sx={{ color: '#111' }} />
+                            </Box>
+                        )}
+                        {!isLoading && myOffers.length === 0 && (
+                            <Box sx={{ textAlign: 'center', py: 8, px: 2, bgcolor: '#fff', borderRadius: '28px' }}>
+                                <StorefrontRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
+                                <Typography fontSize={18} fontWeight={720}>Ваших аккаунтов пока нет</Typography>
+                                <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Создайте предложение, и оно появится здесь.</Typography>
+                                <Button onClick={() => handleTabChange('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>Создать</Button>
+                            </Box>
+                        )}
+                        {myOffers.map(offer => <AccountCard key={offer.offer_id} offer={offer} currentUserId={user?.id} />)}
+                    </Stack>
+                )}
             </Box>
         </Box>
     );

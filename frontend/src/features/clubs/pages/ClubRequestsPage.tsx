@@ -349,21 +349,26 @@ export function ClubRequestsPage() {
         else window.open(url, '_blank', 'noopener,noreferrer');
     };
 
+    const goBack = () => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate(`/clubs/${id}`);
+    };
+
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', bgcolor: 'background.default' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111' }}>
             {/* Header */}
             <Box sx={{
                 position: 'sticky', top: 0, zIndex: 50,
-                bgcolor: alpha('#080808', 0.92), backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)',
+                borderBottom: '1px solid rgba(17,17,17,0.06)',
                 display: 'flex', alignItems: 'center', gap: 1.5, px: 1, py: 1,
             }}>
-                <IconButton onClick={() => navigate(-1)}>
+                <IconButton onClick={goBack} aria-label="Назад" sx={{ bgcolor: '#fff', color: '#111' }}>
                     <ArrowBackRoundedIcon />
                 </IconButton>
                 <Box sx={{ flex: 1 }}>
                     <Typography fontWeight={800} fontSize={16}>Заявки на вступление</Typography>
-                    <Typography variant="caption" color="text.secondary">Просматривайте и принимайте решения</Typography>
+                    <Typography variant="caption" color="#77736B">Просматривайте и принимайте решения</Typography>
                 </Box>
                 {(requests?.length || issueRequests.length || paymentRequests.length) > 0 && (
                     <Chip color="error" size="small" label={(requests?.length || 0) + issueRequests.length + paymentRequests.length} sx={{ fontWeight: 700 }} />

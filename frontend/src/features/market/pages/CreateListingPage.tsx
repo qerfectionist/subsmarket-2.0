@@ -26,6 +26,11 @@ const CreateListingPage = () => {
     const [operatorId, setOperatorId] = useState('beeline');
     const [loading, setLoading] = useState(false);
 
+    const goBack = () => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate('/gb-market');
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount || Number(amount) <= 0) {
@@ -42,7 +47,7 @@ const CreateListingPage = () => {
         try {
             await api.createGigabyteOffer({ operator: operatorId, amount_gb: Number(amount), price: Number(price) });
             haptic.notification('success');
-            navigate('/market');
+            navigate('/gb-market?tab=deals');
         } catch (e) {
             console.error(e);
             haptic.notification('error');
@@ -53,15 +58,15 @@ const CreateListingPage = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', bgcolor: 'background.default', pb: 12 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 12 }}>
             {/* Header */}
             <Box sx={{
                 position: 'sticky', top: 0, zIndex: 50,
-                bgcolor: alpha('#080808', 0.92), backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)',
+                borderBottom: '1px solid rgba(17,17,17,0.06)',
                 display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 1,
             }}>
-                <IconButton onClick={() => navigate(-1)}><ArrowBackRoundedIcon /></IconButton>
+                <IconButton onClick={goBack} aria-label="Назад" sx={{ bgcolor: '#fff', color: '#111' }}><ArrowBackRoundedIcon /></IconButton>
                 <Typography fontWeight={800} fontSize={16}>
                     {t('listing', 'title') || 'Создать объявление'}
                 </Typography>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, Club } from '@/shared/api';
@@ -36,9 +36,11 @@ const filters: Array<{ id: Filter; label: string }> = [
 ];
 
 export function ClubsPage() {
-    const [tab, setTab] = useState<PageTab>('market');
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const categoryParam = searchParams.get('category');
+    const tabParam = searchParams.get('tab');
+    const initialTab: PageTab = tabParam === 'my' ? 'my' : 'market';
+    const [tab, setTab] = useState<PageTab>(initialTab);
     const initialFilter: Filter = categoryParam === 'digital' || categoryParam === 'telecom' ? categoryParam : 'all';
     const [filter, setFilter] = useState<Filter>(initialFilter);
     const [searchInput, setSearchInput] = useState('');
@@ -58,6 +60,45 @@ export function ClubsPage() {
         setSearchQuery('');
     };
 
+    useEffect(() => {
+        const nextTab: PageTab = searchParams.get('tab') === 'my' ? 'my' : 'market';
+        const nextCategory = searchParams.get('category');
+        const nextFilter: Filter = nextCategory === 'digital' || nextCategory === 'telecom' ? nextCategory : 'all';
+
+        setTab(current => current === nextTab ? current : nextTab);
+        setFilter(current => current === nextFilter ? current : nextFilter);
+    }, [searchParams]);
+
+    const setRouteState = (nextTab: PageTab, nextFilter = filter) => {
+        const nextParams = new URLSearchParams(searchParams);
+        if (nextTab === 'my') {
+            nextParams.set('tab', 'my');
+        } else {
+            nextParams.set('tab', 'market');
+        }
+
+        if (nextFilter === 'all') {
+            nextParams.delete('category');
+        } else {
+            nextParams.set('category', nextFilter);
+        }
+
+        setSearchParams(nextParams, { replace: true });
+    };
+
+    const handleTabChange = (nextTab: PageTab) => {
+        haptic.selection();
+        setTab(nextTab);
+        if (nextTab === 'market') clearSearch();
+        setRouteState(nextTab, nextTab === 'market' ? 'all' : filter);
+    };
+
+    const handleFilterChange = (nextFilter: Filter) => {
+        haptic.selection();
+        setFilter(nextFilter);
+        setRouteState(tab, nextFilter);
+    };
+
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['clubs', filter, searchQuery],
         queryFn: () => api.getClubs({ ...(filter !== 'all' && { category: filter }), ...(searchQuery && { search: searchQuery }) }),
@@ -75,6 +116,7 @@ export function ClubsPage() {
 
     const clubs = data?.items ?? [];
     const total = data?.total ?? 0;
+    const visibleMyClubs = filter === 'all' ? (myClubs ?? []) : (myClubs ?? []).filter(club => club.category === filter);
     const createPath = filter === 'telecom'
         ? '/clubs/create/tariff'
         : filter === 'digital'
@@ -97,7 +139,7 @@ export function ClubsPage() {
                         {tab === 'market' && total > 0 && <Chip label={`${total} сейчас`} sx={{ bgcolor: '#fff', color: '#111' }} />}
                     </Box>
 
-                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); if (v === 'market') { setFilter('all'); clearSearch(); } }} sx={{ minHeight: 40, mb: 1.2 }}>
+                    <Tabs value={tab} onChange={(_, v) => handleTabChange(v)} sx={{ minHeight: 40, mb: 1.2 }}>
                         <Tab value="market" label="Маркет" />
                         <Tab value="my" label="Мои" />
                     </Tabs>
@@ -121,7 +163,7 @@ export function ClubsPage() {
                                             key={item.id}
                                             label={item.label}
                                             clickable
-                                            onClick={() => { haptic.selection(); setFilter(item.id); }}
+                                            onClick={() => handleFilterChange(item.id)}
                                             sx={{
                                                 bgcolor: filter === item.id ? '#111' : '#fff',
                                                 color: filter === item.id ? '#fff' : '#111',
@@ -157,10 +199,10 @@ export function ClubsPage() {
                     <Stack spacing={1}>
                         {myLoading && [1, 2].map(i => <ClubCardSkeleton key={i} />)}
                         {myError && <ErrorState title="Не загрузили ваши места" action="Повторить" onClick={() => myRefetch()} />}
-                        {!myLoading && !myError && (!myClubs || myClubs.length === 0) && (
-                            <EmptyState title="Мест пока нет" body="Вступите в клуб или создайте свое предложение." action="Открыть маркет" onClick={() => setTab('market')} />
+                        {!myLoading && !myError && visibleMyClubs.length === 0 && (
+                            <EmptyState title="Мест пока нет" body="Вступите в клуб или создайте свое предложение." action="Открыть маркет" onClick={() => handleTabChange('market')} />
                         )}
-                        {!myLoading && !myError && myClubs?.map(club => <ClubCard key={club.club_id} club={club} />)}
+                        {!myLoading && !myError && visibleMyClubs.map(club => <ClubCard key={club.club_id} club={club} />)}
                     </Stack>
                 )}
             </Box>

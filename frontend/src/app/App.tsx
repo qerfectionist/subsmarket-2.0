@@ -10,6 +10,7 @@ import { routePreloads, warmupCoreData } from '@/app/routePreload';
 
 // Lazy loaded pages
 const HomePage = lazy(() => import('@/features/home/pages/HomePage').then(m => ({ default: m.HomePage })));
+const MyHubPage = lazy(() => import('@/features/home/pages/MyHubPage').then(m => ({ default: m.MyHubPage })));
 const OnboardingPage = lazy(() => import('@/features/home/pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(m => ({ default: m.ClubsPage })));
 const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(m => ({ default: m.ClubDetailsPage })));
@@ -54,6 +55,7 @@ function AppRoutes() {
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
+                    <Route path="my" element={<MyHubPage />} />
                     <Route path="onboarding" element={<OnboardingPage />} />
                     <Route path="clubs" element={<ClubsPage />} />
                     <Route path="clubs/create" element={<CreateClubPage />} />

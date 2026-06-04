@@ -79,6 +79,11 @@ export default function DealPage() {
         if (confirmed) confirmMutation.mutate();
     };
 
+    const goBack = () => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate('/deals');
+    };
+
     if (isLoading) {
         return (
             <Box sx={{ p: 2, pb: 16 }}>
@@ -102,7 +107,7 @@ export default function DealPage() {
                 </Box>
                 <Typography fontWeight={700} color="error.main" fontSize={14}>{t('common', 'error')}</Typography>
                 <Typography variant="caption" color="text.secondary" textAlign="center" maxWidth={240}>Сделка не найдена или произошла ошибка</Typography>
-                <Button variant="outlined" onClick={() => navigate(-1)} sx={{ mt: 1, borderRadius: 3, textTransform: 'none' }}>
+                <Button variant="outlined" onClick={goBack} sx={{ mt: 1, borderRadius: 3, textTransform: 'none' }}>
                     ← {t('common', 'back')}
                 </Button>
             </Box>
@@ -119,7 +124,7 @@ export default function DealPage() {
             <Stack spacing={1.5}>
                 {/* Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pt: 1 }}>
-                    <IconButton onClick={() => navigate(-1)} sx={{ color: 'text.secondary' }}>
+                    <IconButton onClick={goBack} sx={{ color: 'text.secondary' }} aria-label="Назад">
                         <ArrowBackRoundedIcon />
                     </IconButton>
                     <Box sx={{ flex: 1 }}>

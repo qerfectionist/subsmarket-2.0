@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, CreateGigabyteOfferRequest, GigabyteOffer } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import DealsListPage from '@/features/deals/pages/DealsListPage';
+import { isKzPhoneComplete } from '@/shared/lib/phone';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import {
     Box,
     Button,
@@ -29,6 +32,18 @@ import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
 type TabKey = 'buy' | 'sell' | 'my';
 
+function normalizeGbTab(value: string | null): TabKey {
+    if (value === 'sell') return 'sell';
+    if (value === 'my' || value === 'deals') return 'my';
+    return 'buy';
+}
+
+function gbTabToQuery(value: TabKey): string {
+    if (value === 'sell') return 'sell';
+    if (value === 'my') return 'deals';
+    return 'buy';
+}
+
 const operators = [
     { id: 'beeline', name: 'Beeline', lifetime: '3 дня', fee: 99 },
     { id: 'tele2', name: 'Tele2', lifetime: '7 дней', fee: 100 },
@@ -47,7 +62,8 @@ function getOfferMeta(description?: string | null) {
 }
 
 export function GBMarketPage() {
-    const [tab, setTab] = useState<TabKey>('buy');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [tab, setTab] = useState<TabKey>(() => normalizeGbTab(searchParams.get('tab')));
     const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
     const [buyOffer, setBuyOffer] = useState<GigabyteOffer | null>(null);
     const haptic = useHaptic();
@@ -60,6 +76,19 @@ export function GBMarketPage() {
         staleTime: 2 * 60 * 1000,
     });
 
+    useEffect(() => {
+        const nextTab = normalizeGbTab(searchParams.get('tab'));
+        setTab(current => current === nextTab ? current : nextTab);
+    }, [searchParams]);
+
+    const handleTabChange = (nextTab: TabKey) => {
+        haptic.selection();
+        setTab(nextTab);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('tab', gbTabToQuery(nextTab));
+        setSearchParams(nextParams, { replace: true });
+    };
+
     const createDealMutation = useMutation({
         mutationFn: api.createDeal,
         onSuccess: () => {
@@ -67,7 +96,7 @@ export function GBMarketPage() {
             queryClient.invalidateQueries({ queryKey: ['gb-offers'] });
             queryClient.invalidateQueries({ queryKey: ['my-deals'] });
             setBuyOffer(null);
-            setTab('my');
+            handleTabChange('my');
         },
         onError: () => haptic.notification('error'),
     });
@@ -88,7 +117,7 @@ export function GBMarketPage() {
                         <Chip label="live" sx={{ bgcolor: '#B9F27D', color: '#111' }} />
                     </Box>
 
-                    <Tabs value={tab} onChange={(_, v) => { haptic.selection(); setTab(v); }} sx={{ minHeight: 40 }}>
+                    <Tabs value={tab} onChange={(_, v) => handleTabChange(v)} sx={{ minHeight: 40 }}>
                         <Tab value="buy" label="Купить" />
                         <Tab value="sell" label="Продать" />
                         <Tab value="my" label="Сделки" />
@@ -122,7 +151,7 @@ export function GBMarketPage() {
                                     <StorefrontRoundedIcon sx={{ fontSize: 44, color: '#B7B1A8', mb: 1 }} />
                                     <Typography fontSize={18} fontWeight={720}>Предложений пока нет</Typography>
                                     <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5 }}>Можно создать первое предложение на продажу ГБ.</Typography>
-                                    <Button onClick={() => setTab('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>
+                                    <Button onClick={() => handleTabChange('sell')} sx={{ mt: 2, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}>
                                         Продать ГБ
                                     </Button>
                                 </Box>
@@ -132,7 +161,7 @@ export function GBMarketPage() {
                     </>
                 )}
 
-                {tab === 'sell' && <SellForm onSuccess={() => setTab('my')} />}
+                {tab === 'sell' && <SellForm onSuccess={() => handleTabChange('my')} />}
                 {tab === 'my' && <DealsListPage />}
             </Box>
 
@@ -206,7 +235,7 @@ function BuyGbDialog({ offer, onClose, onSubmit, loading }: { offer: GigabyteOff
         onClose();
     };
 
-    const phoneReady = phone.replace(/\D/g, '').length >= 10;
+    const phoneReady = isKzPhoneComplete(phone);
 
     return (
         <Dialog open={!!offer} onClose={handleClose} PaperProps={{ sx: { borderRadius: '28px', m: 2, maxWidth: 380, width: '100%' } }}>
@@ -216,12 +245,10 @@ function BuyGbDialog({ offer, onClose, onSubmit, loading }: { offer: GigabyteOff
                     {op?.name} · доступно {maxGb} ГБ · действует {meta.lifetime || op?.lifetime || 'ограниченное время'}
                 </Typography>
                 <Stack spacing={1.5}>
-                    <TextField
+                    <PhoneInput
                         label="Номер для получения ГБ"
                         value={phone}
-                        onChange={e => setPhone(e.target.value)}
-                        placeholder="+7 777 123 45 67"
-                        type="tel"
+                        onChange={setPhone}
                         fullWidth
                     />
                     <Box>

@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { api, Club } from '@/shared/api';
 import {
     Avatar,
     Box,
@@ -27,12 +29,14 @@ const serviceTiles = [
     { title: 'Аккаунты', subtitle: 'GPT, Canva, Grok', to: '/accounts', icon: StorefrontRoundedIcon, color: '#D8C7FF' },
 ];
 
-const liveOffers = [
-    { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', to: '/clubs?category=digital' },
-];
-
 export function HomePage() {
     const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const { data: liveData, isLoading: liveLoading } = useQuery({
+        queryKey: ['home-live-clubs'],
+        queryFn: () => api.getClubs({ limit: 3 }),
+        staleTime: 2 * 60 * 1000,
+    });
+    const liveOffers = liveData?.items ?? [];
 
     return (
         <Box sx={{ bgcolor: '#F5F4EF', color: '#111', px: 2, pt: 1.6, pb: 2 }}>
@@ -144,47 +148,33 @@ export function HomePage() {
                     ))}
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography fontSize={21} fontWeight={760} lineHeight={1.15}>
-                        Сейчас в маркете
-                    </Typography>
-                    <Button component={Link} to="/clubs" endIcon={<ArrowForwardRoundedIcon />} sx={{ color: '#111', px: 1 }}>
-                        Все
-                    </Button>
-                </Box>
+                {(liveLoading || liveOffers.length > 0) && (
+                    <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography fontSize={21} fontWeight={760} lineHeight={1.15}>
+                                Сейчас в маркете
+                            </Typography>
+                            <Button component={Link} to="/clubs" endIcon={<ArrowForwardRoundedIcon />} sx={{ color: '#111', px: 1 }}>
+                                Все
+                            </Button>
+                        </Box>
 
-                <Stack spacing={1}>
-                    {liveOffers.map((item, index) => (
-                        <Card key={item.title} sx={{ bgcolor: '#fff', color: '#111', borderRadius: '24px', border: 0 }}>
-                            <CardActionArea component={Link} to={item.to} sx={{ p: 1.45, display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                                <Box
-                                    sx={{
-                                        width: 44,
-                                        height: 44,
-                                        borderRadius: '16px',
-                                        bgcolor: index === 0 ? '#FFE15A' : '#F2F1EC',
-                                        display: 'grid',
-                                        placeItems: 'center',
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    {index === 1 ? <WifiRoundedIcon sx={{ fontSize: 21 }} /> : <CreditScoreRoundedIcon sx={{ fontSize: 21 }} />}
-                                </Box>
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                    <Typography fontSize={15.5} fontWeight={720} lineHeight={1.2} noWrap>
-                                        {item.title}
-                                    </Typography>
-                                    <Typography fontSize={12.5} fontWeight={520} color="#77736B" noWrap>
-                                        {item.meta}
-                                    </Typography>
-                                </Box>
-                                <Typography fontSize={15} fontWeight={760}>
-                                    {item.price}
-                                </Typography>
-                            </CardActionArea>
-                        </Card>
-                    ))}
-                </Stack>
+                        <Stack spacing={1}>
+                            {liveLoading && [1, 2, 3].map(index => (
+                                <Card key={index} sx={{ bgcolor: '#fff', color: '#111', borderRadius: '24px', border: 0, p: 1.45 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                                        <Box sx={{ width: 44, height: 44, borderRadius: '16px', bgcolor: '#F2F1EC', flexShrink: 0 }} />
+                                        <Box sx={{ flex: 1 }}>
+                                            <Box sx={{ width: '55%', height: 16, borderRadius: 999, bgcolor: '#F2F1EC', mb: 0.8 }} />
+                                            <Box sx={{ width: '38%', height: 12, borderRadius: 999, bgcolor: '#F2F1EC' }} />
+                                        </Box>
+                                    </Box>
+                                </Card>
+                            ))}
+                            {!liveLoading && liveOffers.map((club, index) => <LiveOfferCard key={club.club_id} club={club} index={index} />)}
+                        </Stack>
+                    </>
+                )}
 
                 <Box sx={{ mt: 1.2, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                     <Button
@@ -208,6 +198,47 @@ export function HomePage() {
                 </Box>
             </Box>
         </Box>
+    );
+}
+
+function LiveOfferCard({ club, index }: { club: Club; index: number }) {
+    const spotsLeft = Math.max(0, club.max_members - club.current_members);
+    const isTelecom = club.category === 'telecom';
+    const meta = isTelecom
+        ? `${club.current_members}/${club.max_members} · семейный тариф`
+        : spotsLeft > 0
+            ? `${spotsLeft} мест свободно`
+            : 'мест нет';
+
+    return (
+        <Card sx={{ bgcolor: '#fff', color: '#111', borderRadius: '24px', border: 0 }}>
+            <CardActionArea component={Link} to={`/clubs/${club.club_id}`} sx={{ p: 1.45, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <Box
+                    sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '16px',
+                        bgcolor: index === 0 ? '#FFE15A' : '#F2F1EC',
+                        display: 'grid',
+                        placeItems: 'center',
+                        flexShrink: 0,
+                    }}
+                >
+                    {isTelecom ? <WifiRoundedIcon sx={{ fontSize: 21 }} /> : <CreditScoreRoundedIcon sx={{ fontSize: 21 }} />}
+                </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography fontSize={15.5} fontWeight={720} lineHeight={1.2} noWrap>
+                        {club.subscription.service_name}
+                    </Typography>
+                    <Typography fontSize={12.5} fontWeight={520} color="#77736B" noWrap>
+                        {meta}
+                    </Typography>
+                </Box>
+                <Typography fontSize={15} fontWeight={760}>
+                    {Math.round(club.price_per_member)} ₸
+                </Typography>
+            </CardActionArea>
+        </Card>
     );
 }
 

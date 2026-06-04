@@ -15,9 +15,10 @@ import {
     Divider,
     IconButton,
     LinearProgress,
+    Alert,
+    Snackbar,
     Skeleton,
     Stack,
-    TextField,
     Typography,
 } from '@mui/material';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -32,6 +33,8 @@ import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { api, ClubSlotConfig } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
+import { isKzPhoneComplete } from '@/shared/lib/phone';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { SERVICE_COLORS } from '../data/serviceCatalog';
 
 const pageMaxWidth = 600;
@@ -48,11 +51,23 @@ export function ClubDetailsPage() {
     const [joinMessage, setJoinMessage] = useState<'pending' | 'approved'>('pending');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [selectedSlotType, setSelectedSlotType] = useState<ClubSlotConfig['type'] | ''>('');
+    const [copyToastOpen, setCopyToastOpen] = useState(false);
 
     const { data: club, isLoading, error } = useQuery({
         queryKey: ['club', id],
         queryFn: () => api.getClub(id!),
         enabled: Boolean(id),
+    });
+    const currentUserId = getCurrentUserId();
+    const canLoadMembers = Boolean(id && club && (
+        club.host_id === currentUserId ||
+        ['invited', 'access_issued', 'payment_pending', 'paid', 'active', 'approved', 'disputed'].includes(club.my_status || '')
+    ));
+    const { data: realMembers = [] } = useQuery({
+        queryKey: ['club-members', id],
+        queryFn: () => api.getClubMembers(id!),
+        enabled: canLoadMembers,
+        staleTime: 30 * 1000,
     });
 
     const joinMutation = useMutation({
@@ -126,7 +141,6 @@ export function ClubDetailsPage() {
         );
     }
 
-    const currentUserId = getCurrentUserId();
     const isHost = club.host_id === currentUserId;
     const isAccepted = ['invited', 'access_issued', 'payment_pending', 'paid', 'active', 'approved', 'disputed'].includes(club.my_status || '');
     const isMember = isHost || isAccepted;
@@ -149,27 +163,21 @@ export function ClubDetailsPage() {
     const handleCopy = async (value: string) => {
         await navigator.clipboard?.writeText(value);
         haptic.selection();
+        setCopyToastOpen(true);
     };
 
-    const handlePhoneInput = (raw: string) => {
-        const digits = raw.replace(/\D/g, '').slice(0, 11);
-        if (!digits) {
-            setPhoneNumber('');
-            return;
-        }
-
-        const fixed = digits.startsWith('7') ? digits : `7${digits.slice(0, 10)}`;
-        const d = fixed.padEnd(11, '_').split('');
-        setPhoneNumber(`+${d[0]} (${d[1]}${d[2]}${d[3]}) ${d[4]}${d[5]}${d[6]}-${d[7]}${d[8]}-${d[9]}${d[10]}`);
+    const goBack = () => {
+        if (window.history.length > 1) navigate(-1);
+        else navigate('/clubs');
     };
 
-    const isPhoneComplete = phoneNumber.replace(/\D/g, '').length === 11;
+    const isPhoneComplete = isKzPhoneComplete(phoneNumber);
 
     return (
         <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 18 }}>
             <Box sx={{ position: 'sticky', top: 0, zIndex: 40, bgcolor: 'rgba(245,244,239,0.94)', backdropFilter: 'blur(20px)', px: 1.5, pt: 1, pb: 1 }}>
                 <Box sx={{ maxWidth: pageMaxWidth, mx: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: '#fff' }}>
+                    <IconButton onClick={goBack} sx={{ bgcolor: '#fff' }} aria-label="Назад">
                         <ArrowBackRoundedIcon />
                     </IconButton>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -254,7 +262,17 @@ export function ClubDetailsPage() {
                                     badge="Оплачено"
                                     initial={(club.host.first_name || club.host.username || 'D').charAt(0)}
                                 />
-                                {Array.from({ length: Math.max(0, membersCount - 1) }).map((_, index) => (
+                                {realMembers.filter(member => ['active', 'approved', 'paid', 'payment_pending', 'access_issued', 'invited'].includes(member.status)).map(member => (
+                                    <MemberRow
+                                        key={member.member_id}
+                                        name={member.user.user_id === currentUserId ? 'Вы' : (member.user.first_name || member.user.username || `User #${member.user.user_id}`)}
+                                        caption={getMemberStatusCaption(member.status)}
+                                        badge={getMemberStatusBadge(member.status)}
+                                        initial={(member.user.first_name || member.user.username || 'U').charAt(0)}
+                                        muted={member.status !== 'active' && member.status !== 'approved'}
+                                    />
+                                ))}
+                                {realMembers.length === 0 && Array.from({ length: Math.max(0, membersCount - 1) }).map((_, index) => (
                                     <MemberRow key={`member-${index}`} name={isMember && !isHost && index === 0 ? 'Вы' : 'Участник'} caption="в клубе" badge="Активен" muted />
                                 ))}
                                 {Array.from({ length: spotsLeft }).map((_, index) => (
@@ -364,14 +382,11 @@ export function ClubDetailsPage() {
                             )}
                         </Stack>
                     )}
-                    <TextField
+                    <PhoneInput
                         autoFocus
                         fullWidth
-                        placeholder="+7 (___) ___-__-__"
                         value={phoneNumber}
-                        onChange={event => handlePhoneInput(event.target.value)}
-                        type="tel"
-                        inputProps={{ inputMode: 'numeric' }}
+                        onChange={setPhoneNumber}
                     />
                 </DialogContent>
                 <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
@@ -381,6 +396,22 @@ export function ClubDetailsPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={copyToastOpen}
+                autoHideDuration={1800}
+                onClose={() => setCopyToastOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                sx={{ bottom: 'calc(92px + env(safe-area-inset-bottom)) !important' }}
+            >
+                <Alert
+                    severity="success"
+                    variant="filled"
+                    onClose={() => setCopyToastOpen(false)}
+                    sx={{ borderRadius: 999, fontWeight: 800, boxShadow: '0 18px 45px rgba(0,0,0,0.22)' }}
+                >
+                    Скопировано
+                </Alert>
+            </Snackbar>
 
             <Dialog open={joinResultOpen} onClose={() => setJoinResultOpen(false)} PaperProps={{ sx: { borderRadius: '28px', m: 2, maxWidth: 360, width: '100%' } }}>
                 <DialogTitle sx={{ textAlign: 'center', fontWeight: 760 }}>
@@ -625,6 +656,22 @@ function getMemberStep(status: string | null) {
         return { index: 1, description: 'Вы открыли спор. Новые действия по семье временно остановлены.' };
     }
     return { index: 1, description: 'Хост принял заявку. Проверьте доступ к подписке, потом переходите к оплате.' };
+}
+
+function getMemberStatusCaption(status: string) {
+    if (status === 'invited' || status === 'approved') return 'принят, ждёт доступа';
+    if (status === 'access_issued' || status === 'payment_pending') return 'доступ выдан';
+    if (status === 'paid') return 'оплатил, ждёт хоста';
+    if (status === 'disputed') return 'спор';
+    return 'в клубе';
+}
+
+function getMemberStatusBadge(status: string) {
+    if (status === 'invited' || status === 'approved') return 'Принят';
+    if (status === 'access_issued' || status === 'payment_pending') return 'Доступ';
+    if (status === 'paid') return 'Оплатил';
+    if (status === 'disputed') return 'Спор';
+    return 'Активен';
 }
 
 function Metric({ label, value, strong, align = 'left' }: { label: string; value: string; strong?: boolean; align?: 'left' | 'right' }) {
