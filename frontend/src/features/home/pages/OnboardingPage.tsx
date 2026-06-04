@@ -42,8 +42,6 @@ const slides = [
 
 const previewItems = [
     { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', tag: 'проверено' },
-    { title: 'Beeline / Tele2', meta: 'ГБ и семейные тарифы', price: 'от 500 ₸', tag: 'сегодня' },
-    { title: 'Яндекс Плюс', meta: '1 свободное место', price: '900 ₸', tag: 'чек' },
 ];
 
 export function OnboardingPage() {

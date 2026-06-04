@@ -189,7 +189,7 @@ export function useTelegram() {
     return {
         webapp,
         user: webapp?.initDataUnsafe?.user,
-        colorScheme: webapp?.colorScheme || 'dark',
+        colorScheme: webapp?.colorScheme || 'light',
         showBackButton,
         showMainButton,
         hideMainButton,

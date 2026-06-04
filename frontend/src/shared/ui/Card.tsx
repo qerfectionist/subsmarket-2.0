@@ -1,40 +1,40 @@
 import * as React from 'react';
-import { Card as HeroCard, CardProps as HeroCardProps, CardBody } from "@heroui/react";
-import { cn, triggerHaptic } from '@/shared/lib/utils';
+import { Card as MuiCard, CardActionArea, CardContent } from '@mui/material';
+import { triggerHaptic } from '@/shared/lib/utils';
 
-interface CardProps extends HeroCardProps {
+interface CardProps {
+    children?: React.ReactNode;
     clickable?: boolean;
+    className?: string;
+    onClick?: () => void;
+    onPress?: () => void;
+    style?: React.CSSProperties;
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-    ({ className, children, clickable, onPress, onClick, ...props }, ref) => {
-        const handlePress = (e: any) => {
+    ({ children, clickable, className, onClick, onPress, style }, ref) => {
+        const handleClick = () => {
             if (clickable) triggerHaptic('light');
-            if (onPress) onPress(e);
-            if (onClick) onClick(e);
+            onClick?.();
+            onPress?.();
         };
 
+        if (clickable || onClick || onPress) {
+            return (
+                <MuiCard ref={ref} className={className} style={style}>
+                    <CardActionArea onClick={handleClick} sx={{ p: 2 }}>
+                        {children}
+                    </CardActionArea>
+                </MuiCard>
+            );
+        }
+
         return (
-            <HeroCard
-                ref={ref}
-                isPressable={clickable || !!onPress || !!onClick}
-                onPress={handlePress}
-                shadow="sm"
-                className={cn(
-                    "bg-[var(--color-bg-secondary)]",
-                    "border border-[var(--color-separator)]",
-                    clickable && "active:scale-[0.98] transition-transform",
-                    className
-                )}
-                classNames={{
-                    body: "p-4"
-                }}
-                {...props}
-            >
-                <CardBody className="p-4">
+            <MuiCard ref={ref} className={className} style={style}>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     {children}
-                </CardBody>
-            </HeroCard>
+                </CardContent>
+            </MuiCard>
         );
     }
 );

@@ -1,4 +1,4 @@
-import { Pagination as HeroPagination } from "@heroui/react";
+import { Pagination as MuiPagination } from '@mui/material';
 import { triggerHaptic } from '@/shared/lib/utils';
 
 export interface PaginationProps {
@@ -13,35 +13,19 @@ export interface PaginationProps {
     className?: string;
 }
 
-export function Pagination({
-    total,
-    page,
-    onChange,
-    siblings = 1,
-    boundaries = 1,
-    showControls = true,
-    isCompact = false,
-    isDisabled = false,
-    className
-}: PaginationProps) {
+export function Pagination({ total, page, onChange, siblings = 1, showControls = true, isCompact = false, isDisabled = false, className }: PaginationProps) {
     return (
-        <HeroPagination
-            total={total}
+        <MuiPagination
+            count={total}
             page={page}
-            onChange={(p) => {
-                triggerHaptic('light');
-                onChange(p);
-            }}
-            siblings={siblings}
-            boundaries={boundaries}
-            showControls={showControls}
-            isCompact={isCompact}
-            isDisabled={isDisabled}
+            disabled={isDisabled}
+            siblingCount={siblings}
+            hidePrevButton={!showControls}
+            hideNextButton={!showControls}
+            size={isCompact ? 'small' : 'medium'}
+            color="primary"
             className={className}
-            classNames={{
-                item: "bg-default-100",
-                cursor: "bg-primary"
-            }}
+            onChange={(_, p) => { triggerHaptic('light'); onChange(p); }}
         />
     );
 }

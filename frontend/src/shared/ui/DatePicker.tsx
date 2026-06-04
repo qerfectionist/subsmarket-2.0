@@ -1,6 +1,4 @@
-import { DatePicker as HeroDatePicker, DateRangePicker } from "@heroui/react";
-import { parseDate, CalendarDate } from "@internationalized/date";
-import { cn } from '@/shared/lib/utils';
+import { TextField } from '@mui/material';
 
 export interface DatePickerProps {
     value?: Date | null;
@@ -13,47 +11,37 @@ export interface DatePickerProps {
     className?: string;
 }
 
-// Helper to convert JS Date to CalendarDate
-function toCalendarDate(date: Date): CalendarDate {
-    return parseDate(date.toISOString().split('T')[0]);
+function toInputValue(date?: Date | null): string {
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
 }
 
-// Helper to convert CalendarDate to JS Date
-function toJsDate(date: CalendarDate): Date {
-    return new Date(date.year, date.month - 1, date.day);
-}
-
-export function DatePicker({
-    value,
-    onChange,
-    label,
-    minDate,
-    maxDate,
-    isDisabled = false,
-    error,
-    className
-}: DatePickerProps) {
+export function DatePicker({ value, onChange, label, minDate, maxDate, isDisabled = false, error, className }: DatePickerProps) {
     return (
-        <HeroDatePicker
+        <TextField
+            type="date"
             label={label}
-            value={value ? toCalendarDate(value) : null}
-            onChange={(date) => onChange?.(date ? toJsDate(date) : null)}
-            minValue={minDate ? toCalendarDate(minDate) : undefined}
-            maxValue={maxDate ? toCalendarDate(maxDate) : undefined}
-            isDisabled={isDisabled}
-            errorMessage={error}
-            isInvalid={!!error}
-            variant="bordered"
-            labelPlacement="outside"
-            className={cn("max-w-full", className)}
-            classNames={{
-                inputWrapper: "bg-[var(--color-bg-content)]"
+            value={toInputValue(value)}
+            onChange={e => onChange?.(e.target.value ? new Date(e.target.value) : null)}
+            disabled={isDisabled}
+            error={!!error}
+            helperText={error}
+            className={className}
+            fullWidth
+            size="small"
+            slotProps={{
+                input: {
+                    inputProps: {
+                        min: toInputValue(minDate) || undefined,
+                        max: toInputValue(maxDate) || undefined,
+                    }
+                },
+                inputLabel: { shrink: true }
             }}
         />
     );
 }
 
-// Date Range Picker
 export interface DateRangePickerProps {
     startDate?: Date | null;
     endDate?: Date | null;
@@ -65,38 +53,11 @@ export interface DateRangePickerProps {
     className?: string;
 }
 
-export function DateRangePickerComponent({
-    startDate,
-    endDate,
-    onChange,
-    label,
-    minDate,
-    maxDate,
-    isDisabled = false,
-    className
-}: DateRangePickerProps) {
-    const value = startDate && endDate ? {
-        start: toCalendarDate(startDate),
-        end: toCalendarDate(endDate)
-    } : null;
-
+export function DateRangePickerComponent({ startDate, endDate, onChange, label, minDate, maxDate, isDisabled = false, className }: DateRangePickerProps) {
     return (
-        <DateRangePicker
-            label={label}
-            value={value}
-            onChange={(range) => {
-                if (range) {
-                    onChange?.(toJsDate(range.start), toJsDate(range.end));
-                } else {
-                    onChange?.(null, null);
-                }
-            }}
-            minValue={minDate ? toCalendarDate(minDate) : undefined}
-            maxValue={maxDate ? toCalendarDate(maxDate) : undefined}
-            isDisabled={isDisabled}
-            variant="bordered"
-            labelPlacement="outside"
-            className={cn("max-w-full", className)}
-        />
+        <div style={{ display: 'flex', gap: 8 }} className={className}>
+            <DatePicker label={label ? `${label} (от)` : 'Начало'} value={startDate} onChange={s => onChange?.(s, endDate ?? null)} minDate={minDate} maxDate={maxDate} isDisabled={isDisabled} />
+            <DatePicker label={label ? `${label} (до)` : 'Конец'} value={endDate} onChange={e => onChange?.(startDate ?? null, e)} minDate={startDate ?? minDate} maxDate={maxDate} isDisabled={isDisabled} />
+        </div>
     );
 }

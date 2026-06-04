@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { cn } from '@/shared/lib/utils';
 import { Check, Circle } from 'lucide-react';
-import { Card, CardBody } from '@heroui/react';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 
 export interface TimelineItem {
     id: string;
@@ -17,74 +16,54 @@ export interface TimelineProps {
     className?: string;
 }
 
-export const Timeline: React.FC<TimelineProps> = ({ items, className }) => {
-    return (
-        <Card shadow="sm" className={cn("bg-content1 border-none", className)}>
-            <CardBody className="p-0 overflow-hidden">
-                {items.map((item, index) => {
-                    const isLast = index === items.length - 1;
-                    const isCompleted = item.status === 'completed';
-                    const isCurrent = item.status === 'current';
-                    const isPending = item.status === 'pending';
-                    const color = item.color || 'primary';
-
-                    return (
-                        <div key={item.id} className="relative flex gap-4 p-4">
-                            {/* Line */}
-                            {!isLast && (
-                                <div className="absolute left-[30px] top-10 bottom-0 w-[2px] bg-default-100" />
-                            )}
-
-                            {/* Icon */}
-                            <div className="relative z-10 flex-shrink-0 mt-0.5">
-                                {isCompleted && (
-                                    <div className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center text-white",
-                                        `bg-${color}`
-                                    )}>
-                                        <Check size={14} strokeWidth={3} />
-                                    </div>
-                                )}
-                                {isCurrent && (
-                                    <div className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center border-2",
-                                        `border-${color} bg-${color}/10`
-                                    )}>
-                                        <div className={cn("w-2.5 h-2.5 rounded-full animate-pulse", `bg-${color}`)} />
-                                    </div>
-                                )}
-                                {isPending && (
-                                    <div className="w-7 h-7 rounded-full border-2 border-default-200 flex items-center justify-center bg-transparent">
-                                        <Circle size={8} fill="currentColor" className="text-transparent" />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Content */}
-                            <div className="flex-1 min-w-0 pt-0.5">
-                                <div className="flex justify-between items-start gap-2">
-                                    <h4 className={cn(
-                                        "text-sm font-semibold leading-tight",
-                                        isPending ? 'text-default-400' : 'text-foreground'
-                                    )}>
-                                        {item.title}
-                                    </h4>
-                                    {item.time && (
-                                        <span className="text-xs text-default-400 font-medium">
-                                            {item.time}
-                                        </span>
-                                    )}
-                                </div>
-                                {item.description && (
-                                    <p className="text-xs text-default-500 mt-1 leading-snug">
-                                        {item.description}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </CardBody>
-        </Card>
-    );
+const colorMap: Record<string, string> = {
+    primary: '#2196F3', success: '#4CAF50', warning: '#FF9800', danger: '#F44336', default: '#9E9E9E',
 };
+
+export const Timeline: React.FC<TimelineProps> = ({ items, className }) => (
+    <Card className={className}>
+        <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+            {items.map((item, index) => {
+                const isLast = index === items.length - 1;
+                const color = colorMap[item.color || 'primary'];
+                return (
+                    <Box key={item.id} sx={{ position: 'relative', display: 'flex', gap: 2, p: 2 }}>
+                        {!isLast && (
+                            <Box sx={{ position: 'absolute', left: 27, top: 44, bottom: 0, width: 2, bgcolor: 'rgba(255,255,255,0.08)' }} />
+                        )}
+                        <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0, mt: 0.25 }}>
+                            {item.status === 'completed' && (
+                                <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                    <Check size={14} strokeWidth={3} />
+                                </Box>
+                            )}
+                            {item.status === 'current' && (
+                                <Box sx={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${color}`, bgcolor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color, animation: 'pulse 1.5s infinite' }} />
+                                </Box>
+                            )}
+                            {item.status === 'pending' && (
+                                <Box sx={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Circle size={8} style={{ opacity: 0.2 }} />
+                                </Box>
+                            )}
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0, pt: 0.25 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                                <Typography fontSize={14} fontWeight={600} color={item.status === 'pending' ? 'text.disabled' : 'text.primary'}>
+                                    {item.title}
+                                </Typography>
+                                {item.time && <Typography variant="caption" color="text.disabled">{item.time}</Typography>}
+                            </Box>
+                            {item.description && (
+                                <Typography variant="caption" color="text.secondary" mt={0.5} display="block" lineHeight={1.5}>
+                                    {item.description}
+                                </Typography>
+                            )}
+                        </Box>
+                    </Box>
+                );
+            })}
+        </CardContent>
+    </Card>
+);

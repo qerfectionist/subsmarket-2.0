@@ -75,6 +75,11 @@ export function ClubsPage() {
 
     const clubs = data?.items ?? [];
     const total = data?.total ?? 0;
+    const createPath = filter === 'telecom'
+        ? '/clubs/create/tariff'
+        : filter === 'digital'
+            ? '/clubs/create/subscription'
+            : '/clubs/create';
 
     return (
         <Box sx={{ minHeight: '100dvh', bgcolor: '#F5F4EF', color: '#111', pb: 14 }}>
@@ -141,7 +146,7 @@ export function ClubsPage() {
                                 title="Пока ничего нет"
                                 body={searchQuery ? `Нет предложений по запросу «${searchQuery}»` : 'Попробуйте другой фильтр или создайте первое предложение.'}
                                 action="Создать"
-                                onClick={() => navigate('/clubs/create')}
+                                onClick={() => navigate(createPath)}
                             />
                         )}
                         {!isLoading && !error && clubs.map(club => <ClubCard key={club.club_id} club={club} />)}
@@ -160,7 +165,7 @@ export function ClubsPage() {
                 )}
             </Box>
 
-            <Fab component={Link} to="/clubs/create" onClick={() => haptic.impact('medium')} sx={{ position: 'fixed', bottom: 'calc(84px + env(safe-area-inset-bottom))', right: 20, zIndex: 50, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }} size="medium">
+            <Fab component={Link} to={createPath} onClick={() => haptic.impact('medium')} sx={{ position: 'fixed', bottom: 'calc(84px + env(safe-area-inset-bottom))', right: 20, zIndex: 50, bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }} size="medium">
                 <AddRoundedIcon />
             </Fab>
         </Box>
@@ -172,6 +177,10 @@ function ClubCard({ club }: { club: Club }) {
     const isFull = club.status === 'full';
     const isFrozen = club.status === 'frozen';
     const spotsFree = club.max_members - club.current_members;
+    const hasSlots = club.category === 'telecom' && Boolean(club.slot_config?.length);
+    const slotSummary = hasSlots
+        ? club.slot_config!.map(slot => `${slot.label}: ${slot.capacity} · ${Math.round(Number(slot.price))} ₸`).join(' / ')
+        : null;
 
     return (
         <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '24px' }}>
@@ -186,8 +195,8 @@ function ClubCard({ club }: { club: Club }) {
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.65, mt: 0.45 }}>
                         <GroupRoundedIcon sx={{ fontSize: 14, color: '#77736B' }} />
-                        <Typography fontSize={12.5} color="#77736B" fontWeight={520}>
-                            {club.current_members}/{club.max_members}
+                        <Typography fontSize={12.5} color="#77736B" fontWeight={520} noWrap>
+                            {slotSummary || `${club.current_members}/${club.max_members}`}
                         </Typography>
                         {!isFull && !isFrozen && spotsFree > 0 && (
                             <Typography fontSize={12.5} color="#2E7D32" fontWeight={650}>
@@ -199,7 +208,7 @@ function ClubCard({ club }: { club: Club }) {
 
                 <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
                     <Typography fontWeight={760} fontSize={16} lineHeight={1.1}>
-                        {Math.round(club.price_per_member)} ₸
+                        {hasSlots ? `от ${Math.round(club.price_per_member)} ₸` : `${Math.round(club.price_per_member)} ₸`}
                     </Typography>
                     {isFull && <Chip label="занято" size="small" sx={{ mt: 0.4, height: 20, bgcolor: '#F2F1EC' }} />}
                     {isFrozen && <Chip label="пауза" size="small" sx={{ mt: 0.4, height: 20, bgcolor: '#FFE0D6' }} />}

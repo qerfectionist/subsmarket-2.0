@@ -5,6 +5,7 @@ export type {
     User,
     Subscription,
     Club,
+    ClubSlotConfig,
     ClubDetails,
     ClubMember,
     CreateClubRequest,

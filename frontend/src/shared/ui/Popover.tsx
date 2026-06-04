@@ -1,9 +1,5 @@
-import {
-    Popover as HeroPopover,
-    PopoverTrigger,
-    PopoverContent,
-} from "@heroui/react";
-import { cn } from '@/shared/lib/utils';
+import * as React from 'react';
+import { Popover as MuiPopover, Tooltip as MuiTooltip } from '@mui/material';
 
 export interface PopoverProps {
     trigger: React.ReactNode;
@@ -14,31 +10,28 @@ export interface PopoverProps {
     className?: string;
 }
 
-export function Popover({
-    trigger,
-    children,
-    placement = 'bottom',
-    showArrow = true,
-    offset = 10,
-    className
-}: PopoverProps) {
+export function Popover({ trigger, children, className }: PopoverProps) {
+    const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
     return (
-        <HeroPopover
-            placement={placement}
-            showArrow={showArrow}
-            offset={offset}
-        >
-            <PopoverTrigger>
-                {trigger}
-            </PopoverTrigger>
-            <PopoverContent className={cn("bg-content1 p-3", className)}>
+        <>
+            {React.cloneElement(trigger as React.ReactElement<any>, {
+                onClick: (e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget),
+            })}
+            <MuiPopover
+                open={Boolean(anchor)}
+                anchorEl={anchor}
+                onClose={() => setAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                slotProps={{ paper: { sx: { bgcolor: '#1e1e1e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 2, p: 1.5 } } }}
+                className={className}
+            >
                 {children}
-            </PopoverContent>
-        </HeroPopover>
+            </MuiPopover>
+        </>
     );
 }
 
-// Tooltip variant (simpler popover)
 export interface TooltipProps {
     content: string;
     children: React.ReactNode;
@@ -47,11 +40,8 @@ export interface TooltipProps {
 
 export function Tooltip({ content, children, placement = 'top' }: TooltipProps) {
     return (
-        <Popover trigger={children} placement={placement}>
-            <span className="text-sm">{content}</span>
-        </Popover>
+        <MuiTooltip title={content} placement={placement} arrow>
+            <span>{children}</span>
+        </MuiTooltip>
     );
 }
-
-// Re-export for custom implementations
-export { HeroPopover as PopoverBase, PopoverTrigger, PopoverContent };

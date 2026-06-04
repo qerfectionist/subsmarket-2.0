@@ -1,70 +1,46 @@
 import * as React from 'react';
-import { Button as HeroButton, ButtonProps as HeroButtonProps } from "@heroui/react";
-import { cn, triggerHaptic } from '@/shared/lib/utils';
+import { Button as MuiButton, ButtonProps as MuiButtonProps, CircularProgress } from '@mui/material';
+import { triggerHaptic } from '@/shared/lib/utils';
 
-interface ButtonProps extends Omit<HeroButtonProps, 'variant' | 'color'> {
-    variant?: 'primary' | 'secondary' | 'glass' | 'ghost' | 'destructive' | HeroButtonProps['variant'];
-    color?: HeroButtonProps['color'];
+interface ButtonProps extends Omit<MuiButtonProps, 'variant' | 'size'> {
+    variant?: 'primary' | 'secondary' | 'glass' | 'ghost' | 'destructive';
+    size?: 'sm' | 'md' | 'lg';
+    isLoading?: boolean;
+    fullWidth?: boolean;
+    onPress?: (e?: any) => void;
 }
 
+const variantMap: Record<string, Pick<MuiButtonProps, 'variant' | 'color'>> = {
+    primary: { variant: 'contained', color: 'primary' },
+    secondary: { variant: 'contained', color: 'inherit' },
+    glass: { variant: 'outlined', color: 'inherit' },
+    ghost: { variant: 'text', color: 'inherit' },
+    destructive: { variant: 'contained', color: 'error' },
+};
+const sizeMap: Record<string, MuiButtonProps['size']> = { sm: 'small', md: 'medium', lg: 'large' };
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = 'primary', size = 'md', children, onPress, onClick, ...props }, ref) => {
-
-        const handlePress = (e: any) => {
+    ({ variant = 'primary', size = 'md', isLoading, fullWidth, onClick, onPress, children, startIcon, disabled, sx, ...props }, ref) => {
+        const muiProps = variantMap[variant] ?? variantMap.primary;
+        const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
             triggerHaptic('light');
-            if (onPress) onPress(e);
-            if (onClick) onClick(e);
+            onClick?.(e);
+            onPress?.(e);
         };
-
-        // Map custom variants to HeroUI props
-        let heroVariant: HeroButtonProps['variant'] = 'solid';
-        let heroColor: HeroButtonProps['color'] = 'primary';
-        let customClass = '';
-
-        switch (variant) {
-            case 'primary':
-                heroVariant = 'shadow';
-                heroColor = 'primary';
-                customClass = 'font-semibold';
-                break;
-            case 'secondary':
-                heroVariant = 'flat';
-                heroColor = 'default';
-                break;
-            case 'glass':
-                heroVariant = 'bordered';
-                customClass = 'bg-white/5 border-white/20 text-white';
-                break;
-            case 'ghost':
-                heroVariant = 'light';
-                heroColor = 'default';
-                break;
-            case 'destructive':
-                heroVariant = 'shadow';
-                heroColor = 'danger';
-                customClass = 'font-semibold';
-                break;
-            default:
-                heroVariant = variant as HeroButtonProps['variant'];
-                break;
-        }
-
         return (
-            <HeroButton
+            <MuiButton
                 ref={ref}
-                className={cn(
-                    "transition-all duration-200",
-                    customClass,
-                    className
-                )}
-                variant={heroVariant}
-                color={heroColor}
-                size={size}
-                onPress={handlePress}
+                {...muiProps}
+                size={sizeMap[size]}
+                fullWidth={fullWidth}
+                disabled={disabled || isLoading}
+                onClick={handleClick}
+                startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : startIcon}
+                sx={{ textTransform: 'none', fontWeight: 700, ...sx }}
                 {...props}
             >
                 {children}
-            </HeroButton>
+            </MuiButton>
         );
     }
 );

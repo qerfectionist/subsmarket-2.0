@@ -1,45 +1,30 @@
 import type { ForwardedRef } from 'react';
 import { forwardRef } from 'react';
-import type { InputProps as HeroInputProps } from '@heroui/react';
-import { Input as HeroInput } from '@heroui/react';
-import { cn } from '@/shared/lib/utils';
+import { TextField, TextFieldProps } from '@mui/material';
 
-interface InputProps extends Omit<HeroInputProps, 'errorMessage'> {
+interface InputProps extends Omit<TextFieldProps, 'label' | 'error'> {
   label?: string;
   error?: string;
   containerClassName?: string;
+  isInvalid?: boolean;
+  isRequired?: boolean;
+  placeholder?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, containerClassName, label, error, ...props }, ref: ForwardedRef<HTMLInputElement>) => (
-    <div className={cn("flex flex-col gap-1.5 w-full", containerClassName)}>
-      {label && (
-        <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">
-          {label}
-        </label>
-      )}
-      <HeroInput
-        ref={ref}
-        errorMessage={error}
-        isInvalid={!!error}
-        className={className}
-        variant="bordered"
-        labelPlacement="outside"
-        classNames={{
-          inputWrapper: [
-            "bg-[var(--color-bg-content)]",
-            "border-[var(--color-separator)]",
-            "data-[hover=true]:border-[var(--color-button)]",
-            "group-data-[focus=true]:border-[var(--color-button)]",
-            "min-h-[48px]"
-          ].join(" "),
-          input: "text-white placeholder:text-white/20",
-          label: "hidden"
-        }}
-        {...props}
-        label={undefined}
-      />
-    </div>
+  ({ label, error, containerClassName, isInvalid, isRequired, className, ...props }, ref: ForwardedRef<HTMLInputElement>) => (
+    <TextField
+      inputRef={ref}
+      label={label}
+      error={!!(error || isInvalid)}
+      helperText={error}
+      required={isRequired}
+      className={className}
+      fullWidth
+      variant="outlined"
+      size="small"
+      {...props}
+    />
   )
 );
 

@@ -26,6 +26,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     { key: 'music', label: 'Музыка', icon: '🎵' },
     { key: 'cloud', label: 'Облако & AI', icon: '☁️' },
     { key: 'education', label: 'Обучение', icon: '🎓' },
+    { key: 'telecom', label: 'Связь', icon: '📡' },
 ];
 
 // ─── Services ────────────────────────────────────────────────
@@ -181,6 +182,44 @@ export const STATIC_SERVICES: CatalogService[] = [
         billingCycle: 'monthly',
         priceRange: { min: 500, max: 800, recommended: 600 },
     },
+
+    // ── Семейные тарифы связи ──
+    {
+        id: 'activ',
+        name: 'Activ Family',
+        logo: 'activ',
+        category: 'telecom',
+        familySize: 10,
+        billingCycle: 'monthly',
+        priceRange: { min: 1000, max: 3000, recommended: 2500 },
+    },
+    {
+        id: 'kcell',
+        name: 'Kcell Family',
+        logo: 'kcell',
+        category: 'telecom',
+        familySize: 10,
+        billingCycle: 'monthly',
+        priceRange: { min: 1000, max: 3000, recommended: 2500 },
+    },
+    {
+        id: 'beeline',
+        name: 'Beeline Family',
+        logo: 'beeline',
+        category: 'telecom',
+        familySize: 6,
+        billingCycle: 'monthly',
+        priceRange: { min: 1500, max: 3500, recommended: 2500 },
+    },
+    {
+        id: 'tele2',
+        name: 'Tele2 Family',
+        logo: 'tele2',
+        category: 'telecom',
+        familySize: 6,
+        billingCycle: 'monthly',
+        priceRange: { min: 1500, max: 3000, recommended: 2500 },
+    },
 ];
 
 // ─── Service Logo Colors ─────────────────────────────────────
@@ -199,4 +238,28 @@ export const SERVICE_COLORS: Record<string, string> = {
     google: '#4285F4',
     duolingo: '#58CC02',
     headspace: '#F47D31',
+    activ: '#00A651',
+    kcell: '#652D90',
+    beeline: '#FFD400',
+    tele2: '#111111',
+};
+
+export const SERVICE_ICONS: Record<string, string> = {
+    youtube: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=256',
+    netflix: 'https://www.google.com/s2/favicons?domain=netflix.com&sz=256',
+    kinopoisk: 'https://www.google.com/s2/favicons?domain=kinopoisk.ru&sz=256',
+    spotify: 'https://www.google.com/s2/favicons?domain=spotify.com&sz=256',
+    apple: 'https://www.google.com/s2/favicons?domain=apple.com&sz=256',
+    ivi: 'https://www.google.com/s2/favicons?domain=ivi.ru&sz=256',
+    megogo: 'https://www.google.com/s2/favicons?domain=megogo.net&sz=256',
+    crunchyroll: 'https://www.google.com/s2/favicons?domain=crunchyroll.com&sz=256',
+    yandex: 'https://www.google.com/s2/favicons?domain=yandex.ru&sz=256',
+    microsoft: 'https://www.google.com/s2/favicons?domain=microsoft.com&sz=256',
+    google: 'https://www.google.com/s2/favicons?domain=google.com&sz=256',
+    duolingo: 'https://www.google.com/s2/favicons?domain=duolingo.com&sz=256',
+    headspace: 'https://www.google.com/s2/favicons?domain=headspace.com&sz=256',
+    activ: 'https://www.google.com/s2/favicons?domain=activ.kz&sz=256',
+    kcell: 'https://www.google.com/s2/favicons?domain=kcell.kz&sz=256',
+    beeline: 'https://www.google.com/s2/favicons?domain=beeline.kz&sz=256',
+    tele2: 'https://www.google.com/s2/favicons?domain=tele2.kz&sz=256',
 };

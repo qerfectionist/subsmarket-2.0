@@ -1,7 +1,7 @@
 ﻿import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { api, Club, CreateClubRequest, pricingApi, PricingService } from '@/shared/api';
+import { api, Club, ClubSlotConfig, CreateClubRequest, pricingApi, PricingService } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { Box, Switch, Avatar, Snackbar, Alert } from '@mui/material';
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
@@ -18,9 +18,17 @@ import {
 // ─── SuccessScreen ──────────────────────────────────────────────────────────
 const API_URL_DEFAULT = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
+function isLocalDevHost(): boolean {
+    return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+}
+
 function getAuthHeaders(): Record<string, string> {
     const initData = (window as any).Telegram?.WebApp?.initData;
-    const auth = initData && initData.length > 0 ? initData : 'mock:12345:dev_user';
+    const auth = initData && initData.length > 0
+        ? initData
+        : import.meta.env.DEV && isLocalDevHost()
+            ? 'mock:12345:dev_user'
+            : '';
     return { 'X-Telegram-Init-Data': auth, 'Content-Type': 'application/json' };
 }
 
@@ -241,9 +249,143 @@ const CAT_META: Record<string, string> = {
     telecom: 'Связь',
 };
 const CAT_ORDER = ['video', 'music', 'cloud', 'education', 'telecom'];
+const DIGITAL_CATEGORY_SET = new Set(['video', 'music', 'cloud', 'education']);
+const TELECOM_CATEGORY_SET = new Set(['telecom']);
+
+type EditableTelecomSlot = ClubSlotConfig & { enabled: boolean };
+type TelecomSlotMode = 'smartphone' | 'multi';
+type CreateClubMode = 'subscription' | 'tariff';
+
+const TELECOM_SLOT_DEFAULTS: EditableTelecomSlot[] = [
+    {
+        type: 'smartphone',
+        label: 'Смартфон',
+        capacity: 2,
+        price: 3000,
+        description: 'Полный интернет, минуты и SMS',
+        enabled: true,
+    },
+    {
+        type: 'router',
+        label: 'Роутер / модем',
+        capacity: 1,
+        price: 1500,
+        description: 'Домашний интернет, без звонков и SMS',
+        enabled: false,
+    },
+    {
+        type: 'm2m',
+        label: 'Умное устройство / часы',
+        capacity: 2,
+        price: 1000,
+        description: 'Для часов, сигнализаций, GPS; обычно до 256 Кбит/с',
+        enabled: false,
+    },
+];
+
+function formatPlaceCount(count: number) {
+    const last = count % 10;
+    const lastTwo = count % 100;
+    const word = last === 1 && lastTwo !== 11
+        ? 'место'
+        : last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)
+            ? 'места'
+            : 'мест';
+    return `${count} ${word}`;
+}
+
+function CreateClubTypePicker() {
+    const navigate = useNavigate();
+    const haptic = useHaptic();
+
+    const options = [
+        {
+            title: 'Семейная подписка',
+            subtitle: 'YouTube, Яндекс, Spotify, облако и AI',
+            badge: 'сервисы',
+            icon: 'grid_view',
+            color: '#FFE15A',
+            to: '/clubs/create/subscription',
+        },
+        {
+            title: 'Семейный тариф',
+            subtitle: 'Activ, Kcell, Beeline, Tele2 и разные типы мест',
+            badge: 'операторы',
+            icon: 'cell_tower',
+            color: '#B9F27D',
+            to: '/clubs/create/tariff',
+        },
+    ];
+
+    return (
+        <div className="min-h-[100dvh] bg-[#F5F4EF] text-[#111] flex flex-col">
+            <Box sx={{ display: 'flex', alignItems: 'center', px: 2, pt: 1.5, pb: 1 }}>
+                <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform" aria-label="Назад">
+                    <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18, color: '#111' }} />
+                </button>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                    <p style={{ fontSize: 15, fontWeight: 850, lineHeight: 1.1 }}>Что создаем?</p>
+                    <p style={{ fontSize: 12, color: '#77736B', fontWeight: 650, marginTop: 2 }}>Выберите отдельный сценарий</p>
+                </div>
+                <div style={{ width: 40, flexShrink: 0 }} />
+            </Box>
+
+            <div className="px-4 pt-5 space-y-3">
+                <div className="bg-[#FFE15A] rounded-[32px] p-6">
+                    <p className="text-[30px] leading-[1.04] font-black tracking-0">Создание без путаницы</p>
+                    <p className="text-[15px] leading-relaxed font-semibold text-black/60 mt-3">
+                        Подписки и мобильные тарифы работают по-разному, поэтому у них отдельные формы.
+                    </p>
+                </div>
+
+                {options.map(option => (
+                    <button
+                        key={option.to}
+                        type="button"
+                        onClick={() => {
+                            haptic.impact('medium');
+                            navigate(option.to);
+                        }}
+                        className="w-full bg-white rounded-[28px] p-4 flex items-center gap-4 text-left active:scale-[0.99] transition-transform"
+                    >
+                        <div className="w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0" style={{ backgroundColor: option.color }}>
+                            <MSIcon name={option.icon} size={27} className="text-[#111]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                                <p className="text-[19px] font-black leading-tight text-[#111]">{option.title}</p>
+                                <span className="px-2 py-1 rounded-full bg-[#F2F1EC] text-[11px] font-black text-[#77736B]">{option.badge}</span>
+                            </div>
+                            <p className="text-[13px] font-semibold text-[#77736B] mt-1 leading-snug">{option.subtitle}</p>
+                        </div>
+                        <MSIcon name="chevron_right" size={22} className="text-[#B2AEA5]" />
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 // ─── Main ──────────────────────────────────────────────────────────────────
 export function CreateClubPage() {
+    const { kind } = useParams<{ kind?: string }>();
+
+    if (kind === 'subscription' || kind === 'tariff') {
+        return <CreateClubFlow mode={kind} />;
+    }
+
+    return <CreateClubTypePicker />;
+}
+
+export function CreateSubscriptionClubPage() {
+    return <CreateClubFlow mode="subscription" />;
+}
+
+export function CreateTariffClubPage() {
+    return <CreateClubFlow mode="tariff" />;
+}
+
+function CreateClubFlow({ mode }: { mode: CreateClubMode }) {
     const navigate = useNavigate();
     const haptic = useHaptic();
     const [step, setStep] = useState(0);
@@ -257,6 +399,8 @@ export function CreateClubPage() {
     /* --- step 2 --- */
     const [price, setPrice] = useState('');
     const [members, setMembers] = useState(0);
+    const [telecomSlotMode, setTelecomSlotMode] = useState<TelecomSlotMode>('smartphone');
+    const [telecomSlots, setTelecomSlots] = useState<EditableTelecomSlot[]>(TELECOM_SLOT_DEFAULTS);
     const [payDay, setPayDay] = useState<number | null>(null);
     const [desc, setDesc] = useState('');
     const [dayOpen, setDayOpen] = useState(false);
@@ -269,7 +413,7 @@ export function CreateClubPage() {
     const [botAdmin, setBotAdmin] = useState(false);
     const [groupRequesting, setGroupRequesting] = useState(false);
     const [allSheet, setAllSheet] = useState(false);
-    const [catFilter, setCatFilter] = useState('all');  // category pill filter
+    const [catFilter, setCatFilter] = useState(mode === 'tariff' ? 'telecom' : 'all');  // category pill filter
 
     /* --- pricing data --- */
     const { data: priceData } = useQuery({
@@ -279,30 +423,63 @@ export function CreateClubPage() {
     });
 
     const services = useMemo<CatalogService[]>(() => {
+        let allServices: CatalogService[];
         if (priceData?.services?.length) {
-            return priceData.services.map((s: PricingService) => ({
+            const apiServices = priceData.services.map((s: PricingService) => ({
                 id: s.id, name: s.name, logo: s.logo || s.id,
                 category: mapCat(s.category),
                 familySize: s.family_size, billingCycle: s.billing_cycle,
                 priceRange: s.price_range,
             }));
+            const existingIds = new Set(apiServices.map(service => service.id));
+            const fallbackTelecom = STATIC_SERVICES.filter(service => service.category === 'telecom' && !existingIds.has(service.id));
+            allServices = [...apiServices, ...fallbackTelecom];
+        } else {
+            allServices = STATIC_SERVICES;
         }
-        return STATIC_SERVICES;
-    }, [priceData]);
+        return allServices.filter(service => (
+            mode === 'tariff'
+                ? TELECOM_CATEGORY_SET.has(service.category)
+                : DIGITAL_CATEGORY_SET.has(service.category)
+        ));
+    }, [priceData, mode]);
 
     /* --- derived --- */
+    const isTelecomSelected = selected?.category === 'telecom';
+    const activeTelecomSlots = useMemo(
+        () => telecomSlots.filter(slot => {
+            if (telecomSlotMode === 'smartphone' && slot.type !== 'smartphone') return false;
+            return slot.enabled && slot.capacity > 0 && slot.price > 0;
+        }),
+        [telecomSlotMode, telecomSlots]
+    );
+    const telecomTotalSlots = useMemo(
+        () => activeTelecomSlots.reduce((sum, slot) => sum + slot.capacity, 0),
+        [activeTelecomSlots]
+    );
+    const telecomTotalPrice = useMemo(
+        () => activeTelecomSlots.reduce((sum, slot) => sum + slot.capacity * slot.price, 0),
+        [activeTelecomSlots]
+    );
+    const telecomMinPrice = useMemo(
+        () => activeTelecomSlots.length ? Math.min(...activeTelecomSlots.map(slot => slot.price)) : 0,
+        [activeTelecomSlots]
+    );
+
     const pricePer = useMemo(() => {
+        if (isTelecomSelected) return telecomMinPrice;
         const p = parseFloat(price);
         return p > 0 && members > 0 ? Math.round(p / members) : 0;
-    }, [price, members]);
+    }, [isTelecomSelected, telecomMinPrice, price, members]);
 
     const priceState = useMemo((): 'low' | 'ok' | 'high' | null => {
+        if (isTelecomSelected) return null;
         if (!selected || !price) return null;
         const p = parseFloat(price);
         if (p < selected.priceRange.min * 0.5) return 'low';
         if (p > selected.priceRange.max * 1.2) return 'high';
         return 'ok';
-    }, [selected, price]);
+    }, [isTelecomSelected, selected, price]);
 
     // Search results shown inline while typing in Step 0
     const searchResults = useMemo(() => {
@@ -334,6 +511,10 @@ export function CreateClubPage() {
         }
         return g;
     }, [services]);
+    const categoryOrder = mode === 'tariff' ? ['telecom'] : CAT_ORDER.filter(cat => cat !== 'telecom');
+    const modeTitle = mode === 'tariff' ? 'Новый тариф' : 'Новая подписка';
+    const stepZeroLabel = mode === 'tariff' ? 'Выберите оператора' : 'Выберите сервис';
+    const searchPlaceholder = mode === 'tariff' ? 'Найти Activ, Kcell, Beeline...' : 'Найти YouTube, Яндекс, Spotify...';
 
     const [localError, setLocalError] = useState<string | null>(null);
 
@@ -346,7 +527,9 @@ export function CreateClubPage() {
 
     const stepOk = [
         !!svcId,
-        !!price && parseFloat(price) > 0 && members >= 2 && !!payDay,
+        (isTelecomSelected
+            ? activeTelecomSlots.length > 0 && telecomTotalSlots > 0 && telecomTotalPrice > 0 && !!payDay
+            : !!price && parseFloat(price) > 0 && members >= 2 && !!payDay),
         phoneOk && (!useTg || (tgLinkOk && botAdmin)),
     ];
 
@@ -369,16 +552,19 @@ export function CreateClubPage() {
         setSelected(s); setSvcId(s.id);
         setPrice(String(s.priceRange.recommended));
         setMembers(2);
+        setTelecomSlotMode('smartphone');
+        setTelecomSlots(TELECOM_SLOT_DEFAULTS);
         setPayDay(null);
     };
 
     const next = () => {
         if (!stepOk[step]) {
             haptic.notification('error');
-            if (step === 0) showAlert('Пожалуйста, выберите сервис, чтобы продолжить.');
+            if (step === 0) showAlert(mode === 'tariff' ? 'Пожалуйста, выберите оператора, чтобы продолжить.' : 'Пожалуйста, выберите сервис, чтобы продолжить.');
             else if (step === 1) {
-                if (!price || parseFloat(price) <= 0) showAlert('Пожалуйста, укажите корректную стоимость.');
-                else if (members < 2) showAlert('Количество участников должно быть минимум 2.');
+                if (isTelecomSelected && activeTelecomSlots.length === 0) showAlert('Добавьте хотя бы один тип места для семейного тарифа.');
+                else if (!isTelecomSelected && (!price || parseFloat(price) <= 0)) showAlert('Пожалуйста, укажите корректную стоимость.');
+                else if (!isTelecomSelected && members < 2) showAlert('Количество участников должно быть минимум 2.');
                 else if (!payDay) showAlert('Пожалуйста, выберите день оплаты.');
             }
             return;
@@ -468,12 +654,18 @@ export function CreateClubPage() {
         haptic.impact('medium');
         const structuredDesc = [
             'Оплата: после вступления и проверки доступа',
+            isTelecomSelected && activeTelecomSlots.length
+                ? `Места: ${activeTelecomSlots.map(slot => `${slot.label} — ${slot.capacity} шт. по ${slot.price} ₸`).join('; ')}`
+                : null,
             desc || null,
         ].filter(Boolean).join('\n');
         createFn.mutate({
             service_id: svcId,
-            price_total: parseFloat(price),
-            max_members: members,
+            price_total: isTelecomSelected ? telecomTotalPrice : parseFloat(price),
+            max_members: isTelecomSelected ? telecomTotalSlots + 1 : members,
+            ...(isTelecomSelected ? {
+                slot_config: activeTelecomSlots.map(({ enabled: _enabled, ...slot }) => slot),
+            } : {}),
             payment_method: bank,
             payment_details: phone,
             payment_day: payDay ?? undefined,
@@ -521,9 +713,9 @@ export function CreateClubPage() {
                     <ArrowBackIosNewRoundedIcon sx={{ fontSize: 18, color: '#111' }} />
                 </button>
                 <div style={{ flex: 1, textAlign: 'center' }}>
-                    <p style={{ fontSize: 15, fontWeight: 850, lineHeight: 1.1 }}>Новый клуб</p>
+                    <p style={{ fontSize: 15, fontWeight: 850, lineHeight: 1.1 }}>{modeTitle}</p>
                     <p style={{ fontSize: 12, color: '#77736B', fontWeight: 650, marginTop: 2 }}>
-                        {step === 0 && 'Выберите сервис'}
+                        {step === 0 && stepZeroLabel}
                         {step === 1 && 'Параметры'}
                         {step === 2 && 'Реквизиты'}
                         {step === 3 && 'Telegram'}
@@ -557,7 +749,7 @@ export function CreateClubPage() {
                             <input
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                placeholder="Найти YouTube, Яндекс, Spotify..."
+                                placeholder={searchPlaceholder}
                                 className="flex-1 bg-transparent text-[17px] font-semibold outline-none placeholder:text-[#77736B]"
                             />
                             {search && (
@@ -626,29 +818,30 @@ export function CreateClubPage() {
                                 {/* Header row: label + category chips */}
                                 <div className="flex items-center gap-3">
                                     <p className="text-[13px] text-[#77736B] font-bold flex-shrink-0">
-                                        {catFilter === 'all' ? 'Популярные' : CAT_META[catFilter]}
+                                        {mode === 'tariff' ? 'Операторы' : catFilter === 'all' ? 'Популярные' : CAT_META[catFilter]}
                                     </p>
-                                    {/* Category chips — tap again to deselect */}
-                                    <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide flex-1">
-                                        {CAT_ORDER.map(cat => (
-                                            <button
-                                                key={cat}
-                                                type="button"
-                                                onClick={() => {
-                                                    haptic.selection();
-                                                    setCatFilter(prev => prev === cat ? 'all' : cat);
-                                                }}
-                                                className={cn(
-                                                    'flex-shrink-0 h-8 px-3 rounded-full text-[12px] font-bold transition-colors',
-                                                    catFilter === cat
-                                                        ? 'bg-[#111] text-white'
-                                                        : 'bg-white text-[#77736B]'
-                                                )}
-                                            >
-                                                {CAT_META[cat]}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {mode === 'subscription' && (
+                                        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide flex-1">
+                                            {categoryOrder.map(cat => (
+                                                <button
+                                                    key={cat}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        haptic.selection();
+                                                        setCatFilter(prev => prev === cat ? 'all' : cat);
+                                                    }}
+                                                    className={cn(
+                                                        'flex-shrink-0 h-8 px-3 rounded-full text-[12px] font-bold transition-colors',
+                                                        catFilter === cat
+                                                            ? 'bg-[#111] text-white'
+                                                            : 'bg-white text-[#77736B]'
+                                                    )}
+                                                >
+                                                    {CAT_META[cat]}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Grid: top 8 OR filtered by category */}
@@ -712,8 +905,8 @@ export function CreateClubPage() {
                 ═══════════════════════════════════════════════════ */}
                 {
                     step === 1 && (() => {
-                        const priceOk = parseFloat(price) > 0;
-                        const membersOk = priceOk && members > 0;
+                        const priceOk = isTelecomSelected ? activeTelecomSlots.length > 0 : parseFloat(price) > 0;
+                        const membersOk = isTelecomSelected ? telecomTotalSlots > 0 : priceOk && members > 0;
                         const dayOk = !!payDay;
                         const dayLocked = !membersOk;
 
@@ -746,85 +939,129 @@ export function CreateClubPage() {
 
                                 {/* ── Main form card — all 3 rows in one card ── */}
                                 <div className="bg-white rounded-[28px] overflow-hidden">
-
-                                    {/* ROW 1: PRICE */}
-                                    <div className="px-5 pt-4 pb-3">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="flex-1">
-                                                <p className="text-xs font-bold text-[#77736B] mb-0.5">
-                                                    Стоимость в месяц
+                                    {isTelecomSelected ? (
+                                        <>
+                                            <div className="px-5 pt-4 pb-3">
+                                                <p className="text-xs font-bold text-[#77736B] mb-2">Формат семейного тарифа</p>
+                                                <div className="grid grid-cols-2 gap-2 rounded-[22px] bg-[#F2F1EC] p-1">
+                                                    {([
+                                                        ['smartphone', 'Только смартфоны'],
+                                                        ['multi', 'Мульти-слоты'],
+                                                    ] as [TelecomSlotMode, string][]).map(([mode, label]) => (
+                                                        <button
+                                                            key={mode}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                haptic.selection();
+                                                                setTelecomSlotMode(mode);
+                                                            }}
+                                                            className={cn(
+                                                                'h-10 rounded-[18px] text-[13px] font-black transition-colors',
+                                                                telecomSlotMode === mode ? 'bg-[#111] text-white' : 'text-[#77736B]'
+                                                            )}
+                                                        >
+                                                            {label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <p className="mt-2 text-[11px] text-[#77736B] font-semibold leading-relaxed">
+                                                    {telecomSlotMode === 'smartphone'
+                                                        ? 'Один тип места: обычный номер телефона с полноценным тарифом.'
+                                                        : 'Разные места в одной семье: смартфон, роутер и устройства M2M с разной ценой.'}
                                                 </p>
-                                                {/* chip below label */}
-                                                <div className="min-h-[20px]">
-                                                    {priceState === 'low' && <span className="text-[11px] font-bold text-[#B7791F]">Ниже рынка</span>}
-                                                    {priceState === 'high' && <span className="text-[11px] font-bold text-[#D92D20]">Выше рынка</span>}
-                                                    {priceState === 'ok' && <span className="text-[11px] font-bold text-[#169B55]">Хорошая цена</span>}
-                                                    {!price && selected && <span className="text-[11px] text-[#77736B] font-semibold">~{selected.priceRange.recommended} ₸ рекоменд.</span>}
-                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                <input
-                                                    type="text"
-                                                    value={price}
-                                                    onChange={e => setPrice(e.target.value.replace(/\D/g, ''))}
-                                                    placeholder={selected ? `${selected.priceRange.recommended}` : '0'}
-                                                    className="w-28 text-right text-[32px] leading-none font-black bg-transparent outline-none tabular-nums text-[#111] placeholder:text-[#B2AEA5]"
-                                                    inputMode="numeric"
-                                                    autoFocus
-                                                />
-                                                <span className="text-base font-bold text-[#77736B]">₸</span>
-                                                <div className="w-5">
-                                                    {priceOk && <MSIcon name="check_circle" size={18} className="text-[#169B55]" />}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                            <div className="h-px bg-[#F0EEE8] mx-5" />
+                                            <TelecomSlotEditor
+                                                slots={telecomSlots}
+                                                mode={telecomSlotMode}
+                                                onChange={setTelecomSlots}
+                                                totalSlots={telecomTotalSlots}
+                                                minPrice={telecomMinPrice}
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
 
-                                    {/* divider */}
-                                    <div className="h-px bg-[#F0EEE8] mx-5" />
+                                            {/* ROW 1: PRICE */}
+                                            <div className="px-5 pt-4 pb-3">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div className="flex-1">
+                                                        <p className="text-xs font-bold text-[#77736B] mb-0.5">
+                                                            Стоимость в месяц
+                                                        </p>
+                                                        {/* chip below label */}
+                                                        <div className="min-h-[20px]">
+                                                            {priceState === 'low' && <span className="text-[11px] font-bold text-[#B7791F]">Ниже рынка</span>}
+                                                            {priceState === 'high' && <span className="text-[11px] font-bold text-[#D92D20]">Выше рынка</span>}
+                                                            {priceState === 'ok' && <span className="text-[11px] font-bold text-[#169B55]">Хорошая цена</span>}
+                                                            {!price && selected && <span className="text-[11px] text-[#77736B] font-semibold">~{selected.priceRange.recommended} ₸ рекоменд.</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <input
+                                                            type="text"
+                                                            value={price}
+                                                            onChange={e => setPrice(e.target.value.replace(/\D/g, ''))}
+                                                            placeholder={selected ? `${selected.priceRange.recommended}` : '0'}
+                                                            className="w-28 text-right text-[32px] leading-none font-black bg-transparent outline-none tabular-nums text-[#111] placeholder:text-[#B2AEA5]"
+                                                            inputMode="numeric"
+                                                            autoFocus
+                                                        />
+                                                        <span className="text-base font-bold text-[#77736B]">₸</span>
+                                                        <div className="w-5">
+                                                            {priceOk && <MSIcon name="check_circle" size={18} className="text-[#169B55]" />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                    {/* ROW 2: MEMBERS */}
-                                    <div className={cn(
-                                        'px-5 py-3 transition-opacity duration-300',
-                                        !priceOk ? 'opacity-60 pointer-events-none select-none' : ''
-                                    )}>
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="flex-1">
-                                                <p className="text-xs font-bold text-[#77736B] mb-0.5">
-                                                    Участников (включая вас)
-                                                </p>
-                                                <div className="min-h-[20px]">
-                                                    {pricePer > 0
-                                                        ? <span className="text-[11px] font-bold text-[#111]">{pricePer} ₸/чел</span>
-                                                        : <span className="text-[11px] text-[#77736B] font-semibold">нажмите + чтобы выбрать</span>
-                                                    }
+                                            {/* divider */}
+                                            <div className="h-px bg-[#F0EEE8] mx-5" />
+
+                                            {/* ROW 2: MEMBERS */}
+                                            <div className={cn(
+                                                'px-5 py-3 transition-opacity duration-300',
+                                                !priceOk ? 'opacity-60 pointer-events-none select-none' : ''
+                                            )}>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div className="flex-1">
+                                                        <p className="text-xs font-bold text-[#77736B] mb-0.5">
+                                                            Участников (включая вас)
+                                                        </p>
+                                                        <div className="min-h-[20px]">
+                                                            {pricePer > 0
+                                                                ? <span className="text-[11px] font-bold text-[#111]">{pricePer} ₸/чел</span>
+                                                                : <span className="text-[11px] text-[#77736B] font-semibold">нажмите + чтобы выбрать</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <button
+                                                            onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 0 : Math.max(2, m - 1)); }}
+                                                            className="w-9 h-9 rounded-full bg-[#F2F1EC] flex items-center justify-center active:scale-90 transition-transform"
+                                                        >
+                                                            <MSIcon name="remove" size={16} className="text-[#111]" />
+                                                        </button>
+                                                        <span className={cn(
+                                                            'text-xl font-black tabular-nums w-7 text-center',
+                                                            members === 0 ? 'text-[#B2AEA5]' : 'text-[#111]'
+                                                        )}>
+                                                            {members === 0 ? '—' : members}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 2 : Math.min(selected?.familySize || 6, m + 1)); }}
+                                                            className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center active:scale-90 transition-transform"
+                                                        >
+                                                            <MSIcon name="add" size={16} className="text-white" />
+                                                        </button>
+                                                        <div className="w-5">
+                                                            {membersOk && <MSIcon name="check_circle" size={18} className="text-[#169B55]" />}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <button
-                                                    onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 0 : Math.max(2, m - 1)); }}
-                                                    className="w-9 h-9 rounded-full bg-[#F2F1EC] flex items-center justify-center active:scale-90 transition-transform"
-                                                >
-                                                    <MSIcon name="remove" size={16} className="text-[#111]" />
-                                                </button>
-                                                <span className={cn(
-                                                    'text-xl font-black tabular-nums w-7 text-center',
-                                                    members === 0 ? 'text-[#B2AEA5]' : 'text-[#111]'
-                                                )}>
-                                                    {members === 0 ? '—' : members}
-                                                </span>
-                                                <button
-                                                    onClick={() => { haptic.selection(); setMembers(m => m === 0 ? 2 : Math.min(selected?.familySize || 6, m + 1)); }}
-                                                    className="w-9 h-9 rounded-full bg-[#111] flex items-center justify-center active:scale-90 transition-transform"
-                                                >
-                                                    <MSIcon name="add" size={16} className="text-white" />
-                                                </button>
-                                                <div className="w-5">
-                                                    {membersOk && <MSIcon name="check_circle" size={18} className="text-[#169B55]" />}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        </>
+                                    )}
 
                                     {/* divider */}
                                     <div className="h-px bg-[#F0EEE8] mx-5" />
@@ -932,7 +1169,11 @@ export function CreateClubPage() {
                                                 {selected?.name || 'Семейная подписка'}
                                             </p>
                                             <p className="mt-1 text-sm font-bold text-white/55">
-                                                {members > 1 ? `${Math.max(members - 1, 1)} свободн. ${members - 1 === 1 ? 'место' : 'места'}` : 'места появятся после выбора участников'}
+                                                {isTelecomSelected
+                                                    ? telecomSlotMode === 'smartphone'
+                                                        ? `${formatPlaceCount(telecomTotalSlots || 0)} для смартфонов`
+                                                        : `${formatPlaceCount(telecomTotalSlots || 0)} разных типов`
+                                                    : members > 1 ? `${Math.max(members - 1, 1)} свободн. ${members - 1 === 1 ? 'место' : 'места'}` : 'места появятся после выбора участников'}
                                             </p>
                                         </div>
                                         <div className="w-12 h-12 rounded-2xl bg-[#FFE15A] text-[#111] flex items-center justify-center flex-shrink-0">
@@ -944,7 +1185,9 @@ export function CreateClubPage() {
                                         <div className="rounded-3xl bg-white/10 px-4 py-3">
                                             <p className="text-[12px] font-bold text-white/50">Ваша доля</p>
                                             <p className="mt-0.5 text-[22px] font-black tabular-nums">
-                                                {pricePer > 0 ? `${pricePer} ₸` : '—'}
+                                                {isTelecomSelected
+                                                    ? telecomMinPrice > 0 ? `от ${telecomMinPrice} ₸` : '—'
+                                                    : pricePer > 0 ? `${pricePer} ₸` : '—'}
                                             </p>
                                         </div>
                                         <div className="rounded-3xl bg-white/10 px-4 py-3">
@@ -1188,7 +1431,7 @@ export function CreateClubPage() {
                             ) : (
                                 <>
                                     <MSIcon name="group_add" size={20} className="text-white" />
-                                    Создать клуб
+                                    {mode === 'tariff' ? 'Создать тариф' : 'Создать подписку'}
                                 </>
                             )}
                         </button>
@@ -1201,10 +1444,10 @@ export function CreateClubPage() {
             < BottomSheet
                 isOpen={allSheet}
                 onClose={() => setAllSheet(false)}
-                title="Все сервисы"
+                title={mode === 'tariff' ? 'Все операторы' : 'Все сервисы'}
             >
                 <div className="space-y-4 pb-6">
-                    {CAT_ORDER
+                    {categoryOrder
                         .filter(cat => grouped[cat]?.length)
                         .map(cat => (
                             <div key={cat}>
@@ -1272,6 +1515,114 @@ export function CreateClubPage() {
                 </Alert>
             </Snackbar>
         </div >
+    );
+}
+
+function TelecomSlotEditor({
+    slots,
+    mode,
+    onChange,
+    totalSlots,
+    minPrice,
+}: {
+    slots: EditableTelecomSlot[];
+    mode: TelecomSlotMode;
+    onChange: (slots: EditableTelecomSlot[]) => void;
+    totalSlots: number;
+    minPrice: number;
+}) {
+    const updateSlot = (type: EditableTelecomSlot['type'], patch: Partial<EditableTelecomSlot>) => {
+        onChange(slots.map(slot => slot.type === type ? { ...slot, ...patch } : slot));
+    };
+    const isMulti = mode === 'multi';
+
+    return (
+        <div className="px-5 py-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <p className="text-xs font-bold text-[#77736B] mb-0.5">Типы мест</p>
+                    <p className="text-sm font-black text-[#111]">
+                        {isMulti ? 'Разные цены внутри одной семьи' : 'Обычные номера с одной ценой'}
+                    </p>
+                </div>
+                <div className="text-right shrink-0">
+                    <p className="text-xs font-bold text-[#77736B]">Итого</p>
+                    <p className="text-sm font-black text-[#111]">
+                        {formatPlaceCount(totalSlots)} · {isMulti ? 'от ' : ''}{minPrice || 0} ₸
+                    </p>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                {slots
+                    .filter(slot => mode === 'multi' || slot.type === 'smartphone')
+                    .map(slot => {
+                        const isLockedSmartphone = mode === 'smartphone' && slot.type === 'smartphone';
+                        return (
+                    <div key={slot.type} className={cn(
+                        'rounded-[22px] border px-3 py-3 transition-all',
+                        slot.enabled ? 'border-[#111] bg-[#F8F7F2]' : 'border-[#F0EEE8] bg-white'
+                    )}>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!isLockedSmartphone) updateSlot(slot.type, { enabled: !slot.enabled });
+                            }}
+                            className={cn(
+                                'w-full flex items-start justify-between gap-3 text-left',
+                                isLockedSmartphone && 'cursor-default'
+                            )}
+                        >
+                            <div>
+                                <p className="text-sm font-black text-[#111]">{slot.label}</p>
+                                <p className="text-[11px] text-[#77736B] font-semibold leading-relaxed">{slot.description}</p>
+                            </div>
+                            <div className={cn(
+                                'w-9 h-5 rounded-full p-0.5 transition-all shrink-0',
+                                isLockedSmartphone || slot.enabled ? 'bg-[#111]' : 'bg-[#D9D6CE]'
+                            )}>
+                                <div className={cn(
+                                    'w-4 h-4 rounded-full bg-white transition-transform',
+                                    isLockedSmartphone || slot.enabled ? 'translate-x-4' : ''
+                                )} />
+                            </div>
+                        </button>
+
+                        {(isLockedSmartphone || slot.enabled) && (
+                            <div className="grid grid-cols-2 gap-2 mt-3">
+                                <label className="rounded-2xl bg-white px-3 py-2">
+                                    <span className="block text-[11px] text-[#77736B] font-bold">Количество</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={slot.capacity}
+                                        onChange={e => updateSlot(slot.type, { capacity: Math.max(1, Math.min(20, Number(e.target.value) || 1)) })}
+                                        className="w-full bg-transparent outline-none text-lg font-black text-[#111]"
+                                        inputMode="numeric"
+                                    />
+                                </label>
+                                <label className="rounded-2xl bg-white px-3 py-2">
+                                    <span className="block text-[11px] text-[#77736B] font-bold">Цена / мес</span>
+                                    <div className="flex items-center gap-1">
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            value={slot.price}
+                                            onChange={e => updateSlot(slot.type, { price: Math.max(1, Number(e.target.value) || 1) })}
+                                            className="w-full bg-transparent outline-none text-lg font-black text-[#111]"
+                                            inputMode="numeric"
+                                        />
+                                        <span className="text-sm font-bold text-[#77736B]">₸</span>
+                                    </div>
+                                </label>
+                            </div>
+                        )}
+                    </div>
+                        );
+                    })}
+            </div>
+        </div>
     );
 }
 

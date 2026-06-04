@@ -2,46 +2,36 @@ import * as React from 'react';
 import { cn } from '@/shared/lib/utils';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { ChevronRight } from 'lucide-react';
-import { Card, CardBody } from '@heroui/react';
+import { Box, Typography, Card, Switch } from '@mui/material';
 
-/* =============================================
- * List Section
- * ============================================= */
-
+/* ── ListSection ─────────────────────────────────────────────────────── */
 interface ListSectionProps extends React.HTMLAttributes<HTMLDivElement> {
     title?: string;
     footer?: string;
 }
 
 export const ListSection = React.forwardRef<HTMLDivElement, ListSectionProps>(
-    ({ className, title, footer, children, ...props }, ref) => {
-        return (
-            <div ref={ref} className={cn('mb-6', className)} {...props}>
-                {title && (
-                    <div className="px-4 mb-2 text-xs font-bold text-default-500 uppercase tracking-wider ml-1">
-                        {title}
-                    </div>
-                )}
-                <Card shadow="sm" className="bg-content1 rounded-[24px]">
-                    <CardBody className="p-0 overflow-hidden">
-                        {children}
-                    </CardBody>
-                </Card>
-                {footer && (
-                    <div className="px-4 mt-2 text-xs text-default-400 leading-snug ml-1">
-                        {footer}
-                    </div>
-                )}
-            </div>
-        );
-    }
+    ({ className, title, footer, children, ...props }, ref) => (
+        <div ref={ref} className={cn('mb-6', className)} {...props}>
+            {title && (
+                <Typography variant="caption" fontWeight={700} color="text.disabled" sx={{ textTransform: 'uppercase', letterSpacing: 2, pl: 0.5, mb: 1, display: 'block' }}>
+                    {title}
+                </Typography>
+            )}
+            <Card sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                {children}
+            </Card>
+            {footer && (
+                <Typography variant="caption" color="text.disabled" sx={{ pl: 0.5, mt: 1, display: 'block', lineHeight: 1.5 }}>
+                    {footer}
+                </Typography>
+            )}
+        </div>
+    )
 );
 ListSection.displayName = 'ListSection';
 
-/* =============================================
- * List Item
- * ============================================= */
-
+/* ── ListItem ────────────────────────────────────────────────────────── */
 interface ListItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onToggle'> {
     icon?: React.ReactNode;
     label: string;
@@ -62,66 +52,52 @@ export const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
 
         const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
             if (disabled) return;
-
-            if (toggle && onToggle) {
-                haptic.impact('light');
-                onToggle(!isOn);
-                return;
-            }
-
-            if (onClick) {
-                haptic.selection();
-                onClick(e);
-            }
+            if (toggle && onToggle) { haptic.impact('light'); onToggle(!isOn); return; }
+            if (onClick) { haptic.selection(); onClick(e); }
         };
 
         return (
-            <div
+            <Box
                 ref={ref}
-                className={cn(
-                    'flex items-center px-4 min-h-[56px] transition-colors line-clamp-1',
-                    'active:bg-default-100/50 cursor-pointer',
-                    'border-b border-default-100 last:border-b-0',
-                    disabled && 'opacity-50 pointer-events-none',
-                    className
-                )}
+                className={cn('flex items-center px-4 min-h-[56px] transition-colors', className)}
+                sx={{
+                    display: 'flex', alignItems: 'center', px: 2, minHeight: 56,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    cursor: (onClick || toggle) ? 'pointer' : 'default',
+                    opacity: disabled ? 0.5 : 1,
+                    pointerEvents: disabled ? 'none' : 'auto',
+                    '&:last-child': { borderBottom: 'none' },
+                    '&:active': { bgcolor: 'rgba(255,255,255,0.04)' },
+                }}
                 onClick={handleClick}
                 {...props}
             >
-                {icon && <span className="mr-4 text-default-500">{icon}</span>}
+                {icon && <Box sx={{ mr: 2, color: 'text.secondary', display: 'flex' }}>{icon}</Box>}
 
-                <div className="flex-1 flex items-center justify-between py-3 min-w-0">
-                    <div className="flex flex-col min-w-0 mr-3">
-                        <span className={cn('text-base font-medium truncate', destructive ? 'text-danger' : 'text-foreground')}>{label}</span>
-                        {subLabel && <span className="text-xs text-default-400 truncate">{subLabel}</span>}
-                    </div>
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, mr: 1 }}>
+                        <Typography fontSize={16} fontWeight={500} color={destructive ? 'error.main' : 'text.primary'} noWrap>
+                            {label}
+                        </Typography>
+                        {subLabel && <Typography variant="caption" color="text.secondary" noWrap>{subLabel}</Typography>}
+                    </Box>
 
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                        {value && <span className="text-sm text-default-500">{value}</span>}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                        {value && <Typography variant="body2" color="text.secondary">{value}</Typography>}
                         {rightElement}
-
-                        {hasArrow && (
-                            <ChevronRight size={18} className="text-default-400" />
-                        )}
-
+                        {hasArrow && <ChevronRight size={18} style={{ opacity: 0.4 }} />}
                         {toggle && (
-                            <div
-                                className={cn(
-                                    "w-[50px] h-[30px] rounded-full p-[2px] transition-colors duration-300",
-                                    isOn ? "bg-success" : "bg-default-200"
-                                )}
-                            >
-                                <div
-                                    className={cn(
-                                        "w-[26px] h-[26px] bg-white rounded-full shadow-lg transition-transform duration-300",
-                                        isOn ? "translate-x-[20px]" : "translate-x-0"
-                                    )}
-                                />
-                            </div>
+                            <Switch
+                                checked={!!isOn}
+                                size="small"
+                                color="success"
+                                onChange={(_, val) => { haptic.impact('light'); onToggle?.(val); }}
+                                onClick={e => e.stopPropagation()}
+                            />
                         )}
-                    </div>
-                </div>
-            </div>
+                    </Box>
+                </Box>
+            </Box>
         );
     }
 );

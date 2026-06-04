@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api';
 import { useTrustHistory, useTrustScore } from '@/shared/api/trust';
@@ -26,12 +27,22 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 
 export function ProfilePage() {
     const haptic = useHaptic();
+    const [searchParams] = useSearchParams();
+    const settingsRef = useRef<HTMLDivElement | null>(null);
     const [currentLang, setLang] = useState<Language>(getLanguage());
     const [showTrustHistory, setShowTrustHistory] = useState(false);
 
     const { data: user, isLoading } = useQuery({ queryKey: ['me'], queryFn: () => api.getMe() });
     const { data: trustData } = useTrustScore(user?.user_id || 0);
     const { data: trustHistoryData, isLoading: isHistoryLoading } = useTrustHistory(user?.user_id || 0);
+
+    useEffect(() => {
+        if (!isLoading && searchParams.get('section') === 'settings') {
+            window.setTimeout(() => {
+                settingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+        }
+    }, [isLoading, searchParams]);
 
     const handleLanguageChange = (lang: Language) => {
         haptic.selection();
@@ -118,10 +129,11 @@ export function ProfilePage() {
                         ))}
                     </Box>
 
-                    <SectionTitle title="Настройки" />
-                    <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px' }}>
+                    <Box ref={settingsRef} sx={{ scrollMarginTop: 18 }}>
+                        <SectionTitle title="Настройки" />
+                        <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px', mt: 1 }}>
                         {[
-                            { label: 'Мои места', sub: 'управление подписками', icon: <HistoryRoundedIcon /> },
+                            { label: 'Мои предложения', sub: 'подписки, тарифы и доступы', icon: <HistoryRoundedIcon /> },
                             { label: 'Безопасность', sub: 'доверие, жалобы, отзывы', icon: <ShieldRoundedIcon /> },
                             { label: 'О приложении', sub: 'версия, правила, поддержка', icon: <ChevronRightRoundedIcon /> },
                         ].map((item, index, arr) => (
@@ -139,7 +151,8 @@ export function ProfilePage() {
                                 {index < arr.length - 1 && <Divider sx={{ mx: 1.5, borderColor: '#F0EEE8' }} />}
                             </Box>
                         ))}
-                    </Card>
+                        </Card>
+                    </Box>
 
                     <SectionTitle title="Язык" />
                     <Card sx={{ bgcolor: '#fff', color: '#111', border: 0, borderRadius: '26px' }}>

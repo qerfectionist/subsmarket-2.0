@@ -1,4 +1,4 @@
-import { Breadcrumbs as HeroBreadcrumbs, BreadcrumbItem } from "@heroui/react";
+import { Breadcrumbs as MuiBreadcrumbs, Link, Typography } from '@mui/material';
 
 export interface BreadcrumbItemData {
     key: string;
@@ -16,23 +16,23 @@ export interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items, onAction, separator, className }: BreadcrumbsProps) {
     return (
-        <HeroBreadcrumbs
-            separator={separator}
-            onAction={(key) => onAction?.(key as string)}
-            className={className}
-            classNames={{
-                list: "gap-1"
-            }}
-        >
-            {items.map((item) => (
-                <BreadcrumbItem
-                    key={item.key}
-                    href={item.href}
-                    isCurrent={item.isCurrent}
-                >
-                    {item.label}
-                </BreadcrumbItem>
-            ))}
-        </HeroBreadcrumbs>
+        <MuiBreadcrumbs separator={separator} className={className}>
+            {items.map(item => item.isCurrent
+                ? <Typography key={item.key} color="text.primary" fontSize={14}>{item.label}</Typography>
+                : (
+                    <Link
+                        key={item.key}
+                        href={item.href || '#'}
+                        underline="hover"
+                        color="text.secondary"
+                        fontSize={14}
+                        onClick={e => { if (onAction) { e.preventDefault(); onAction(item.key); } }}
+                        sx={{ cursor: 'pointer' }}
+                    >
+                        {item.label}
+                    </Link>
+                )
+            )}
+        </MuiBreadcrumbs>
     );
 }

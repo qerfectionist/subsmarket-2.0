@@ -1,12 +1,8 @@
+import * as React from 'react';
 import {
-    Table as HeroTable,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    getKeyValue,
-} from "@heroui/react";
+    Table as MuiTable, TableHead, TableBody, TableRow,
+    TableCell as MuiTableCell, TableContainer, Paper, Typography,
+} from '@mui/material';
 
 export interface TableColumn {
     key: string;
@@ -27,51 +23,45 @@ export interface TableProps<T> {
 }
 
 export function Table<T extends Record<string, any>>({
-    columns,
-    rows,
-    getRowKey,
-    onRowClick,
-    isStriped = false,
-    isHeaderSticky = false,
-    selectionMode = 'none',
-    className,
-    emptyContent = 'Нет данных'
+    columns, rows, getRowKey, onRowClick, isStriped = false,
+    isHeaderSticky = false, className, emptyContent = 'Нет данных',
 }: TableProps<T>) {
     return (
-        <HeroTable
-            aria-label="Data table"
-            isStriped={isStriped}
-            isHeaderSticky={isHeaderSticky}
-            selectionMode={selectionMode}
-            className={className}
-            classNames={{
-                wrapper: "bg-content1 rounded-lg",
-                th: "bg-default-100",
-            }}
-        >
-            <TableHeader columns={columns}>
-                {(column) => (
-                    <TableColumn key={column.key} allowsSorting={column.allowsSorting}>
-                        {column.label}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody items={rows} emptyContent={emptyContent}>
-                {(item) => (
-                    <TableRow
-                        key={getRowKey(item)}
-                        onClick={() => onRowClick?.(item)}
-                        className={onRowClick ? 'cursor-pointer hover:bg-default-100' : ''}
-                    >
-                        {(columnKey) => (
-                            <TableCell>{getKeyValue(item, columnKey)}</TableCell>
-                        )}
+        <TableContainer component={Paper} className={className} sx={{ bgcolor: 'rgba(255,255,255,0.04)', borderRadius: 3 }}>
+            <MuiTable stickyHeader={isHeaderSticky} size="small">
+                <TableHead>
+                    <TableRow>
+                        {columns.map(col => (
+                            <MuiTableCell key={col.key} sx={{ fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, bgcolor: 'rgba(255,255,255,0.06)' }}>
+                                {col.label}
+                            </MuiTableCell>
+                        ))}
                     </TableRow>
-                )}
-            </TableBody>
-        </HeroTable>
+                </TableHead>
+                <TableBody>
+                    {rows.length === 0 ? (
+                        <TableRow>
+                            <MuiTableCell colSpan={columns.length} align="center" sx={{ py: 5 }}>
+                                <Typography color="text.disabled">{emptyContent}</Typography>
+                            </MuiTableCell>
+                        </TableRow>
+                    ) : rows.map((row, i) => (
+                        <TableRow
+                            key={getRowKey(row)}
+                            hover={!!onRowClick}
+                            onClick={() => onRowClick?.(row)}
+                            sx={{
+                                cursor: onRowClick ? 'pointer' : 'default',
+                                bgcolor: isStriped && i % 2 === 1 ? 'rgba(255,255,255,0.02)' : undefined,
+                            }}
+                        >
+                            {columns.map(col => (
+                                <MuiTableCell key={col.key}>{row[col.key]}</MuiTableCell>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </MuiTable>
+        </TableContainer>
     );
 }
-
-// Re-export for custom implementations
-export { HeroTable as TableBase, TableHeader, TableColumn as HeroTableColumn, TableBody, TableRow, TableCell };

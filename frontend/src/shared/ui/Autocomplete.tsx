@@ -1,6 +1,5 @@
-import type { FC, Key } from 'react';
-import { Autocomplete as HeroAutocomplete, AutocompleteItem } from '@heroui/react';
-import { cn } from '@/shared/lib/utils';
+import type { FC } from 'react';
+import { Autocomplete as MuiAutocomplete, TextField, CircularProgress } from '@mui/material';
 
 export interface AutocompleteOption {
     key: string;
@@ -22,72 +21,46 @@ export interface AutocompleteProps {
 }
 
 export const Autocomplete: FC<AutocompleteProps> = ({
-    options,
-    selectedKey,
-    onSelectionChange,
-    label,
-    placeholder = 'Поиск...',
-    isDisabled = false,
-    isLoading = false,
-    className,
-    containerClassName
+    options, selectedKey, onSelectionChange, label, placeholder = 'Поиск...',
+    isDisabled = false, isLoading = false, className,
 }) => {
-    const handleSelectionChange = (key: Key | null) => {
-        if (!onSelectionChange) return;
-        onSelectionChange(key as string | null);
-    };
-
+    const selected = options.find(o => o.key === selectedKey) ?? null;
     return (
-        <div className={cn("flex flex-col gap-1.5 w-full", containerClassName)}>
-            {label && (
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest pl-1">
-                    {label}
-                </label>
+        <MuiAutocomplete
+            options={options}
+            value={selected}
+            disabled={isDisabled}
+            loading={isLoading}
+            getOptionLabel={o => o.label}
+            onChange={(_, val) => onSelectionChange?.(val?.key ?? null)}
+            className={className}
+            fullWidth
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    label={label}
+                    placeholder={placeholder}
+                    size="small"
+                    InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                            <>
+                                {isLoading && <CircularProgress size={16} />}
+                                {params.InputProps.endAdornment}
+                            </>
+                        ),
+                    }}
+                />
             )}
-            <HeroAutocomplete
-                placeholder={placeholder}
-                selectedKey={selectedKey}
-                onSelectionChange={handleSelectionChange}
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                className={cn("max-w-full", className)}
-                variant="bordered"
-                labelPlacement="outside"
-                inputProps={{
-                    classNames: {
-                        inputWrapper: "bg-[var(--color-bg-content)] border-[var(--color-separator)] min-h-[48px]",
-                        input: "text-white placeholder:text-white/20",
-                    }
-                }}
-                classNames={{
-                    base: "w-full",
-                    listbox: "bg-[#1c1c1e] border border-white/10",
-                    popoverContent: "bg-[#1c1c1e] border border-white/10",
-                }}
-                label={undefined}
-            >
-                {options.map((option) => (
-                    <AutocompleteItem
-                        key={option.key}
-                        textValue={option.label}
-                        startContent={
-                            option.icon ? (
-                                <div className="w-6 h-6 rounded bg-white/5 overflow-hidden flex-shrink-0">
-                                    <img src={option.icon} alt="" className="w-full h-full object-cover" />
-                                </div>
-                            ) : null
-                        }
-                    >
-                        <div className="flex flex-col">
-                            <span className="text-small font-medium">{option.label}</span>
-                            {option.description && (
-                                <span className="text-tiny text-default-400 capitalize">{option.description}</span>
-                            )}
-                        </div>
-                    </AutocompleteItem>
-                ))}
-            </HeroAutocomplete>
-        </div>
+            renderOption={(props, option) => (
+                <li {...props} key={option.key}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: 500 }}>{option.label}</span>
+                        {option.description && <span style={{ fontSize: 11, opacity: 0.5 }}>{option.description}</span>}
+                    </div>
+                </li>
+            )}
+        />
     );
 };
 

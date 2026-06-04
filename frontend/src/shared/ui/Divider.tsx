@@ -1,4 +1,4 @@
-import { Divider as HeroDivider } from "@heroui/react";
+import { Divider as MuiDivider, Box, Typography } from '@mui/material';
 import { cn } from '@/shared/lib/utils';
 
 export interface DividerProps {
@@ -9,25 +9,22 @@ export interface DividerProps {
 
 export function Divider({ className, orientation = 'horizontal', label }: DividerProps) {
     if (label) {
-        // HeroUI Divider doesn't support labels, so we keep custom implementation for labeled dividers
         return (
-            <div className={cn('relative w-full my-4 flex items-center', className)}>
-                <HeroDivider className="flex-1" />
-                <span className="shrink-0 mx-4 text-xs font-bold text-foreground-400 uppercase tracking-wider">
+            <Box className={cn('relative w-full my-4 flex items-center', className)} sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
+                <MuiDivider sx={{ flex: 1 }} />
+                <Typography variant="caption" fontWeight={700} color="text.disabled" sx={{ mx: 2, textTransform: 'uppercase', letterSpacing: 1.5 }}>
                     {label}
-                </span>
-                <HeroDivider className="flex-1" />
-            </div>
+                </Typography>
+                <MuiDivider sx={{ flex: 1 }} />
+            </Box>
         );
     }
 
     return (
-        <HeroDivider
+        <MuiDivider
             orientation={orientation}
-            className={cn(
-                orientation === 'vertical' ? 'mx-2' : 'my-4',
-                className
-            )}
+            className={className}
+            sx={orientation === 'vertical' ? { mx: 1 } : { my: 2 }}
         />
     );
 }

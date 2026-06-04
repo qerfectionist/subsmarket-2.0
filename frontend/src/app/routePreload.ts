@@ -3,6 +3,7 @@ import { api } from '@/shared/api';
 
 export const routePreloads = {
     home: () => import('@/features/home/pages/HomePage'),
+    market: () => import('@/features/clubs/pages/ClubsPage'),
     clubs: () => import('@/features/clubs/pages/ClubsPage'),
     gb: () => import('@/features/market/pages/GBMarketPage'),
     profile: () => import('@/features/profile/pages/ProfilePage'),

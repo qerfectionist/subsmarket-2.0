@@ -1,18 +1,22 @@
-/**
+﻿/**
  * API client for SubsMarket backend.
  * Uses Telegram initData for authentication.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1');
+const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
+
+function isLocalDevHost(): boolean {
+    return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+}
 
 /**
  * Get Telegram initData for authentication
  */
 function getInitData(): string {
-    const initData = window.Telegram?.WebApp?.initData;
+    const initData = (window as Window & { Telegram?: { WebApp?: { initData?: string } } }).Telegram?.WebApp?.initData;
 
     // Mock auth for local development
-    if (!initData && import.meta.env.DEV) {
+    if (!initData && import.meta.env.DEV && isLocalDevHost()) {
         return 'mock:12345:dev_user';
     }
 
@@ -45,8 +49,8 @@ export async function apiFetch<T>(
     if (!response.ok) {
         // Global 401 handler: session expired or invalid Telegram auth
         if (response.status === 401) {
-            const tgApp = (window as any).Telegram?.WebApp;
-            tgApp?.showAlert?.('Сессия истекла. Пожалуйста, перезапустите приложение.');
+            const tgApp = (window as Window & { Telegram?: { WebApp?: { showAlert?: (msg: string) => void } } }).Telegram?.WebApp;
+            tgApp?.showAlert?.('РЎРµСЃСЃРёСЏ РёСЃС‚РµРєР»Р°. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚Рµ РїСЂРёР»РѕР¶РµРЅРёРµ.');
             throw new Error('AUTH_EXPIRED');
         }
 
@@ -99,6 +103,17 @@ export interface Club {
     status: 'open' | 'full' | 'frozen' | 'closed';
     description: string | null;
     created_at: string;
+    slot_config?: ClubSlotConfig[] | null;
+}
+
+export interface ClubSlotConfig {
+    type: 'smartphone' | 'router' | 'm2m';
+    label: string;
+    capacity: number;
+    price: number;
+    description?: string | null;
+    occupied?: number;
+    available?: number;
 }
 
 export interface ClubDetails extends Club {
@@ -110,7 +125,9 @@ export interface ClubDetails extends Club {
     payment_day: number | null;
     rules: string | null;
     telegram_group_link: string | null;
-    my_status: 'pending' | 'active' | 'approved' | 'left' | 'kicked' | null;
+    my_status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked' | null;
+    my_access_issued_at: string | null;
+    my_payment_deadline_at: string | null;
 }
 
 export interface CreateClubRequest {
@@ -118,6 +135,7 @@ export interface CreateClubRequest {
     subscription_id?: string;    // Legacy UUID (optional)
     price_total: number;
     max_members: number;
+    slot_config?: ClubSlotConfig[];
     payment_method: string;
     payment_details: string;
     payment_day?: number;
@@ -131,10 +149,26 @@ export interface CreateClubRequest {
 export interface ClubMember {
     member_id: string;
     user: User;
-    status: 'pending' | 'active' | 'approved' | 'left' | 'kicked';
+    status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked';
     phone_number: string | null;
+    slot_type: 'smartphone' | 'router' | 'm2m' | null;
     joined_at: string;
     last_payment_at: string | null;
+    access_issued_at: string | null;
+    payment_deadline_at: string | null;
+}
+
+export interface AuditLog {
+    event_id: string;
+    actor_id: number | null;
+    target_user_id: number | null;
+    club_id: string | null;
+    deal_id: string | null;
+    event_type: string;
+    from_status: string | null;
+    to_status: string | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string;
 }
 
 export interface GigabyteOffer {
@@ -258,10 +292,13 @@ export const api = {
         return apiFetch<{ status: 'pending' | 'ready'; link: string | null }>(`/telegram/group-request/${requestId}`);
     },
 
-    async joinClub(clubId: string, phoneNumber?: string): Promise<{ status: string; message: string }> {
+    async joinClub(clubId: string, phoneNumber?: string, slotType?: ClubSlotConfig['type']): Promise<{ status: string; message: string }> {
         return apiFetch<{ status: string; message: string }>(`/clubs/${clubId}/join`, {
             method: 'POST',
-            body: JSON.stringify(phoneNumber ? { phone_number: phoneNumber } : {}),
+            body: JSON.stringify({
+                ...(phoneNumber ? { phone_number: phoneNumber } : {}),
+                ...(slotType ? { slot_type: slotType } : {}),
+            }),
         });
     },
 
@@ -272,11 +309,11 @@ export const api = {
     },
 
     async cancelJoinRequest(clubId: string): Promise<{ status: string; message: string }> {
-        return apiFetch(`/clubs/${clubId}/join`, { method: 'DELETE' });
+        return apiFetch<{ status: string; message: string }>(`/clubs/${clubId}/join`, { method: 'DELETE' });
     },
 
     async remindHost(clubId: string): Promise<{ status: string; message: string }> {
-        return apiFetch(`/clubs/${clubId}/remind`, { method: 'POST' });
+        return apiFetch<{ status: string; message: string }>(`/clubs/${clubId}/remind`, { method: 'POST' });
     },
 
     async getPendingMembers(clubId: string): Promise<ClubMember[]> {
@@ -289,6 +326,34 @@ export const api = {
 
     async rejectMember(clubId: string, memberId: string): Promise<{ status: string; message: string }> {
         return apiFetch(`/clubs/${clubId}/members/${memberId}/reject`, { method: 'POST' });
+    },
+
+    async markClubAccessReceived(clubId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/me/access-received`, { method: 'POST' });
+    },
+
+    async issueClubAccess(clubId: string, memberId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/${memberId}/issue-access`, { method: 'POST' });
+    },
+
+    async markClubPaid(clubId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/me/paid`, { method: 'POST' });
+    },
+
+    async disputeClubMembership(clubId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/me/dispute`, { method: 'POST' });
+    },
+
+    async getClubMembers(clubId: string): Promise<ClubMember[]> {
+        return apiFetch<ClubMember[]>(`/clubs/${clubId}/members`);
+    },
+
+    async confirmMemberPayment(clubId: string, memberId: string): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/${memberId}/confirm-payment`, { method: 'POST' });
+    },
+
+    async getClubAudit(clubId: string): Promise<AuditLog[]> {
+        return apiFetch<AuditLog[]>(`/clubs/${clubId}/audit`);
     },
 
 
@@ -364,16 +429,43 @@ export const api = {
     },
 };
 
+type QueryParam = string | number | boolean | null | undefined;
+
+interface ClientConfig {
+    params?: Record<string, QueryParam>;
+    headers?: Record<string, string>;
+}
+
+function buildQuery(params?: Record<string, QueryParam>): string {
+    if (!params) return '';
+
+    const search = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            search.set(key, String(value));
+        }
+    });
+
+    const query = search.toString();
+    return query ? `?${query}` : '';
+}
+
 export const client = {
-    get: <T>(url: string, config?: any) => {
-        const query = config?.params ? '?' + new URLSearchParams(config.params).toString() : '';
-        return apiFetch<T>(`${url}${query}`).then(data => ({ data }));
+    get: <T>(url: string, config?: ClientConfig) => {
+        const query = buildQuery(config?.params);
+        return apiFetch<T>(`${url}${query}`, { headers: config?.headers }).then(data => ({ data }));
     },
-    post: <T>(url: string, data?: any, config?: any) => apiFetch<T>(url, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        ...config
-    }).then(data => ({ data })),
+    post: <T>(url: string, data?: unknown, config?: ClientConfig) => {
+        const request: RequestInit = { method: 'POST', headers: config?.headers };
+        if (data instanceof FormData) {
+            request.body = data;
+        } else if (data !== undefined) {
+            request.body = JSON.stringify(data);
+        }
+
+        return apiFetch<T>(url, request).then(data => ({ data }));
+    },
 };
 
 export default api;
+

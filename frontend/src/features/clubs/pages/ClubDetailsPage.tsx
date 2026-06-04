@@ -30,7 +30,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
-import { api } from '@/shared/api';
+import { api, ClubSlotConfig } from '@/shared/api';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { SERVICE_COLORS } from '../data/serviceCatalog';
 
@@ -47,6 +47,7 @@ export function ClubDetailsPage() {
     const [joinResultOpen, setJoinResultOpen] = useState(false);
     const [joinMessage, setJoinMessage] = useState<'pending' | 'approved'>('pending');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [selectedSlotType, setSelectedSlotType] = useState<ClubSlotConfig['type'] | ''>('');
 
     const { data: club, isLoading, error } = useQuery({
         queryKey: ['club', id],
@@ -55,7 +56,7 @@ export function ClubDetailsPage() {
     });
 
     const joinMutation = useMutation({
-        mutationFn: (phone?: string | void) => api.joinClub(id!, phone || undefined),
+        mutationFn: (payload?: { phone?: string; slotType?: ClubSlotConfig['type'] }) => api.joinClub(id!, payload?.phone, payload?.slotType),
         onSuccess: data => {
             haptic.notification('success');
             setJoinMessage(data.message?.toLowerCase().includes('auto') ? 'approved' : 'pending');
@@ -91,6 +92,24 @@ export function ClubDetailsPage() {
         onError: () => haptic.notification('error'),
     });
 
+    const paidMutation = useMutation({
+        mutationFn: () => api.markClubPaid(id!),
+        onSuccess: () => {
+            haptic.notification('success');
+            queryClient.invalidateQueries({ queryKey: ['club', id] });
+        },
+        onError: () => haptic.notification('error'),
+    });
+
+    const disputeMutation = useMutation({
+        mutationFn: () => api.disputeClubMembership(id!),
+        onSuccess: () => {
+            haptic.notification('warning');
+            queryClient.invalidateQueries({ queryKey: ['club', id] });
+        },
+        onError: () => haptic.notification('error'),
+    });
+
     if (isLoading) return <ClubDetailsSkeleton />;
 
     if (error || !club) {
@@ -109,7 +128,8 @@ export function ClubDetailsPage() {
 
     const currentUserId = getCurrentUserId();
     const isHost = club.host_id === currentUserId;
-    const isMember = isHost || club.my_status === 'active' || club.my_status === 'approved';
+    const isAccepted = ['invited', 'access_issued', 'payment_pending', 'paid', 'active', 'approved', 'disputed'].includes(club.my_status || '');
+    const isMember = isHost || isAccepted;
     const isPending = !isHost && club.my_status === 'pending';
     const isFull = club.status === 'full';
     const membersCount = club.current_members ?? 0;
@@ -119,6 +139,10 @@ export function ClubDetailsPage() {
     const statusLabel = getStatusLabel(club.status);
     const price = Math.round(club.price_per_member);
     const total = Math.round(club.price_total);
+    const telecomSlots = club.slot_config || [];
+    const hasTelecomSlots = (club.category === 'telecom' || club.subscription.category === 'telecom') && telecomSlots.length > 0;
+    const availableTelecomSlots = telecomSlots.filter(slot => (slot.available ?? slot.capacity) > 0);
+    const selectedSlot = telecomSlots.find(slot => slot.type === selectedSlotType);
     const paymentDay = club.payment_day ? `${club.payment_day} числа` : 'по договорённости';
     const paymentMethod = formatPaymentMethod(club.payment_method);
 
@@ -184,7 +208,7 @@ export function ClubDetailsPage() {
                             </Box>
 
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 2.3 }}>
-                                <Metric label="Ваша доля" value={`${price} ₸`} strong />
+                                <Metric label={hasTelecomSlots ? 'Места от' : 'Ваша доля'} value={hasTelecomSlots ? `от ${price} ₸` : `${price} ₸`} strong />
                                 <Metric label="Всего" value={`${total} ₸`} align="right" />
                             </Box>
 
@@ -207,6 +231,10 @@ export function ClubDetailsPage() {
                             </Stack>
                         </CardContent>
                     </Card>
+
+                    {hasTelecomSlots && (
+                        <TelecomSlotsCard slots={telecomSlots} />
+                    )}
 
                     <Card sx={{ borderRadius: '28px' }}>
                         <CardContent sx={{ p: 2 }}>
@@ -236,6 +264,21 @@ export function ClubDetailsPage() {
                         </CardContent>
                     </Card>
 
+                    {isPending && (
+                        <PendingRequestCard />
+                    )}
+
+                    {!isHost && isAccepted && (
+                        <MemberProgressCard
+                            status={club.my_status}
+                            onPaid={() => paidMutation.mutate()}
+                            onDispute={() => disputeMutation.mutate()}
+                            paidLoading={paidMutation.isPending}
+                            disputeLoading={disputeMutation.isPending}
+                            paymentDeadlineAt={club.my_payment_deadline_at}
+                        />
+                    )}
+
                     {(club.description || club.rules || club.telegram_group_link) && (
                         <Card sx={{ borderRadius: '28px' }}>
                             <CardContent sx={{ p: 2 }}>
@@ -263,9 +306,10 @@ export function ClubDetailsPage() {
                 onJoin: () => {
                     haptic.impact('medium');
                     if (club.category === 'telecom' || club.subscription.category === 'telecom') {
+                        setSelectedSlotType(availableTelecomSlots[0]?.type || '');
                         setPhoneOpen(true);
                     } else {
-                        joinMutation.mutate();
+                        joinMutation.mutate(undefined);
                     }
                 },
                 onRemind: () => remindMutation.mutate(),
@@ -298,6 +342,28 @@ export function ClubDetailsPage() {
                     <Typography fontSize={14} color="#77736B" textAlign="center" sx={{ mb: 2 }}>
                         Организатору нужен номер, чтобы добавить вас в семейный тариф.
                     </Typography>
+                    {hasTelecomSlots && (
+                        <Stack spacing={0.8} sx={{ mb: 2 }}>
+                            <Typography fontSize={12.5} color="#77736B" fontWeight={700}>Выберите тип места</Typography>
+                            {availableTelecomSlots.map(slot => (
+                                <Button
+                                    key={slot.type}
+                                    fullWidth
+                                    variant={selectedSlotType === slot.type ? 'contained' : 'outlined'}
+                                    onClick={() => setSelectedSlotType(slot.type)}
+                                    sx={{ justifyContent: 'space-between', borderRadius: 3 }}
+                                >
+                                    <span>{slot.label}</span>
+                                    <span>{Math.round(Number(slot.price))} ₸</span>
+                                </Button>
+                            ))}
+                            {selectedSlot && (
+                                <Typography fontSize={12} color="#77736B">
+                                    {selectedSlot.description}
+                                </Typography>
+                            )}
+                        </Stack>
+                    )}
                     <TextField
                         autoFocus
                         fullWidth
@@ -310,7 +376,7 @@ export function ClubDetailsPage() {
                 </DialogContent>
                 <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
                     <Button onClick={() => setPhoneOpen(false)} sx={{ bgcolor: '#F2F1EC', color: '#111' }}>Отмена</Button>
-                    <Button variant="contained" disabled={!isPhoneComplete || joinMutation.isPending} onClick={() => joinMutation.mutate(phoneNumber)}>
+                    <Button variant="contained" disabled={!isPhoneComplete || (hasTelecomSlots && !selectedSlotType) || joinMutation.isPending} onClick={() => joinMutation.mutate({ phone: phoneNumber, slotType: selectedSlotType || undefined })}>
                         Отправить
                     </Button>
                 </DialogActions>
@@ -381,6 +447,184 @@ function renderBottomAction(props: {
             </Box>
         </Box>
     );
+}
+
+function TelecomSlotsCard({ slots }: { slots: ClubSlotConfig[] }) {
+    return (
+        <Card sx={{ borderRadius: '28px' }}>
+            <CardContent sx={{ p: 2 }}>
+                <Typography fontSize={16} fontWeight={760} sx={{ mb: 1.2 }}>Свободные места</Typography>
+                <Stack spacing={0.8}>
+                    {slots.map(slot => {
+                        const available = slot.available ?? slot.capacity;
+                        const isAvailable = available > 0;
+                        return (
+                            <Box
+                                key={slot.type}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: 1.2,
+                                    bgcolor: isAvailable ? '#F8F7F2' : '#F2F1EC',
+                                    borderRadius: '18px',
+                                    px: 1.3,
+                                    py: 1.1,
+                                    opacity: isAvailable ? 1 : 0.62,
+                                }}
+                            >
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography fontSize={14} fontWeight={760}>{slot.label}</Typography>
+                                    <Typography fontSize={12} color="#77736B" fontWeight={560}>
+                                        {available} из {slot.capacity} свободно
+                                    </Typography>
+                                </Box>
+                                <Typography fontSize={15} fontWeight={800} whiteSpace="nowrap">
+                                    {Math.round(Number(slot.price))} ₸
+                                </Typography>
+                            </Box>
+                        );
+                    })}
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+}
+
+function PendingRequestCard() {
+    return (
+        <Card sx={{ borderRadius: '28px', bgcolor: '#FFF4CC' }}>
+            <CardContent sx={{ p: 2 }}>
+                <Typography fontSize={16} fontWeight={760}>Заявка отправлена</Typography>
+                <Typography fontSize={14} color="#7A5B00" sx={{ mt: 0.5, lineHeight: 1.45 }}>
+                    Вы пока не в клубе. Организатор получит заявку, напишет вам в Telegram и примет решение после проверки доступа и оплаты.
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+}
+
+function MemberProgressCard({
+    status,
+    onPaid,
+    onDispute,
+    paidLoading,
+    disputeLoading,
+    paymentDeadlineAt,
+}: {
+    status: string | null;
+    onPaid: () => void;
+    onDispute: () => void;
+    paidLoading: boolean;
+    disputeLoading: boolean;
+    paymentDeadlineAt?: string | null;
+}) {
+    const step = getMemberStep(status);
+    const canMarkPaid = status === 'payment_pending';
+    const canConfirmAccess = false;
+    const accessLoading = false;
+    const onAccessReceived = () => undefined;
+    const isWaitingHost = status === 'paid';
+    const isActive = status === 'active';
+    const isDisputed = status === 'disputed';
+
+    return (
+        <Card sx={{ borderRadius: '28px', bgcolor: '#fff' }}>
+            <CardContent sx={{ p: 2 }}>
+                <Typography fontSize={16} fontWeight={760}>Доступ и оплата</Typography>
+                <Typography fontSize={14} color="#77736B" sx={{ mt: 0.5, lineHeight: 1.45 }}>
+                    {step.description}
+                </Typography>
+
+                {(status === 'invited' || status === 'approved' || status === 'access_issued') && (
+                    <Box sx={{ bgcolor: '#FFF4CC', borderRadius: 3, px: 1.5, py: 1.2, mt: 1.4 }}>
+                        <Typography fontSize={13} color="#7A5B00" fontWeight={700} textAlign="center">
+                            Хост принял заявку. Договоритесь в Telegram и ждите выдачи доступа.
+                        </Typography>
+                    </Box>
+                )}
+
+                {status === 'payment_pending' && paymentDeadlineAt && (
+                    <Box sx={{ bgcolor: '#F2F1EC', borderRadius: 3, px: 1.5, py: 1.2, mt: 1.4 }}>
+                        <Typography fontSize={12.5} color="#77736B" fontWeight={650}>Оплатить до</Typography>
+                        <Typography fontSize={15} fontWeight={800}>{new Date(paymentDeadlineAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</Typography>
+                    </Box>
+                )}
+
+                <Stack spacing={0.8} sx={{ mt: 1.6 }}>
+                    {['Заявка принята', 'Проверка доступа', 'Оплата', 'Подтверждение хоста'].map((label, index) => (
+                        <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                display: 'grid',
+                                placeItems: 'center',
+                                bgcolor: index <= step.index ? '#111' : '#F2F1EC',
+                                color: index <= step.index ? '#fff' : '#B7B1A8',
+                                fontSize: 12,
+                                fontWeight: 800,
+                            }}>
+                                {index + 1}
+                            </Box>
+                            <Typography fontSize={13.5} fontWeight={index === step.index ? 760 : 620} color={index <= step.index ? '#111' : '#77736B'}>
+                                {label}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Stack>
+
+                {isDisputed && (
+                    <Box sx={{ bgcolor: '#FFE0D6', borderRadius: 3, px: 1.5, py: 1.2, mt: 1.8 }}>
+                        <Typography fontSize={13} color="#B42318" fontWeight={700} textAlign="center">
+                            Спор открыт. Семья заморожена до решения.
+                        </Typography>
+                    </Box>
+                )}
+
+                {!isActive && !isDisputed && (
+                    <Stack spacing={1} sx={{ mt: 1.8 }}>
+                        {canConfirmAccess && (
+                            <Button variant="contained" fullWidth disabled={accessLoading} onClick={onAccessReceived}>
+                                Доступ получил
+                            </Button>
+                        )}
+                        {canMarkPaid && (
+                            <Button variant={canConfirmAccess ? 'outlined' : 'contained'} fullWidth disabled={paidLoading} onClick={onPaid}>
+                                Оплатил
+                            </Button>
+                        )}
+                        {isWaitingHost && (
+                            <Box sx={{ bgcolor: '#FFF4CC', borderRadius: 3, px: 1.5, py: 1.2 }}>
+                                <Typography fontSize={13} color="#7A5B00" fontWeight={700} textAlign="center">
+                                    Ждём, пока хост подтвердит получение оплаты
+                                </Typography>
+                            </Box>
+                        )}
+                        <Button color="error" sx={{ bgcolor: '#FFE0D6', color: '#B42318', '&:hover': { bgcolor: '#FFD2C2' } }} disabled={disputeLoading} onClick={onDispute}>
+                            Открыть спор
+                        </Button>
+                    </Stack>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function getMemberStep(status: string | null) {
+    if (status === 'active') {
+        return { index: 3, description: 'Хост подтвердил оплату. Место активно, данные подписки доступны.' };
+    }
+    if (status === 'paid') {
+        return { index: 3, description: 'Вы отметили оплату. Теперь хост должен подтвердить, что деньги пришли.' };
+    }
+    if (status === 'payment_pending') {
+        return { index: 2, description: 'Доступ проверен. Переведите оплату по реквизитам и нажмите “Оплатил”.' };
+    }
+    if (status === 'disputed') {
+        return { index: 1, description: 'Вы открыли спор. Новые действия по семье временно остановлены.' };
+    }
+    return { index: 1, description: 'Хост принял заявку. Проверьте доступ к подписке, потом переходите к оплате.' };
 }
 
 function Metric({ label, value, strong, align = 'left' }: { label: string; value: string; strong?: boolean; align?: 'left' | 'right' }) {

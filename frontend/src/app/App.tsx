@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TelegramProvider } from '@/app/providers/TelegramProvider';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
@@ -14,6 +14,8 @@ const OnboardingPage = lazy(() => import('@/features/home/pages/OnboardingPage')
 const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(m => ({ default: m.ClubsPage })));
 const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(m => ({ default: m.ClubDetailsPage })));
 const CreateClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateClubPage })));
+const CreateSubscriptionClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateSubscriptionClubPage })));
+const CreateTariffClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateTariffClubPage })));
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const ReportUserPage = lazy(() => import('@/features/profile/pages/ReportUserPage').then(m => ({ default: m.ReportUserPage })));
 const DemoPage = lazy(() => import('@/features/home/pages/DemoPage').then(m => ({ default: m.DemoPage })));
@@ -55,6 +57,8 @@ function AppRoutes() {
                     <Route path="onboarding" element={<OnboardingPage />} />
                     <Route path="clubs" element={<ClubsPage />} />
                     <Route path="clubs/create" element={<CreateClubPage />} />
+                    <Route path="clubs/create/subscription" element={<CreateSubscriptionClubPage />} />
+                    <Route path="clubs/create/tariff" element={<CreateTariffClubPage />} />
                     <Route path="clubs/:id" element={<ClubDetailsPage />} />
                     <Route path="clubs/:id/requests" element={<ClubRequestsPage />} />
                     <Route path="gb-market" element={<GBMarketPage />} />
@@ -69,6 +73,7 @@ function AppRoutes() {
                     <Route path="admin" element={<AdminPanelPage />} />
                     <Route path="deals" element={<DealsListPage />} />
                     <Route path="deals/:dealId" element={<DealPage />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
             </Routes>
         </Suspense>

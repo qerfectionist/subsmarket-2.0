@@ -1,15 +1,12 @@
 import {
-    Switch as HeroSwitch,
-    Checkbox as HeroCheckbox,
-    Radio as HeroRadio,
-    RadioGroup as HeroRadioGroup
-} from "@heroui/react";
+    Switch as MuiSwitch, Checkbox as MuiCheckbox,
+    Radio as MuiRadio, RadioGroup as MuiRadioGroup,
+    FormControlLabel, FormControl, FormLabel,
+    Typography,
+} from '@mui/material';
 import { triggerHaptic } from '@/shared/lib/utils';
 
-/* =============================================
- * SWITCH (TOGGLE)
- * ============================================= */
-
+/* ── Switch ────────────────────────────────────────────────────────────── */
 export interface SwitchProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -20,27 +17,22 @@ export interface SwitchProps {
 
 export function Switch({ checked, onChange, disabled, label, className }: SwitchProps) {
     return (
-        <HeroSwitch
-            isSelected={checked}
-            onValueChange={(val) => {
-                triggerHaptic('light');
-                onChange(val);
-            }}
-            isDisabled={disabled}
+        <FormControlLabel
             className={className}
-            classNames={{
-                wrapper: "group-data-[selected=true]:bg-success"
-            }}
-        >
-            {label}
-        </HeroSwitch>
+            control={
+                <MuiSwitch
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={(_, val) => { triggerHaptic('light'); onChange(val); }}
+                    color="success"
+                />
+            }
+            label={label}
+        />
     );
 }
 
-/* =============================================
- * CHECKBOX
- * ============================================= */
-
+/* ── Checkbox ──────────────────────────────────────────────────────────── */
 export interface CheckboxProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -51,24 +43,21 @@ export interface CheckboxProps {
 
 export function Checkbox({ checked, onChange, disabled, label, className }: CheckboxProps) {
     return (
-        <HeroCheckbox
-            isSelected={checked}
-            onValueChange={(val) => {
-                triggerHaptic('light');
-                onChange(val);
-            }}
-            isDisabled={disabled}
+        <FormControlLabel
             className={className}
-        >
-            {label}
-        </HeroCheckbox>
+            control={
+                <MuiCheckbox
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={(_, val) => { triggerHaptic('light'); onChange(val); }}
+                />
+            }
+            label={label}
+        />
     );
 }
 
-/* =============================================
- * RADIO
- * ============================================= */
-
+/* ── Radio ─────────────────────────────────────────────────────────────── */
 export interface RadioProps {
     checked: boolean;
     onChange: () => void;
@@ -79,26 +68,23 @@ export interface RadioProps {
     className?: string;
 }
 
-export function Radio({ checked: _checked, onChange, disabled, label, value, className }: RadioProps) {
+export function Radio({ onChange, disabled, label, value, className }: RadioProps) {
     return (
-        <HeroRadio
-            value={value}
-            isDisabled={disabled}
+        <FormControlLabel
             className={className}
-            onChange={() => {
-                triggerHaptic('light');
-                onChange();
-            }}
-        >
-            {label}
-        </HeroRadio>
+            value={value}
+            control={
+                <MuiRadio
+                    disabled={disabled}
+                    onChange={() => { triggerHaptic('light'); onChange(); }}
+                />
+            }
+            label={label}
+        />
     );
 }
 
-/* =============================================
- * RADIO GROUP (new helper)
- * ============================================= */
-
+/* ── RadioGroup ─────────────────────────────────────────────────────────── */
 export interface RadioGroupOption {
     value: string;
     label: string;
@@ -115,21 +101,17 @@ export interface RadioGroupProps {
 
 export function RadioGroup({ options, value, onChange, label, orientation = 'vertical', className }: RadioGroupProps) {
     return (
-        <HeroRadioGroup
-            label={label}
-            value={value}
-            onValueChange={(val) => {
-                triggerHaptic('light');
-                onChange(val);
-            }}
-            orientation={orientation}
-            className={className}
-        >
-            {options.map((opt) => (
-                <HeroRadio key={opt.value} value={opt.value}>
-                    {opt.label}
-                </HeroRadio>
-            ))}
-        </HeroRadioGroup>
+        <FormControl className={className}>
+            {label && <FormLabel><Typography variant="caption" fontWeight={700}>{label}</Typography></FormLabel>}
+            <MuiRadioGroup
+                value={value}
+                row={orientation === 'horizontal'}
+                onChange={(_, val) => { triggerHaptic('light'); onChange(val); }}
+            >
+                {options.map(opt => (
+                    <FormControlLabel key={opt.value} value={opt.value} control={<MuiRadio />} label={opt.label} />
+                ))}
+            </MuiRadioGroup>
+        </FormControl>
     );
 }

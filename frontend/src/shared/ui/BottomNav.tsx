@@ -4,14 +4,16 @@ import { preloadTab } from '@/app/routePreload';
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 
 function pathToValue(pathname: string): string {
     if (pathname === '/') return 'home';
-    if (pathname.startsWith('/clubs')) return 'clubs';
+    if (pathname.startsWith('/clubs')) return 'market';
+    if (pathname.startsWith('/accounts')) return 'market';
     if (pathname.startsWith('/gb-market')) return 'gb';
-    if (pathname.startsWith('/profile')) return 'profile';
+    if (pathname.startsWith('/deals')) return 'deals';
+    if (pathname.startsWith('/profile')) return '';
     return 'home';
 }
 
@@ -22,17 +24,20 @@ export function BottomNav() {
     const value = pathToValue(location.pathname);
     const navItems = [
         { value: 'home', label: 'Главная', icon: <HomeRoundedIcon /> },
-        { value: 'clubs', label: 'Места', icon: <GridViewRoundedIcon /> },
+        { value: 'market', label: 'Маркет', icon: <GridViewRoundedIcon /> },
         { value: 'gb', label: 'ГБ', icon: <StorefrontRoundedIcon /> },
-        { value: 'profile', label: 'Профиль', icon: <PersonRoundedIcon /> },
+        { value: 'deals', label: 'Сделки', icon: <ReceiptLongRoundedIcon /> },
     ];
 
     const handleChange = (_: React.SyntheticEvent, newValue: string) => {
         const paths: Record<string, string> = {
-            home: '/', clubs: '/clubs', gb: '/gb-market', profile: '/profile',
+            home: '/',
+            market: '/clubs',
+            gb: '/gb-market',
+            deals: '/deals',
         };
         const targetPath = paths[newValue];
-        if (location.pathname === targetPath) return; // Already at the root of the tab
+        if (location.pathname === targetPath) return;
 
         haptic.selection();
         navigate(targetPath);

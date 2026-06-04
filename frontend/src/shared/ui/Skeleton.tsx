@@ -1,5 +1,4 @@
-import { Skeleton as HeroSkeleton } from "@heroui/react";
-import { cn } from '@/shared/lib/utils';
+import { Skeleton as MuiSkeleton } from '@mui/material';
 
 interface SkeletonProps {
   className?: string;
@@ -10,15 +9,12 @@ interface SkeletonProps {
 
 export function Skeleton({ className, width, height, circle }: SkeletonProps) {
   return (
-    <HeroSkeleton
-      className={cn(
-        circle ? "rounded-full" : "rounded-lg",
-        className
-      )}
-      style={{
-        width: width,
-        height: height,
-      }}
+    <MuiSkeleton
+      variant={circle ? 'circular' : 'rectangular'}
+      width={width}
+      height={height}
+      className={className}
+      sx={{ borderRadius: circle ? '50%' : 1.5 }}
     />
   );
 }

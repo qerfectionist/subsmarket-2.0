@@ -69,9 +69,20 @@ export const ComplaintForm: FC<ComplaintFormProps> = ({
     const [error, setError] = useState<string | null>(null);
 
     const handleAddEvidence = useCallback(() => {
-        if (evidenceUrl && evidenceUrl.startsWith('http')) {
-            setEvidenceUrls(prev => [...prev, evidenceUrl]);
-            setEvidenceUrl('');
+        try {
+            const url = new URL(evidenceUrl);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+                setEvidenceUrls(prev => {
+                    if (prev.includes(evidenceUrl)) return prev;
+                    return [...prev, evidenceUrl];
+                });
+                setEvidenceUrl('');
+                setError(null);
+            } else {
+                setError('Ссылка должна начинаться с http:// или https://');
+            }
+        } catch {
+            setError('Введите корректную ссылку');
         }
     }, [evidenceUrl]);
 
@@ -205,7 +216,7 @@ export const ComplaintForm: FC<ComplaintFormProps> = ({
                         <div className="flex flex-wrap gap-2">
                             {evidenceUrls.map((url, index) => (
                                 <div
-                                    key={index}
+                                    key={url}
                                     className="flex items-center gap-1 bg-slate-700 rounded px-2 py-1 text-sm"
                                 >
                                     <span className="text-gray-300 truncate max-w-[150px]">

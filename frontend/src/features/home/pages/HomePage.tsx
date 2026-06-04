@@ -5,7 +5,7 @@ import {
     Button,
     Card,
     CardActionArea,
-    Chip,
+    IconButton,
     Stack,
     Typography,
 } from '@mui/material';
@@ -15,22 +15,20 @@ import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import CellTowerRoundedIcon from '@mui/icons-material/CellTowerRounded';
 import CreditScoreRoundedIcon from '@mui/icons-material/CreditScoreRounded';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
-import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import WifiRoundedIcon from '@mui/icons-material/WifiRounded';
 
 const serviceTiles = [
-    { title: 'Подписки', subtitle: 'YouTube, Яндекс', to: '/clubs?category=digital', icon: GridViewRoundedIcon, color: '#FFE36E' },
-    { title: 'Тарифы', subtitle: 'семейные операторы', to: '/clubs?category=telecom', icon: CellTowerRoundedIcon, color: '#B9F27D' },
+    { title: 'Подписки', subtitle: 'YouTube, Яндекс', to: '/clubs?category=digital', createTo: '/clubs/create/subscription', icon: GridViewRoundedIcon, color: '#FFE36E' },
+    { title: 'Тарифы', subtitle: 'семейные операторы', to: '/clubs?category=telecom', createTo: '/clubs/create/tariff', icon: CellTowerRoundedIcon, color: '#B9F27D' },
     { title: 'Гигабайты', subtitle: 'продажа лишних ГБ', to: '/gb-market', icon: WifiRoundedIcon, color: '#BFE7FF' },
     { title: 'Аккаунты', subtitle: 'GPT, Canva, Grok', to: '/accounts', icon: StorefrontRoundedIcon, color: '#D8C7FF' },
 ];
 
 const liveOffers = [
     { title: 'YouTube Premium', meta: '2 места в семье', price: '700 ₸', to: '/clubs?category=digital' },
-    { title: 'Beeline / Tele2', meta: 'семейные тарифы', price: 'от 500 ₸', to: '/clubs?category=telecom' },
-    { title: 'Яндекс Плюс', meta: '1 место · актуально', price: '900 ₸', to: '/clubs?category=digital' },
 ];
 
 export function HomePage() {
@@ -41,7 +39,12 @@ export function HomePage() {
             <Box sx={{ maxWidth: 430, mx: 'auto' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                        <Avatar src={user?.photo_url} sx={{ width: 38, height: 38, bgcolor: '#111', color: '#fff', fontWeight: 700 }}>
+                        <Avatar
+                            component={Link}
+                            to="/profile"
+                            src={user?.photo_url}
+                            sx={{ width: 38, height: 38, bgcolor: '#111', color: '#fff', fontWeight: 700, textDecoration: 'none' }}
+                        >
                             {(user?.first_name ?? 'S').charAt(0)}
                         </Avatar>
                         <Box>
@@ -53,7 +56,14 @@ export function HomePage() {
                             </Typography>
                         </Box>
                     </Box>
-                    <Chip label="KZ" sx={{ height: 34, bgcolor: '#fff', color: '#111', fontWeight: 650 }} />
+                    <IconButton
+                        component={Link}
+                        to="/profile?section=settings"
+                        aria-label="Настройки"
+                        sx={{ width: 40, height: 40, bgcolor: '#fff', color: '#111', '&:hover': { bgcolor: '#fff' } }}
+                    >
+                        <SettingsRoundedIcon sx={{ fontSize: 21 }} />
+                    </IconButton>
                 </Box>
 
                 <Card sx={{ bgcolor: '#fff', color: '#111', borderRadius: '28px', border: '0', mb: 1.2 }}>
@@ -176,24 +186,24 @@ export function HomePage() {
                     ))}
                 </Stack>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1.2 }}>
+                <Box sx={{ mt: 1.2, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                     <Button
                         component={Link}
-                        to="/clubs/create"
+                        to="/clubs/create/subscription"
                         size="large"
                         startIcon={<AddRoundedIcon />}
-                        sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' } }}
+                        sx={{ bgcolor: '#111', color: '#fff', '&:hover': { bgcolor: '#222' }, minWidth: 0 }}
                     >
-                        Создать
+                        Подписку
                     </Button>
                     <Button
                         component={Link}
-                        to="/tools/receipt-analyzer"
+                        to="/clubs/create/tariff"
                         size="large"
-                        startIcon={<ReceiptLongRoundedIcon />}
-                        sx={{ bgcolor: '#fff', color: '#111', '&:hover': { bgcolor: '#fff' } }}
+                        startIcon={<CellTowerRoundedIcon />}
+                        sx={{ bgcolor: '#fff', color: '#111', '&:hover': { bgcolor: '#fff' }, minWidth: 0 }}
                     >
-                        Чек
+                        Тариф
                     </Button>
                 </Box>
             </Box>
