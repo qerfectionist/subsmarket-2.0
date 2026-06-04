@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.entities.deal import Deal
 from src.domain.entities.market import GigabyteOffer
 from src.domain.entities.user import User
-from src.domain.services.notification_service import NotificationService
+from src.infrastructure.telegram.notification_service import NotificationService
 from src.domain.services.ai_service import AIService
 from src.domain.services.trust_service import TrustService
 

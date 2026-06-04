@@ -17,6 +17,7 @@ from src.domain.entities.market import GigabyteOffer, AccountOffer
 from src.domain.entities.deal import Deal
 from src.domain.entities.pricing import PricingService, TelecomOperator
 from src.domain.entities.trust import TrustEvent, Complaint, JoinRequest
+from src.domain.entities.audit import AuditLog
 
 __all__ = [
     # Models
@@ -28,6 +29,7 @@ __all__ = [
     "GigabyteOffer",
     "AccountOffer",
     "Deal",
+    "AuditLog",
     # Pricing
     "PricingService",
     "TelecomOperator",

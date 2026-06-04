@@ -79,7 +79,6 @@ class ClubUpdate(BaseModel):
     payment_day: Optional[int] = Field(default=None, ge=1, le=31)
     description: Optional[str] = Field(default=None, max_length=500)
     rules: Optional[str] = Field(default=None, max_length=1000)
-    status: Optional[str] = None
     approval_mode: Optional[str] = None
     min_trust_score: Optional[Decimal] = Field(default=None, ge=0, le=5)
 

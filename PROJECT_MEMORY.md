@@ -2,13 +2,18 @@
 
 ## 1. 🎯 Глобальная Цель Проекта
 
-**SubsMarket 2.0** — это P2P маркетплейс внутри Telegram (Mini App) для совместного использования цифровых подписок и торговли гигабайтами сотовых операторов (Казахстан).
+**SubsMarket 2.0** — это Telegram Mini App для совместного использования цифровых подписок, семейных тарифов, торговли гигабайтами и продажи доступов/аккаунтов в Казахстане.
+
+Ключевой продуктовый поворот от 2026-06-03: SubsMarket — не escrow и не банк, но и не хаотичная доска объявлений. Это P2P-платформа правил: деньги идут напрямую между людьми, а система фиксирует статусы, дедлайны, действия и AuditLog.
+
 **Главные фичи:**
 
-- **Clubs**: Совместная покупка семейных подписок (Netflix, Spotify, iCloud и др.).
-- **GB Market**: Покупка/продажа гигабайт (Altel, Tele2, Kcell).
+- **Families / Clubs**: Совместная покупка семейных подписок и тарифов (YouTube Premium, Yandex Plus, Spotify, Netflix, Tele2/Beeline/Activ).
+- **Strict Join Flow**: заявка -> чат с хостом -> принятие -> выдача доступа -> 30 минут на оплату -> подтверждение.
+- **GB Market**: Покупка/продажа гигабайт у операторов, которые технически поддерживают перевод. Altel запрещен для ГБ.
 - **Trust Score**: Система репутации и защиты от мошенничества.
-- **P2P Deals**: Безопасные сделки с проверкой скриншотов оплаты.
+- **AuditLog**: Неизменяемая история ключевых действий вместо ненадежных скриншотов переписки.
+- **Frozen / Disputes**: Спор замораживает семью и блокирует рискованные действия.
 
 ## 2. ⚡️ Протокол Памяти и Контекста (CRITICAL)
 
@@ -20,22 +25,26 @@
 **Технологии:**
 
 - **Frontend**: React + Vite, TypeScript.
-- **Styling**: Tailwind CSS **v3.4.19 (Stable)** + HeroUI (версия **2.8.8 stable**).
-  - *Решение*: Отказ от Tailwind v4 beta из-за несовместимости с `@heroui/theme` и багов парсера. Используется `--legacy-peer-deps`.
-  - *Стили*: Тёмная тема, iOS/xAI минимализм, стекломорфизм.
+- **Styling**: Tailwind CSS + собственный mini-app UI.
+  - *Текущий стиль*: мобильный Telegram Mini App, светлая Yandex-like визуальная система, крупная типографика, плотные карточки, понятные CTA.
 - **Backend**: Python (FastAPI) + SQLAlchemy (Async).
 - **Database**: PostgreSQL (Neon.tech).
+- **Timers**: DB sweeper внутри FastAPI, без Redis/Docker для MVP-таймера оплаты.
 - **Integration**: Telegram WebApp SDK (Haptics, MainButton, CloudStorage).
 - **State Management**: TanStack Query (React Query).
 
 ## 3. 🚧 Текущий Контекст (The State)
 
-- **Rescue Mission Completed**: Проект восстановлен после инцидента с `git stash`. Все файлы возвращены, зависимости переустановлены.
-- **Infrastructure Stabilized**:
-  - Frontend работает на <http://localhost:5174> (Tailwind v3, PostCSS, HeroUI 2.8.8).
-  - Backend работает на <http://localhost:8000> (FastAPI, Uvicorn).
-- **Trust Score System UI**: Полностью реализован фронтенд (TrustBadge, History, Complaints). Бэкенд подключен.
-- **Работающих сервисов**: 2 (Frontend, Backend).
+- **Current local services**:
+  - Frontend: <http://localhost:5173>
+  - Backend: <http://localhost:8000>
+- **Telegram local dev**: Для теста внутри Telegram используется HTTPS tunnel на frontend и `APP_BASE_URL` для ссылок Mini App.
+- **Strict club flow implemented**: pending не занимает место; approve -> invited; issue-access -> payment_pending + deadline; paid -> host confirm -> active.
+- **Payment timeout implemented**: FastAPI sweeper переводит просроченный `payment_pending` в `removed` и освобождает место.
+- **AuditLog implemented**: отдельная таблица системной истории для создания, заявки, принятия, выдачи доступа, оплаты, подтверждения, спора и автопросрочки.
+- **Frozen implemented**: спор переводит клуб в `frozen` и блокирует join/approve/issue-access/confirm-payment.
+- **GB Altel ban implemented**: Altel убран из UI создания и запрещен на backend.
+- **Important docs**: подробный отчет текущей продуктовой позиции лежит в `docs/PROJECT_REPORT_2026-06-03.md`.
 
 ## 4. 📝 История Решений (Change Log)
 
@@ -48,6 +57,13 @@
 - [2026-02-07] **API Refactoring**: Создан `pricing.ts`, исправлен экспорт в `client.ts`.
 - [2026-02-09] **Trust System UI**: Реализованы компоненты рейтинга, истории и жалоб. Интегрированы TanStack Query хуки. Создана документация `docs/TRUST_SYSTEM.md`.
 - [2026-02-09] **GB Market P2P**: Реализован полный цикл сделок (Backend + Frontend). Созданы `DealPage`, `DealsListPage`. Подключен `AIService` для проверки чеков.
+- [2026-05-31] **Mini App UI**: Интерфейс переделан из "сайта" в мобильное Telegram-приложение.
+- [2026-06-02] **Marketplace taxonomy**: Разделены семейные подписки, семейные тарифы, ГБ и доступы/аккаунты. Убраны лишние поля региона и типа места.
+- [2026-06-02] **Telegram group flow**: Добавлено создание/выбор Telegram-группы, добавление бота и автоподтягивание invite-ссылки.
+- [2026-06-03] **Host approval**: Вступление в семью требует заявки и решения хоста, а не мгновенного вступления.
+- [2026-06-03] **Strict payment flow**: Добавлены `invited`, `payment_pending`, `paid`, `active`, 30-минутный таймер оплаты и подтверждение хостом.
+- [2026-06-03] **DDD rules**: Правила переходов вынесены в доменный state machine `backend/src/domain/rules/club_state_machine.py`.
+- [2026-06-03] **AuditLog/Frozen**: Добавлены системный журнал действий и заморозка семьи при споре.
 
 ## 5. 🔜 План действий
 
@@ -75,7 +91,8 @@
 
 ### Next Steps
 
-1. **Monetization Implementation**: Добавить paywall на создание клуба/объявления (Kaspi/Stars).
-2. **Testing**: Manual E2E testing всего flow.
-3. **Deployment**: Deploy на staging (Vercel + Fly.io/Railway).
-4. **Telegram Bot**: Настроить WebApp menu button для бота.
+1. **Tests first**: Добавить unit/API тесты для state machine, AuditLog, frozen, payment timeout и Altel ban.
+2. **Telegram E2E**: Пройти сценарий двумя аккаунтами через локальный HTTPS tunnel: заявка -> чат -> принять -> доступ выдан -> оплатил -> подтвердить.
+3. **Docs sync**: Поддерживать `PROJECT_MASTER.md`, `PROJECT_MEMORY.md`, `README.md` и `docs/PROJECT_REPORT_2026-06-03.md` в новой логике "rules first, no escrow".
+4. **UX warnings**: Добавить предупреждения для fair-use лимитов семейных тарифов, сроков жизни/комиссий ГБ и privacy-risk общих AI/account доступов.
+5. **Deployment**: После проверки локального сценария сделать один commit и deploy.

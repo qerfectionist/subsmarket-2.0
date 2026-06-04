@@ -22,7 +22,7 @@ class User(Base):
     
     # Status & Trust
     status: Mapped[str] = mapped_column(String(20), default="active")
-    trust_score: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=Decimal("5.0"))
+    trust_score: Mapped[Decimal] = mapped_column(Numeric(3, 1), default=Decimal("5.0"))
     scam_reports: Mapped[int] = mapped_column(Integer, default=0)
     
     # P2P Stats

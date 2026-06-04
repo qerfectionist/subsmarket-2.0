@@ -1,27 +1,41 @@
-# SubsMarket 2.0 🚀
+# SubsMarket 2.0
 
-P2P Marketplace for Subscriptions & GB Trading — Telegram Mini App для Казахстана.
+Telegram Mini App для совместных подписок, семейных тарифов, ГБ-маркета и доступов/аккаунтов в Казахстане.
+
+SubsMarket не является escrow, банком или магазином. Деньги идут напрямую между людьми, а платформа задает строгие правила: заявка, выдача доступа, 30 минут на оплату, подтверждение, AuditLog и заморозка спорных ситуаций.
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-06B6D4?logo=tailwindcss)
 
-## 📦 Что это?
+## Что это?
 
 SubsMarket — платформа для:
 
-- 🎬 **Групповых подписок** — Netflix, Spotify, YouTube за копейки
-- 📱 **Семейных тарифов** — Beeline, Tele2, Altel делим на всех
-- 📊 **P2P маркет ГБ** — покупай/продавай интернет-трафик
+- **Семейных подписок** — YouTube Premium, Yandex Plus, Spotify, Netflix, Apple Music.
+- **Семейных тарифов** — Tele2, Beeline, Activ/Kcell, где участники делят общий тариф.
+- **ГБ-маркета** — покупка/продажа лишних гигабайтов с учетом срока жизни и комиссий.
+- **Доступов/аккаунтов** — Canva, Google One, Microsoft 365, CapCut и другие сервисы с отдельными предупреждениями по рискам.
 
-## 🛠 Tech Stack
+Основной MVP-принцип: **доступ вперед денег, 30 минут на оплату, все действия зафиксированы**.
+
+## Product Rules
+
+- **No escrow**: платформа не принимает и не хранит деньги.
+- **Access before money**: оплата только после выдачи доступа.
+- **No markup**: цена места считается автоматически и делится поровну.
+- **AuditLog**: ключевые действия пишутся в системную историю.
+- **Frozen disputes**: спор замораживает семью и блокирует рискованные действия.
+- **Altel ban for GB**: Altel запрещен в ГБ-маркете, потому что не поддерживает прямой перевод ГБ.
+
+## Tech Stack
 
 ### Frontend
 
 - React 19 + TypeScript
 - Vite 6
-- Tailwind CSS v4
+- Tailwind CSS
 - TanStack Query v5
 - React Router v7
 
@@ -31,16 +45,17 @@ SubsMarket — платформа для:
 - FastAPI
 - SQLAlchemy 2.0 (async)
 - PostgreSQL (Neon)
-- Redis
+- Alembic
+- Telegram Bot API
+- DB sweeper for payment timeouts
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
 - Python 3.11+
 - PostgreSQL (или Neon account)
-- Redis (опционально)
 
 ### 1. Clone & Setup
 
@@ -69,8 +84,8 @@ cd backend
 pip install uv  # Fast package manager
 uv pip install -e .
 
-# Run migrations (if using Alembic)
-# alembic upgrade head
+# Run migrations
+alembic upgrade head
 
 # Seed database
 python -m src.seed
@@ -87,27 +102,26 @@ uvicorn src.main:app --reload
 docker-compose up -d
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 subsmarket-2.0/
 ├── backend/
 │   ├── src/
-│   │   ├── api/           # FastAPI routes
-│   │   ├── domain/        # ORM models, enums
-│   │   ├── infrastructure/ # DB, auth
+│   │   ├── domain/        # Entities and framework-free rules
+│   │   ├── application/   # Use cases and services
+│   │   ├── infrastructure/ # DB, Telegram, external adapters
+│   │   ├── interface/     # FastAPI routes and schemas
 │   │   ├── main.py        # App entry point
-│   │   ├── config.py      # Settings
-│   │   └── seed.py        # Initial data
+│   │   └── config.py      # Settings
 │   ├── pyproject.toml
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── api/           # API client
-│   │   ├── components/    # UI components
-│   │   ├── hooks/         # React hooks
-│   │   ├── i18n/          # Translations (ru/kk)
-│   │   ├── pages/         # Page components
+│   │   ├── app/           # App shell and providers
+│   │   ├── features/      # Clubs, market, deals, profile
+│   │   ├── pages/         # Admin and top-level pages
+│   │   ├── shared/        # API client and reusable UI
 │   │   ├── App.tsx
 │   │   └── main.tsx
 │   ├── package.json
@@ -117,7 +131,7 @@ subsmarket-2.0/
 └── README.md
 ```
 
-## 🌐 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -128,8 +142,15 @@ subsmarket-2.0/
 | GET | `/api/v1/clubs/{id}` | Club details |
 | POST | `/api/v1/clubs/{id}/join` | Join club |
 | POST | `/api/v1/clubs/{id}/leave` | Leave club |
+| GET | `/api/v1/clubs/{id}/pending` | Host pending requests |
+| POST | `/api/v1/clubs/{id}/approve` | Host approves request |
+| POST | `/api/v1/clubs/{id}/members/{member_id}/issue-access` | Host issues access and starts timer |
+| POST | `/api/v1/clubs/{id}/members/me/paid` | Participant marks payment |
+| POST | `/api/v1/clubs/{id}/members/{member_id}/confirm-payment` | Host confirms payment |
+| POST | `/api/v1/clubs/{id}/members/me/dispute` | Participant opens dispute |
+| GET | `/api/v1/clubs/{id}/audit` | Club audit history |
 
-## 🔐 Authentication
+## Authentication
 
 Uses Telegram WebApp `initData` for authentication:
 
@@ -137,7 +158,7 @@ Uses Telegram WebApp `initData` for authentication:
 2. Backend validates HMAC-SHA256 signature
 3. User auto-created on first request
 
-## 🌍 i18n
+## i18n
 
 Supports:
 
@@ -146,16 +167,24 @@ Supports:
 
 Language auto-detected from Telegram or browser settings.
 
-## 📱 Telegram Mini App
+## Telegram Mini App
 
-To test in Telegram:
+Production test:
 
 1. Create bot via @BotFather
 2. Enable Web App mode
 3. Set Web App URL to your deployment
 4. Open bot → Menu → Launch App
 
-## 🚀 Deployment
+Local Telegram test without deploying every change:
+
+1. Start backend on `http://localhost:8000`.
+2. Start Vite on `http://localhost:5173`.
+3. Open an HTTPS tunnel to `http://localhost:5173`.
+4. Set `APP_BASE_URL` to the tunnel URL for backend notifications.
+5. See `docs/LOCAL_TELEGRAM_DEV.md`.
+
+## Deployment
 
 ### Recommended: Cloud Run + Neon
 

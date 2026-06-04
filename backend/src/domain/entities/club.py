@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text, Numeric, DateTime
+from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text, Numeric, DateTime, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -38,6 +38,7 @@ class Club(Base, SoftDeleteMixin):
     price_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     price_per_member: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     max_members: Mapped[int] = mapped_column(Integer, default=4)
+    slot_config: Mapped[Optional[list[dict]]] = mapped_column(JSON, nullable=True)
     
     # Status
     status: Mapped[str] = mapped_column(String(20), default="open")
@@ -87,10 +88,13 @@ class ClubMember(Base):
     
     # Telecom Requirement
     phone_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    slot_type: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     
     # Payment tracking
     last_payment_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     next_payment_due: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    access_issued_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    payment_deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Timestamps
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))

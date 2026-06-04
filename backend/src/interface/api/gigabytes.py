@@ -21,6 +21,9 @@ async def create_gigabyte_offer(
     db: Annotated[AsyncSession, Depends(get_db)]
 ):
     """Create a new GB sell offer. Rate limited: 1 per minute."""
+    if data.operator.strip().lower() in {"altel", "алтел"}:
+        raise HTTPException(status_code=400, detail="Altel не поддерживает прямой перевод ГБ")
+
     # Anti-spam: max 3 active offers per user (Free tier)
     active_count_result = await db.execute(
         select(func.count(GigabyteOffer.offer_id))

@@ -25,23 +25,35 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Create test database session."""
+@pytest_asyncio.fixture(scope="session")
+async def db_engine():
+    """Create test database engine once for all tests."""
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-    
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
-    async_session = async_sessionmaker(engine, expire_on_commit=False)
-    
-    async with async_session() as session:
-        yield session
-    
+    yield engine
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    
     await engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create test database session using transactional rollback for high speed."""
+    connection = await db_engine.connect()
+    transaction = await connection.begin()
+    
+    async_session = async_sessionmaker(bind=connection, expire_on_commit=False)
+    session = async_session()
+    
+    try:
+        # Create a savepoint for this test
+        await session.begin_nested()
+        yield session
+    finally:
+        await session.close()
+        await transaction.rollback()
+        await connection.close()
 
 
 @pytest_asyncio.fixture(scope="function")

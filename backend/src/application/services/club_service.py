@@ -29,7 +29,7 @@ class ClubService:
         # Include the host (+1) who always occupies 1 slot
         return (result.scalar() or 0) + 1
 
-    async def _get_member_counts_batch(self, club_ids: list[UUID]) -> dict[UUID, int]:
+    async def get_member_counts_batch(self, club_ids: list[UUID]) -> dict[UUID, int]:
         """Single query to get member counts for multiple clubs. Eliminates N+1."""
         if not club_ids:
             return {}
@@ -41,7 +41,7 @@ class ClubService:
         )
         return {row[0]: row[1] for row in result.all()}
 
-    def _build_club_list_item(self, club: Club, member_count: int) -> ClubListItem:
+    def build_club_list_item(self, club: Club, member_count: int) -> ClubListItem:
         """Build ClubListItem from already-fetched data (no DB calls)."""
         return ClubListItem(
             club_id=club.club_id,
@@ -366,7 +366,7 @@ class ClubService:
 
     async def _notify_host_join_request(self, club: Club, user: User) -> None:
         """Notify host about a new pending join request."""
-        from src.domain.services.notification_service import NotificationService
+        from src.infrastructure.telegram.notification_service import NotificationService
 
         service_name = club.subscription.service_name if club.subscription else "club"
         user_name = user.first_name or user.username or f"User {user.user_id}"
@@ -407,7 +407,7 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Not a member")
             
         member.status = "left"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
         
         # Reopen club if it was full
         if club.status == "full":
@@ -488,7 +488,7 @@ class ClubService:
             raise HTTPException(status_code=400, detail=f"Member is already {member.status}")
 
         member.status = "kicked"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
 
         await self.db.commit()
         return "Member rejected"
@@ -507,7 +507,7 @@ class ClubService:
             raise HTTPException(status_code=404, detail="No pending request found")
 
         member.status = "left"
-        member.left_at = datetime.utcnow()
+        member.left_at = datetime.now(timezone.utc)
 
         await self.db.commit()
         return "Join request cancelled"
@@ -562,7 +562,7 @@ class ClubService:
 
     async def remind_host_of_request(self, club_id: UUID, user: User) -> str:
         """Send a reminder notification to the host about pending join requests."""
-        from src.domain.services.notification_service import NotificationService
+        from src.infrastructure.telegram.notification_service import NotificationService
 
         # Get club with host
         result = await self.db.execute(
@@ -623,7 +623,7 @@ class ClubService:
 
         # Soft delete the club so historical deals and membership references don't break
         club.is_deleted = True
-        club.deleted_at = datetime.utcnow()
+        club.deleted_at = datetime.now(timezone.utc)
         club.status = "deleted"
         
         await self.db.commit()

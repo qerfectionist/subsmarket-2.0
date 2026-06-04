@@ -1,6 +1,6 @@
 """Club API routes."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Annotated, Optional
 from uuid import UUID
@@ -80,10 +80,10 @@ async def get_my_clubs(
         return []
 
     club_ids = [c.club_id for c in all_clubs]
-    counts = await service._get_member_counts_batch(club_ids)
+    counts = await service.get_member_counts_batch(club_ids)
 
     return [
-        service._build_club_list_item(club, counts.get(club.club_id, 0) + 1)
+        service.build_club_list_item(club, counts.get(club.club_id, 0) + 1)
         for club in all_clubs
     ]
 
@@ -113,13 +113,17 @@ async def get_clubs(
     # Search by subscription name (JOIN if needed)
     search_join = search and search.strip()
 
+    if search_join:
+
+        search_join = search_join.replace('%', r'\%').replace('_', r'\_')
+
     # Get total count
     if search_join:
         count_query = (
             select(func.count(Club.club_id))
             .join(Subscription, Club.subscription_id == Subscription.subscription_id)
             .where(*conditions)
-            .where(Subscription.service_name.ilike(f"%{search_join}%"))
+            .where(Subscription.service_name.ilike(f"%{search_join}%", escape='\\'  ))
         )
     else:
         count_query = select(func.count(Club.club_id)).where(*conditions)
@@ -133,7 +137,7 @@ async def get_clubs(
             .options(selectinload(Club.subscription))
             .join(Subscription, Club.subscription_id == Subscription.subscription_id)
             .where(*conditions)
-            .where(Subscription.service_name.ilike(f"%{search_join}%"))
+            .where(Subscription.service_name.ilike(f"%{search_join}%", escape='\\'  ))
             .order_by(Club.created_at.desc())
             .limit(limit)
             .offset(offset)
@@ -152,10 +156,10 @@ async def get_clubs(
 
     # ONE batch query for all member counts — eliminates N+1
     club_ids = [c.club_id for c in clubs]
-    counts = await service._get_member_counts_batch(club_ids)
+    counts = await service.get_member_counts_batch(club_ids)
 
     items = [
-        service._build_club_list_item(club, counts.get(club.club_id, 0) + 1)
+        service.build_club_list_item(club, counts.get(club.club_id, 0) + 1)
         for club in clubs
     ]
 
@@ -189,12 +193,12 @@ async def create_club(
             user_id=tg_user.id,
             username=tg_user.username,
             first_name=tg_user.first_name,
-            last_active_at=datetime.utcnow(),
+            last_active_at=datetime.now(timezone.utc),
         )
         db.add(user)
         await db.flush()
     else:
-        user.last_active_at = datetime.utcnow()
+        user.last_active_at = datetime.now(timezone.utc)
         if tg_user.username:
             user.username = tg_user.username
         if tg_user.first_name:

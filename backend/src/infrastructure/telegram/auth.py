@@ -5,7 +5,7 @@ import hmac
 import json
 import time
 from typing import Optional
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from fastapi import HTTPException, Request, status
 from pydantic import BaseModel
@@ -32,6 +32,29 @@ class TelegramInitData(BaseModel):
     query_id: Optional[str] = None
     chat_instance: Optional[str] = None
     start_param: Optional[str] = None
+
+
+LOCAL_DEV_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def _hostname_from_header(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+
+    parsed = urlparse(value if "://" in value else f"http://{value}")
+    return parsed.hostname
+
+
+def _is_local_dev_request(request: Request) -> bool:
+    """Allow mock auth only when the browser/app was opened from a local origin."""
+    origin_host = _hostname_from_header(request.headers.get("origin"))
+    referer_host = _hostname_from_header(request.headers.get("referer"))
+    if origin_host or referer_host:
+        return (origin_host in LOCAL_DEV_HOSTS) or (referer_host in LOCAL_DEV_HOSTS)
+
+    host = _hostname_from_header(request.headers.get("host"))
+    client_host = request.client.host if request.client else None
+    return host in LOCAL_DEV_HOSTS and client_host in LOCAL_DEV_HOSTS
 
 
 def validate_init_data(init_data: str, bot_token: str) -> TelegramInitData:
@@ -116,12 +139,24 @@ async def get_current_user(request: Request) -> TelegramUser:
             detail="Missing Telegram InitData"
         )
     
-    # In debug mode, allow mock auth for local development
+    # In debug mode, allow mock auth only for local development pages.
     if settings.debug and init_data.startswith("mock:"):
+        if not _is_local_dev_request(request):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Mock auth is allowed only on localhost",
+            )
+
         # Format: mock:user_id:username
         parts = init_data.split(":")
+        if len(parts) < 2 or not parts[1].isdigit():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid mock auth format",
+            )
+
         return TelegramUser(
-            id=int(parts[1]) if len(parts) > 1 else 12345,
+            id=int(parts[1]),
             first_name="Dev",
             username=parts[2] if len(parts) > 2 else "dev_user",
         )

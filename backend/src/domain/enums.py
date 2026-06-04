@@ -1,4 +1,8 @@
-"""Domain models: Enums for business logic."""
+"""Domain models: Enums for business logic.
+
+These enums are the single source of truth for allowed status values.
+They MUST stay in sync with `domain/rules/club_state_machine.py`.
+"""
 
 from enum import Enum
 
@@ -14,27 +18,48 @@ class ClubStatus(str, Enum):
     """Club lifecycle status."""
     open = "open"           # Accepting new members
     full = "full"           # Max members reached
-    frozen = "frozen"       # Temporarily paused
+    frozen = "frozen"       # Temporarily paused (dispute)
     closed = "closed"       # Permanently closed
+    deleted = "deleted"     # Soft-deleted
 
 
-class ClubType(str, Enum):
-    """Type of club/subscription."""
+class MemberStatus(str, Enum):
+    """Club membership status — full lifecycle.
+
+    Transition graph (see club_state_machine.py for authoritative rules):
+        pending → invited → access_issued → payment_pending → paid → active
+        pending → rejected
+        pending → left (cancel_request)
+        * → left (voluntary leave)
+        * → disputed → (resolved externally)
+        payment_pending → removed (timeout)
+    """
+    pending = "pending"                   # Awaiting host approval
+    invited = "invited"                   # Host approved, pre-access
+    approved = "approved"                 # Legacy compatibility (≈ invited)
+    access_issued = "access_issued"       # Host shared credentials / access
+    payment_pending = "payment_pending"   # Access given, awaiting payment
+    paid = "paid"                         # User marked payment sent
+    active = "active"                     # Host confirmed payment
+    disputed = "disputed"                 # Under dispute, club frozen
+    rejected = "rejected"                 # Host rejected join request
+    removed = "removed"                   # Removed by system (e.g. timeout)
+    left = "left"                         # Left voluntarily
+    kicked = "kicked"                     # Removed by host
+
+
+class ClubCategory(str, Enum):
+    """Type of club / subscription."""
     digital = "digital"     # Netflix, Spotify, YouTube Premium
     telecom = "telecom"     # Beeline Family, Tele2, Altel
 
 
-class MemberStatus(str, Enum):
-    """Club membership status."""
-    pending = "pending"         # Awaiting payment
-    active = "active"           # Paid and active
-    payment_due = "payment_due" # Payment reminder sent
-    left = "left"               # Left voluntarily
-    kicked = "kicked"           # Removed by host
-
-
 class MobileOperator(str, Enum):
-    """Mobile operators for GB Market."""
+    """Mobile operators for GB Market.
+
+    NOTE: Altel is excluded from GB Market per business rules,
+    but kept here for telecom club tariffs.
+    """
     beeline = "beeline"
     activ = "activ"
     tele2 = "tele2"

@@ -4,7 +4,15 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 # ─── Rate Limiter ───
-# Shared instance used across all API routers
+# WARNING: This in-memory limiter is INEFFECTIVE on Vercel Serverless Functions
+# because each invocation may run in a different ephemeral container.
+# For production, switch to an external store backend:
+#   pip install slowapi[redis]
+#   limiter = Limiter(key_func=get_remote_address, storage_uri="redis://...")
+# or use Upstash Redis (free tier) via:
+#   limiter = Limiter(key_func=get_remote_address, storage_uri=os.getenv("UPSTASH_REDIS_URL"))
+#
+# For Docker / long-running process deployments, in-memory works fine.
 limiter = Limiter(key_func=get_remote_address)
 
 

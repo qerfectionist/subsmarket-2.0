@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     app_name: str = "SubsMarket"
     app_version: str = "2.0.0"
     debug: bool = False
+    app_base_url: str = "https://subsmarket-2-0.vercel.app"
     
     # Database (Neon PostgreSQL)
     database_url: str = "postgresql+asyncpg://user:pass@host/dbname"
