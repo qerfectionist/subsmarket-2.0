@@ -108,7 +108,7 @@ export function GBMarketPage() {
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.4 }}>
                         <Box>
                             <Typography fontSize={28} fontWeight={760} lineHeight={1.05}>
-                                ГБ маркет
+                                Гигабайты
                             </Typography>
                             <Typography fontSize={13.5} fontWeight={520} color="#77736B">
                                 лишние гигабайты от людей рядом
@@ -120,7 +120,7 @@ export function GBMarketPage() {
                     <Tabs value={tab} onChange={(_, v) => handleTabChange(v)} sx={{ minHeight: 40 }}>
                         <Tab value="buy" label="Купить" />
                         <Tab value="sell" label="Продать" />
-                        <Tab value="my" label="Сделки" />
+                        <Tab value="my" label="Мои" />
                     </Tabs>
                 </Box>
             </Box>
@@ -129,7 +129,7 @@ export function GBMarketPage() {
                 {tab === 'buy' && (
                     <>
                         <Box sx={{ display: 'flex', gap: 0.8, overflowX: 'auto', pb: 1.4, mx: -2, px: 2 }}>
-                            {[{ id: null, name: 'Все' }, ...operators].map(op => (
+                            {[{ id: null, name: 'Операторы' }, ...operators].map(op => (
                                 <Chip
                                     key={op.id ?? 'all'}
                                     label={op.name}

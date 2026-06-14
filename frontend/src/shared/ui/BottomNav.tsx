@@ -1,21 +1,22 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useHaptic } from '@/shared/hooks/useHaptic';
 import { preloadTab } from '@/app/routePreload';
 import { Box, Drawer, Paper, Typography } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import CellTowerRoundedIcon from '@mui/icons-material/CellTowerRounded';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import WifiRoundedIcon from '@mui/icons-material/WifiRounded';
 
 function pathToValue(pathname: string): string {
     if (pathname === '/') return 'home';
     if (pathname.startsWith('/my')) return 'my';
-    if (pathname.startsWith('/deals')) return 'deals';
+    if (pathname.startsWith('/requests')) return 'requests';
     return '';
 }
 
@@ -26,7 +27,7 @@ const createActions = [
         to: '/clubs/create/subscription',
         icon: <GridViewRoundedIcon />,
         color: '#FFE15A',
-        preload: 'clubs',
+        preload: 'subscriptions',
     },
     {
         label: 'Семейный тариф',
@@ -34,20 +35,20 @@ const createActions = [
         to: '/clubs/create/tariff',
         icon: <CellTowerRoundedIcon />,
         color: '#B9F27D',
-        preload: 'clubs',
+        preload: 'tariffs',
     },
     {
         label: 'Продать ГБ',
         subtitle: 'лишние гигабайты',
-        to: '/gb-market?tab=sell',
+        to: '/gigabytes?tab=sell',
         icon: <WifiRoundedIcon />,
         color: '#BFE7FF',
-        preload: 'gb',
+        preload: 'gigabytes',
     },
     {
         label: 'Продать аккаунт',
         subtitle: 'GPT, Canva, Grok',
-        to: '/accounts?tab=sell',
+        to: '/accounts?tab=create',
         icon: <StorefrontRoundedIcon />,
         color: '#D8C7FF',
         preload: 'accounts',
@@ -63,8 +64,8 @@ export function BottomNav() {
 
     const navItems = [
         { value: 'home', label: 'Главная', icon: <HomeRoundedIcon />, to: '/', preload: 'home' },
-        { value: 'my', label: 'Мои', icon: <AccountCircleRoundedIcon />, to: '/my', preload: 'my' },
-        { value: 'deals', label: 'Сделки', icon: <ReceiptLongRoundedIcon />, to: '/deals', preload: 'deals' },
+        { value: 'my', label: 'Мои', icon: <Inventory2RoundedIcon />, to: '/my', preload: 'my' },
+        { value: 'requests', label: 'Заявки', icon: <AssignmentRoundedIcon />, to: '/requests', preload: 'requests' },
     ];
 
     const go = (to: string) => {
@@ -147,11 +148,11 @@ export function BottomNav() {
                 </Box>
 
                 <NavButton
-                    active={value === 'deals'}
-                    label="Сделки"
-                    icon={<ReceiptLongRoundedIcon />}
-                    onClick={() => go('/deals')}
-                    onWarm={() => preloadTab('deals')}
+                    active={value === 'requests'}
+                    label="Заявки"
+                    icon={<AssignmentRoundedIcon />}
+                    onClick={() => go('/requests')}
+                    onWarm={() => preloadTab('requests')}
                 />
             </Paper>
 
@@ -178,7 +179,7 @@ export function BottomNav() {
                     Что создать?
                 </Typography>
                 <Typography fontSize={14} fontWeight={560} color="#77736B" sx={{ mb: 1.6 }}>
-                    Выберите тип предложения. Разные категории не смешиваются.
+                    Выберите тип предложения. Категории не смешиваются.
                 </Typography>
 
                 <Box sx={{ display: 'grid', gap: 1 }}>
@@ -231,7 +232,7 @@ function NavButton({
 }: {
     active: boolean;
     label: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     onClick: () => void;
     onWarm: () => void;
 }) {

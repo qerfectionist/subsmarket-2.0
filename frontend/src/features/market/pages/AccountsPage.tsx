@@ -101,7 +101,7 @@ const accountServiceOptions: AccountServiceOption[] = [
     { name: 'Skillshare', category: 'Обучение' },
 ];
 
-const accountCategoryOptions = ['Все', ...Array.from(new Set(accountServiceOptions.map(option => option.category)))];
+const accountCategoryOptions = ['Категории', ...Array.from(new Set(accountServiceOptions.map(option => option.category)))];
 
 const accountCategoryColors: Record<string, string> = {
     AI: '#D8C7FF',
@@ -374,7 +374,7 @@ export function AccountsPage() {
                     </Box>
 
                     <Tabs value={tab} onChange={(_, v) => handleTabChange(v)} sx={{ minHeight: 40 }}>
-                        <Tab value="buy" label="Маркет" />
+                        <Tab value="buy" label="Предложения" />
                         <Tab value="sell" label="Создать" />
                         <Tab value="my" label="Мои" />
                     </Tabs>
@@ -538,12 +538,12 @@ function AccountServicePicker({
     onSelect: (option: AccountServiceOption) => void;
 }) {
     const [search, setSearch] = useState('');
-    const [activeCategory, setActiveCategory] = useState('Все');
+    const [activeCategory, setActiveCategory] = useState('Категории');
     const [isOpen, setIsOpen] = useState(false);
     const haptic = useHaptic();
     const normalizedSearch = search.trim().toLowerCase();
     const filteredServices = accountServiceOptions.filter(option => {
-        const matchesCategory = activeCategory === 'Все' || option.category === activeCategory;
+        const matchesCategory = activeCategory === 'Категории' || option.category === activeCategory;
         const matchesSearch = !normalizedSearch || option.name.toLowerCase().includes(normalizedSearch);
         return matchesCategory && matchesSearch;
     });

@@ -13,6 +13,8 @@ const HomePage = lazy(() => import('@/features/home/pages/HomePage').then(m => (
 const MyHubPage = lazy(() => import('@/features/home/pages/MyHubPage').then(m => ({ default: m.MyHubPage })));
 const OnboardingPage = lazy(() => import('@/features/home/pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const ClubsPage = lazy(() => import('@/features/clubs/pages/ClubsPage').then(m => ({ default: m.ClubsPage })));
+const SubscriptionsPage = lazy(() => import('@/features/clubs/pages/CategoryClubsPage').then(m => ({ default: m.SubscriptionsPage })));
+const TariffsPage = lazy(() => import('@/features/clubs/pages/CategoryClubsPage').then(m => ({ default: m.TariffsPage })));
 const ClubDetailsPage = lazy(() => import('@/features/clubs/pages/ClubDetailsPage').then(m => ({ default: m.ClubDetailsPage })));
 const CreateClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateClubPage })));
 const CreateSubscriptionClubPage = lazy(() => import('@/features/clubs/pages/CreateClubPage').then(m => ({ default: m.CreateSubscriptionClubPage })));
@@ -29,6 +31,7 @@ const DealPage = lazy(() => import('@/features/deals/pages/DealPage'));
 const DealsListPage = lazy(() => import('@/features/deals/pages/DealsListPage'));
 const AdminPanelPage = lazy(() => import('@/pages/Admin/AdminPanelPage'));
 const ClubRequestsPage = lazy(() => import('@/features/clubs/pages/ClubRequestsPage').then(m => ({ default: m.ClubRequestsPage })));
+const RequestsHubPage = lazy(() => import('@/features/requests/pages/RequestsHubPage').then(m => ({ default: m.RequestsHubPage })));
 
 function PageLoader() {
     return (
@@ -57,6 +60,9 @@ function AppRoutes() {
                     <Route index element={<HomePage />} />
                     <Route path="my" element={<MyHubPage />} />
                     <Route path="onboarding" element={<OnboardingPage />} />
+                    <Route path="subscriptions" element={<SubscriptionsPage />} />
+                    <Route path="tariffs" element={<TariffsPage />} />
+                    <Route path="gigabytes" element={<GBMarketPage />} />
                     <Route path="clubs" element={<ClubsPage />} />
                     <Route path="clubs/create" element={<CreateClubPage />} />
                     <Route path="clubs/create/subscription" element={<CreateSubscriptionClubPage />} />
@@ -73,6 +79,7 @@ function AppRoutes() {
                     <Route path="my-clubs" element={<ClubsPage />} />
                     <Route path="admin/complaints" element={<ComplaintsPage />} />
                     <Route path="admin" element={<AdminPanelPage />} />
+                    <Route path="requests" element={<RequestsHubPage />} />
                     <Route path="deals" element={<DealsListPage />} />
                     <Route path="deals/:dealId" element={<DealPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
