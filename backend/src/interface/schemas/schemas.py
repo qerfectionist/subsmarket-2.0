@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, ConfigDict
@@ -112,6 +112,8 @@ class ClubDetails(ClubListItem):
     telegram_group_link: Optional[str] = None
     min_trust_score: Optional[Decimal] = None  # Specific detail
     my_status: Optional[str] = None  # 'pending' | 'active' | 'approved' | 'left' | null
+    my_access_issued_at: Optional[datetime] = None
+    my_payment_deadline_at: Optional[datetime] = None
 
 
 # ============================================
@@ -134,8 +136,41 @@ class ClubMemberResponse(BaseModel):
     phone_number: Optional[str] = None  # Added
     joined_at: datetime
     last_payment_at: Optional[datetime] = None
+    access_issued_at: Optional[datetime] = None
+    payment_deadline_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ClubPaymentClaimRequest(BaseModel):
+    """Buyer metadata for marking a club payment as sent.
+
+    The platform records this for history only; bank transfer verification
+    remains a manual host responsibility.
+    """
+
+    receipt_metadata: Optional[dict[str, Any]] = None
+
+
+class AuditLogResponse(BaseModel):
+    """Append-only system event response."""
+
+    event_id: UUID
+    actor_id: Optional[int] = None
+    target_user_id: Optional[int] = None
+    club_id: Optional[UUID] = None
+    deal_id: Optional[UUID] = None
+    event_type: str
+    from_status: Optional[str] = None
+    to_status: Optional[str] = None
+    metadata: Optional[dict[str, Any]] = Field(
+        default=None,
+        validation_alias="extra",
+        serialization_alias="metadata",
+    )
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 # ============================================
