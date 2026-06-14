@@ -37,7 +37,7 @@ const hubItems = [
     {
         title: 'ГБ сделки',
         subtitle: 'покупки и продажи гигабайтов',
-        to: '/gb-market?tab=deals',
+        to: '/gigabytes?tab=deals',
         icon: <WifiRoundedIcon />,
         color: '#BFE7FF',
     },

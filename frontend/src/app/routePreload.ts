@@ -4,6 +4,10 @@ import { api } from '@/shared/api';
 export const routePreloads = {
     home: () => import('@/features/home/pages/HomePage'),
     my: () => import('@/features/home/pages/MyHubPage'),
+    subscriptions: () => import('@/features/clubs/pages/CategoryClubsPage'),
+    tariffs: () => import('@/features/clubs/pages/CategoryClubsPage'),
+    gigabytes: () => import('@/features/market/pages/GBMarketPage'),
+    requests: () => import('@/features/requests/pages/RequestsHubPage'),
     market: () => import('@/features/clubs/pages/ClubsPage'),
     clubs: () => import('@/features/clubs/pages/ClubsPage'),
     gb: () => import('@/features/market/pages/GBMarketPage'),
