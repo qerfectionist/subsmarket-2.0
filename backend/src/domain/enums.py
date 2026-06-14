@@ -27,7 +27,7 @@ class MemberStatus(str, Enum):
     """Club membership status — full lifecycle.
 
     Transition graph (see club_state_machine.py for authoritative rules):
-        pending → invited → access_issued → payment_pending → paid → active
+        pending → approved → access_issued → payment_pending → payment_claimed → active
         pending → rejected
         pending → left (cancel_request)
         * → left (voluntary leave)
@@ -39,7 +39,8 @@ class MemberStatus(str, Enum):
     approved = "approved"                 # Legacy compatibility (≈ invited)
     access_issued = "access_issued"       # Host shared credentials / access
     payment_pending = "payment_pending"   # Access given, awaiting payment
-    paid = "paid"                         # User marked payment sent
+    payment_claimed = "payment_claimed"   # User marked payment sent, host must verify manually
+    paid = "paid"                         # Legacy compatibility
     active = "active"                     # Host confirmed payment
     disputed = "disputed"                 # Under dispute, club frozen
     rejected = "rejected"                 # Host rejected join request
@@ -52,6 +53,10 @@ class ClubCategory(str, Enum):
     """Type of club / subscription."""
     digital = "digital"     # Netflix, Spotify, YouTube Premium
     telecom = "telecom"     # Beeline Family, Tele2, Altel
+
+
+# Backward-compatible export expected by domain.__init__.
+ClubType = ClubCategory
 
 
 class MobileOperator(str, Enum):

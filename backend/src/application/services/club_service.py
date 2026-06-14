@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
@@ -9,9 +9,22 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.domain.entities.audit import AuditLog
 from src.domain.entities.club import Club, ClubMember
 from src.domain.entities.subscription import Subscription
 from src.domain.entities.user import User
+from src.domain.rules.club_state_machine import (
+    LIVE_MEMBER_STATUSES,
+    MEMBER_APPROVED,
+    MEMBER_PAYMENT_PENDING,
+    OCCUPIED_MEMBER_STATUSES,
+    PRIVATE_ACCESS_STATUSES,
+    VISIBLE_MEMBER_STATUSES,
+    ClubRuleViolation,
+    require_club_mutable,
+    require_joinable,
+    transition,
+)
 from src.interface.schemas.schemas import ClubCreate, ClubDetails, ClubListItem, UserResponse, SubscriptionResponse
 
 
@@ -20,11 +33,11 @@ class ClubService:
         self.db = db
 
     async def _get_member_count(self, club_id: UUID) -> int:
-        """Count active or pending members."""
+        """Count occupied seats: host + access/payment/active members."""
         result = await self.db.execute(
             select(func.count(ClubMember.member_id))
             .where(ClubMember.club_id == club_id)
-            .where(ClubMember.status.in_(["active", "pending"]))
+            .where(ClubMember.status.in_(OCCUPIED_MEMBER_STATUSES))
         )
         # Include the host (+1) who always occupies 1 slot
         return (result.scalar() or 0) + 1
@@ -36,10 +49,56 @@ class ClubService:
         result = await self.db.execute(
             select(ClubMember.club_id, func.count(ClubMember.member_id))
             .where(ClubMember.club_id.in_(club_ids))
-            .where(ClubMember.status.in_(["active", "pending"]))
+            .where(ClubMember.status.in_(OCCUPIED_MEMBER_STATUSES))
             .group_by(ClubMember.club_id)
         )
         return {row[0]: row[1] for row in result.all()}
+
+    def _raise_rule_violation(self, exc: ClubRuleViolation) -> None:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    def _ensure_club_mutable(self, club: Club) -> None:
+        try:
+            require_club_mutable(club.status)
+        except ClubRuleViolation as exc:
+            self._raise_rule_violation(exc)
+
+    def _ensure_club_joinable(self, club: Club) -> None:
+        try:
+            require_joinable(club.status)
+        except ClubRuleViolation as exc:
+            self._raise_rule_violation(exc)
+
+    def _transition_member(self, action: str, member: ClubMember) -> tuple[str, str]:
+        from_status = member.status
+        try:
+            member.status = transition(action, member.status)
+        except ClubRuleViolation as exc:
+            self._raise_rule_violation(exc)
+        return from_status, member.status
+
+    def _audit(
+        self,
+        event_type: str,
+        *,
+        actor_id: Optional[int],
+        club_id: Optional[UUID],
+        target_user_id: Optional[int] = None,
+        from_status: Optional[str] = None,
+        to_status: Optional[str] = None,
+        extra: Optional[dict] = None,
+    ) -> None:
+        self.db.add(
+            AuditLog(
+                actor_id=actor_id,
+                target_user_id=target_user_id,
+                club_id=club_id,
+                event_type=event_type,
+                from_status=from_status,
+                to_status=to_status,
+                extra=extra,
+            )
+        )
 
     def build_club_list_item(self, club: Club, member_count: int) -> ClubListItem:
         """Build ClubListItem from already-fetched data (no DB calls)."""
@@ -97,17 +156,15 @@ class ClubService:
                 detail="Club not found"
             )
         
-        # Check access
         is_host = club.host_id == user_id
-        is_active_member = any(
-            m.user_id == user_id and m.status == "active"
-            for m in club.members
-        )
         
         # Find current user's membership status
         my_membership = next(
             (m for m in club.members if m.user_id == user_id and m.status not in ["left", "kicked"]),
             None
+        )
+        has_private_access = bool(
+            my_membership and my_membership.status in PRIVATE_ACCESS_STATUSES
         )
         
         member_count = await self._get_member_count(club.club_id)
@@ -126,11 +183,13 @@ class ClubService:
             description=club.description,
             created_at=club.created_at,
             payment_method=club.payment_method,
-            payment_details=club.payment_details if (is_host or is_active_member or any(m.user_id == user_id and m.status == "approved" for m in club.members)) else None,
+            payment_details=club.payment_details if (is_host or has_private_access) else None,
             payment_day=club.payment_day,
             rules=club.rules,
-            telegram_group_link=club.telegram_group_link if (is_host or is_active_member) else None,
+            telegram_group_link=club.telegram_group_link if (is_host or has_private_access) else None,
             my_status=my_membership.status if my_membership else None,
+            my_access_issued_at=my_membership.access_issued_at if my_membership else None,
+            my_payment_deadline_at=my_membership.payment_deadline_at if my_membership else None,
         )
 
     async def update_club(self, club_id: UUID, data: "ClubUpdate", user_id: int) -> ClubListItem:
@@ -147,6 +206,7 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Club not found")
         if club.host_id != user_id:
             raise HTTPException(status_code=403, detail="Only the host can edit this club")
+        self._ensure_club_mutable(club)
 
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
@@ -268,6 +328,13 @@ class ClubService:
         self.db.add(club)
         await self.db.flush()
         await self.db.refresh(club, ["subscription"])
+        self._audit(
+            "club_created",
+            actor_id=user_id,
+            target_user_id=None,
+            club_id=club.club_id,
+            to_status=club.status,
+        )
 
         try:
             list_item = await self.get_club_list_item(club)
@@ -299,8 +366,7 @@ class ClubService:
         if club.host_id == user.user_id:
             raise HTTPException(status_code=400, detail="Host cannot join their own club")
 
-        if club.status != "open":
-            raise HTTPException(status_code=400, detail="Club is not accepting new members")
+        self._ensure_club_joinable(club)
 
         # Telecom Logic: Phone Check + Validation
         if club.category == "telecom":
@@ -323,7 +389,13 @@ class ClubService:
             .where(ClubMember.user_id == user.user_id)
             .where(ClubMember.status.not_in(["left", "kicked"]))
         )
-        if existing_result.scalar_one_or_none():
+        existing = existing_result.scalar_one_or_none()
+        if existing:
+            if existing.status in {"rejected", "removed"}:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot rejoin this club after rejection or payment timeout",
+                )
             raise HTTPException(status_code=400, detail="Already a member")
 
         # Check capacity INSIDE the locked transaction
@@ -341,8 +413,8 @@ class ClubService:
             if club.min_trust_score and user.trust_score < club.min_trust_score:
                 msg = "Trust score too low for auto-approval. Request pending host review."
             else:
-                new_status = "approved"
-                msg = "Request auto-approved! Please proceed to payment."
+                new_status = MEMBER_APPROVED
+                msg = "Request approved. Host must issue access before payment."
 
         member = ClubMember(
             club_id=club_id,
@@ -352,10 +424,15 @@ class ClubService:
         )
 
         self.db.add(member)
-
-        # Auto-close if now full
-        if active_count + 1 >= club.max_members:
-            club.status = "full"
+        await self.db.flush()
+        self._audit(
+            "member_join_requested",
+            actor_id=user.user_id,
+            target_user_id=user.user_id,
+            club_id=club_id,
+            to_status=member.status,
+            extra={"phone_number_provided": bool(phone_number)},
+        )
 
         await self.db.commit()
 
@@ -399,15 +476,24 @@ class ClubService:
             select(ClubMember)
             .where(ClubMember.club_id == club_id)
             .where(ClubMember.user_id == user_id)
-            .where(ClubMember.status.in_(["active", "pending", "approved"]))
+            .where(ClubMember.status.in_(LIVE_MEMBER_STATUSES))
         )
         member = result.scalar_one_or_none()
         
         if not member:
             raise HTTPException(status_code=404, detail="Not a member")
             
+        from_status = member.status
         member.status = "left"
         member.left_at = datetime.now(timezone.utc)
+        self._audit(
+            "member_left",
+            actor_id=user_id,
+            target_user_id=user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=member.status,
+        )
         
         # Reopen club if it was full
         if club.status == "full":
@@ -432,7 +518,7 @@ class ClubService:
             select(ClubMember)
             .options(selectinload(ClubMember.user))
             .where(ClubMember.club_id == club_id)
-            .where(ClubMember.status == "pending")
+            .where(ClubMember.status.in_(["pending", "approved", "payment_claimed"]))
             .order_by(ClubMember.joined_at.asc())
         )
         return result.scalars().all()
@@ -452,23 +538,25 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Member not found")
         if member.club.host_id != host_id:
             raise HTTPException(status_code=403, detail="Only the host can approve members")
-        if member.status != "pending":
-            raise HTTPException(status_code=400, detail=f"Member is already {member.status}")
+        self._ensure_club_mutable(member.club)
 
-        # Check capacity
+        # Approval is not a seat reservation, but do not approve when no future slot can be issued.
         active_count = await self._get_member_count(club_id)
         if active_count >= member.club.max_members:
             raise HTTPException(status_code=400, detail="Club is full")
 
-        member.status = "active"
-
-        # Auto-close if now full
-        active_count_after = await self._get_member_count(club_id)
-        if active_count_after >= member.club.max_members:
-            member.club.status = "full"
+        from_status, to_status = self._transition_member("approve", member)
+        self._audit(
+            "member_approved",
+            actor_id=host_id,
+            target_user_id=member.user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+        )
 
         await self.db.commit()
-        return "Member approved successfully"
+        return "Member approved. Issue access to reserve a slot."
 
     async def reject_member(self, club_id: UUID, member_id: UUID, host_id: int) -> str:
         """Reject a pending join request."""
@@ -484,14 +572,205 @@ class ClubService:
             raise HTTPException(status_code=404, detail="Member not found")
         if member.club.host_id != host_id:
             raise HTTPException(status_code=403, detail="Only the host can reject members")
-        if member.status != "pending":
-            raise HTTPException(status_code=400, detail=f"Member is already {member.status}")
+        self._ensure_club_mutable(member.club)
 
-        member.status = "kicked"
+        from_status, to_status = self._transition_member("reject", member)
         member.left_at = datetime.now(timezone.utc)
+        self._audit(
+            "member_rejected",
+            actor_id=host_id,
+            target_user_id=member.user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+        )
 
         await self.db.commit()
         return "Member rejected"
+
+    async def issue_access(self, club_id: UUID, member_id: UUID, host_id: int) -> str:
+        """Host issues access and starts the 30-minute payment window."""
+        result = await self.db.execute(
+            select(ClubMember)
+            .options(selectinload(ClubMember.club))
+            .where(ClubMember.member_id == member_id)
+            .where(ClubMember.club_id == club_id)
+            .with_for_update()
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        if member.club.host_id != host_id:
+            raise HTTPException(status_code=403, detail="Only the host can issue access")
+        self._ensure_club_mutable(member.club)
+
+        occupied_count = await self._get_member_count(club_id)
+        if occupied_count >= member.club.max_members:
+            member.club.status = "full"
+            await self.db.commit()
+            raise HTTPException(status_code=400, detail="Club is full")
+
+        from_status, to_status = self._transition_member("issue_access", member)
+        now = datetime.now(timezone.utc)
+        member.access_issued_at = now
+        member.payment_deadline_at = now + timedelta(minutes=30)
+
+        occupied_count_after = await self._get_member_count(club_id)
+        if occupied_count_after >= member.club.max_members:
+            member.club.status = "full"
+
+        self._audit(
+            "access_issued",
+            actor_id=host_id,
+            target_user_id=member.user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+            extra={"payment_deadline_at": member.payment_deadline_at.isoformat()},
+        )
+        await self.db.commit()
+        return "Access issued. Payment window started."
+
+    async def mark_paid(
+        self, club_id: UUID, user_id: int, receipt_metadata: Optional[dict] = None
+    ) -> str:
+        """Buyer claims payment was sent. The host must verify manually."""
+        result = await self.db.execute(
+            select(ClubMember)
+            .options(selectinload(ClubMember.club))
+            .where(ClubMember.club_id == club_id)
+            .where(ClubMember.user_id == user_id)
+            .with_for_update()
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            raise HTTPException(status_code=404, detail="Membership not found")
+
+        now = datetime.now(timezone.utc)
+        if member.status == MEMBER_PAYMENT_PENDING and member.payment_deadline_at:
+            deadline = member.payment_deadline_at
+            if deadline.tzinfo is None:
+                deadline = deadline.replace(tzinfo=timezone.utc)
+            if deadline <= now:
+                from_status, to_status = self._transition_member("payment_timeout", member)
+                member.left_at = now
+                if member.club.status == "full":
+                    member.club.status = "open"
+                self._audit(
+                    "payment_timeout",
+                    actor_id=None,
+                    target_user_id=user_id,
+                    club_id=club_id,
+                    from_status=from_status,
+                    to_status=to_status,
+                    extra={"payment_deadline_at": deadline.isoformat()},
+                )
+                await self.db.commit()
+                raise HTTPException(status_code=400, detail="Payment window expired")
+
+        from_status, to_status = self._transition_member("mark_paid", member)
+        member.last_payment_at = now
+        self._audit(
+            "payment_claimed",
+            actor_id=user_id,
+            target_user_id=user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+            extra={"receipt_metadata": receipt_metadata or {}},
+        )
+        await self.db.commit()
+        return "Payment marked as sent. Waiting for host confirmation."
+
+    async def confirm_payment(self, club_id: UUID, member_id: UUID, host_id: int) -> str:
+        """Host manually confirms bank payment and activates the member."""
+        result = await self.db.execute(
+            select(ClubMember)
+            .options(selectinload(ClubMember.club))
+            .where(ClubMember.member_id == member_id)
+            .where(ClubMember.club_id == club_id)
+            .with_for_update()
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        if member.club.host_id != host_id:
+            raise HTTPException(status_code=403, detail="Only the host can confirm payment")
+        self._ensure_club_mutable(member.club)
+
+        from_status, to_status = self._transition_member("confirm_payment", member)
+        self._audit(
+            "payment_confirmed",
+            actor_id=host_id,
+            target_user_id=member.user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+            extra={"verification": "manual_bank_check"},
+        )
+        await self.db.commit()
+        return "Payment confirmed. Member is active."
+
+    async def dispute_membership(self, club_id: UUID, user_id: int) -> str:
+        """Open dispute and freeze the whole club."""
+        result = await self.db.execute(
+            select(ClubMember)
+            .options(selectinload(ClubMember.club))
+            .where(ClubMember.club_id == club_id)
+            .where(ClubMember.user_id == user_id)
+            .with_for_update()
+        )
+        member = result.scalar_one_or_none()
+        if not member:
+            raise HTTPException(status_code=404, detail="Membership not found")
+
+        from_status, to_status = self._transition_member("dispute", member)
+        club_from_status = member.club.status
+        member.club.status = "frozen"
+        self._audit(
+            "member_disputed",
+            actor_id=user_id,
+            target_user_id=user_id,
+            club_id=club_id,
+            from_status=from_status,
+            to_status=to_status,
+        )
+        self._audit(
+            "club_frozen",
+            actor_id=user_id,
+            target_user_id=member.club.host_id,
+            club_id=club_id,
+            from_status=club_from_status,
+            to_status=member.club.status,
+        )
+        await self.db.commit()
+        return "Dispute opened. Club is frozen."
+
+    async def get_audit(self, club_id: UUID, user_id: int) -> list[AuditLog]:
+        """Return audit history to host or any participant of the family."""
+        club_result = await self.db.execute(
+            select(Club).where(Club.club_id == club_id).where(Club.is_deleted == False)
+        )
+        club = club_result.scalar_one_or_none()
+        if not club:
+            raise HTTPException(status_code=404, detail="Club not found")
+
+        is_host = club.host_id == user_id
+        if not is_host:
+            membership_result = await self.db.execute(
+                select(ClubMember.member_id)
+                .where(ClubMember.club_id == club_id)
+                .where(ClubMember.user_id == user_id)
+            )
+            if membership_result.scalar_one_or_none() is None:
+                raise HTTPException(status_code=403, detail="Access denied")
+
+        result = await self.db.execute(
+            select(AuditLog)
+            .where(AuditLog.club_id == club_id)
+            .order_by(AuditLog.created_at.asc())
+        )
+        return list(result.scalars().all())
 
     async def cancel_join_request(self, club_id: UUID, user_id: int) -> str:
         """User cancels their own pending join request."""
@@ -515,7 +794,7 @@ class ClubService:
     async def get_club_members(
         self, club_id: UUID, user_id: int
     ) -> list["ClubMemberResponse"]:
-        """Get active + pending members. Accessible only to the host or active members."""
+        """Get live members. Accessible only to the host or members with issued access."""
         from src.interface.schemas.schemas import ClubMemberResponse
 
         # Fetch club
@@ -526,14 +805,14 @@ class ClubService:
         if not club:
             raise HTTPException(status_code=404, detail="Club not found")
 
-        # Access control: host or active member only
+        # Access control: host or member after access/payment activation.
         is_host = club.host_id == user_id
         if not is_host:
             member_check = await self.db.execute(
                 select(ClubMember)
                 .where(ClubMember.club_id == club_id)
                 .where(ClubMember.user_id == user_id)
-                .where(ClubMember.status == "active")
+                .where(ClubMember.status.in_(PRIVATE_ACCESS_STATUSES))
             )
             if member_check.scalar_one_or_none() is None:
                 raise HTTPException(status_code=403, detail="Access denied")
@@ -543,7 +822,7 @@ class ClubService:
             select(ClubMember)
             .options(selectinload(ClubMember.user))
             .where(ClubMember.club_id == club_id)
-            .where(ClubMember.status.in_(["active", "pending"]))
+            .where(ClubMember.status.in_(VISIBLE_MEMBER_STATUSES))
             .order_by(ClubMember.joined_at)
         )
         members = result.scalars().all()
@@ -556,6 +835,8 @@ class ClubService:
                 phone_number=m.phone_number,
                 joined_at=m.joined_at,
                 last_payment_at=m.last_payment_at,
+                access_issued_at=m.access_issued_at,
+                payment_deadline_at=m.payment_deadline_at,
             )
             for m in members
         ]

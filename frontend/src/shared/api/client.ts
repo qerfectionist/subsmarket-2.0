@@ -125,7 +125,7 @@ export interface ClubDetails extends Club {
     payment_day: number | null;
     rules: string | null;
     telegram_group_link: string | null;
-    my_status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked' | null;
+    my_status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'payment_claimed' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked' | null;
     my_access_issued_at: string | null;
     my_payment_deadline_at: string | null;
 }
@@ -149,7 +149,7 @@ export interface CreateClubRequest {
 export interface ClubMember {
     member_id: string;
     user: User;
-    status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked';
+    status: 'pending' | 'invited' | 'access_issued' | 'payment_pending' | 'payment_claimed' | 'paid' | 'active' | 'approved' | 'rejected' | 'removed' | 'disputed' | 'left' | 'kicked';
     phone_number: string | null;
     slot_type: 'smartphone' | 'router' | 'm2m' | null;
     joined_at: string;
@@ -336,8 +336,11 @@ export const api = {
         return apiFetch(`/clubs/${clubId}/members/${memberId}/issue-access`, { method: 'POST' });
     },
 
-    async markClubPaid(clubId: string): Promise<{ status: string; message: string }> {
-        return apiFetch(`/clubs/${clubId}/members/me/paid`, { method: 'POST' });
+    async markClubPaid(clubId: string, receiptMetadata?: Record<string, unknown>): Promise<{ status: string; message: string }> {
+        return apiFetch(`/clubs/${clubId}/members/me/paid`, {
+            method: 'POST',
+            body: JSON.stringify({ receipt_metadata: receiptMetadata ?? null }),
+        });
     },
 
     async disputeClubMembership(clubId: string): Promise<{ status: string; message: string }> {

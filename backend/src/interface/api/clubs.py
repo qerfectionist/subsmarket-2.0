@@ -5,16 +5,18 @@ from decimal import Decimal
 from typing import Annotated, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.interface.schemas.schemas import (
+    AuditLogResponse,
     ClubCreate,
     ClubDetails,
     ClubListItem,
     ClubMemberResponse,
+    ClubPaymentClaimRequest,
     ClubUpdate,
     StatusResponse,
     SubscriptionResponse,
@@ -24,6 +26,7 @@ from src.interface.schemas.schemas import (
 from src.domain.entities.club import Club, ClubMember
 from src.domain.entities.subscription import Subscription
 from src.domain.entities.user import User
+from src.domain.rules.club_state_machine import LIVE_MEMBER_STATUSES
 from src.application.services.club_service import ClubService
 from src.infrastructure.telegram.auth import TelegramUser, get_current_user
 from src.infrastructure.persistence.database import get_db
@@ -60,7 +63,7 @@ async def get_my_clubs(
     member_q = await db.execute(
         select(ClubMember.club_id)
         .where(ClubMember.user_id == tg_user.id)
-        .where(ClubMember.status.in_(["active", "pending", "approved"]))
+        .where(ClubMember.status.in_(LIVE_MEMBER_STATUSES))
     )
     member_club_ids = [row[0] for row in member_q.all()]
 
@@ -105,10 +108,9 @@ async def get_clubs(
     conditions = [Club.is_deleted == False]
     if category:
         conditions.append(Club.category == category)
-    if status_filter:
+    conditions.append(Club.status.in_(["open", "full"]))
+    if status_filter in {"open", "full"}:
         conditions.append(Club.status == status_filter)
-    else:
-        conditions.append(Club.status.in_(["open", "full"]))
 
     # Search by subscription name (JOIN if needed)
     search_join = search and search.strip()
@@ -294,6 +296,8 @@ async def get_pending_members(
             phone_number=m.phone_number,
             joined_at=m.joined_at,
             last_payment_at=m.last_payment_at,
+            access_issued_at=m.access_issued_at,
+            payment_deadline_at=m.payment_deadline_at,
         )
         for m in members
     ]
@@ -321,6 +325,67 @@ async def reject_member(
     """Reject a pending member. Host only."""
     msg = await service.reject_member(club_id, member_id, tg_user.id)
     return StatusResponse(status="success", message=msg)
+
+
+@router.post("/{club_id}/members/{member_id}/issue-access", response_model=StatusResponse)
+async def issue_access(
+    club_id: UUID,
+    member_id: UUID,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    service: Annotated[ClubService, Depends(get_service)],
+) -> StatusResponse:
+    """Issue access to an approved member and start the payment timer. Host only."""
+    msg = await service.issue_access(club_id, member_id, tg_user.id)
+    return StatusResponse(status="success", message=msg)
+
+
+@router.post("/{club_id}/members/me/paid", response_model=StatusResponse)
+async def mark_paid(
+    club_id: UUID,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    service: Annotated[ClubService, Depends(get_service)],
+    data: ClubPaymentClaimRequest | None = Body(default=None),
+) -> StatusResponse:
+    """Buyer marks payment as sent. Platform stores metadata but does not verify bank transfer."""
+    msg = await service.mark_paid(
+        club_id,
+        tg_user.id,
+        data.receipt_metadata if data else None,
+    )
+    return StatusResponse(status="success", message=msg)
+
+
+@router.post("/{club_id}/members/{member_id}/confirm-payment", response_model=StatusResponse)
+async def confirm_payment(
+    club_id: UUID,
+    member_id: UUID,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    service: Annotated[ClubService, Depends(get_service)],
+) -> StatusResponse:
+    """Host confirms payment after a manual bank check."""
+    msg = await service.confirm_payment(club_id, member_id, tg_user.id)
+    return StatusResponse(status="success", message=msg)
+
+
+@router.post("/{club_id}/members/me/dispute", response_model=StatusResponse)
+async def dispute_membership(
+    club_id: UUID,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    service: Annotated[ClubService, Depends(get_service)],
+) -> StatusResponse:
+    """Open a dispute and freeze the club."""
+    msg = await service.dispute_membership(club_id, tg_user.id)
+    return StatusResponse(status="success", message=msg)
+
+
+@router.get("/{club_id}/audit", response_model=list[AuditLogResponse])
+async def get_club_audit(
+    club_id: UUID,
+    tg_user: Annotated[TelegramUser, Depends(get_current_user)],
+    service: Annotated[ClubService, Depends(get_service)],
+) -> list[AuditLogResponse]:
+    """Get club audit history for host and participants."""
+    return await service.get_audit(club_id, tg_user.id)
 
 
 @router.delete("/{club_id}/join", response_model=StatusResponse)
