@@ -322,7 +322,7 @@ class ClubService:
             rules=data.rules,
             approval_mode=data.approval_mode,
             min_trust_score=data.min_trust_score,
-            telegram_group_link=data.telegram_group_link,
+            telegram_group_link=getattr(data, "telegram_group_link", None),
         )
 
         self.db.add(club)
@@ -330,7 +330,7 @@ class ClubService:
         await self.db.refresh(club, ["subscription"])
         self._audit(
             "club_created",
-            actor_id=host_id,
+            actor_id=user_id,
             target_user_id=None,
             club_id=club.club_id,
             to_status=club.status,
