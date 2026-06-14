@@ -62,6 +62,7 @@ class ClubBase(BaseModel):
     payment_day: Optional[int] = Field(default=None, ge=1, le=31)
     description: Optional[str] = Field(default=None, max_length=500)
     rules: Optional[str] = Field(default=None, max_length=1000)
+    telegram_group_link: Optional[str] = None
     
     # Validation settings
     approval_mode: str = "manual"  # manual | auto

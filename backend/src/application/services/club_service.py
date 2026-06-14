@@ -322,7 +322,7 @@ class ClubService:
             rules=data.rules,
             approval_mode=data.approval_mode,
             min_trust_score=data.min_trust_score,
-            telegram_group_link=getattr(data, "telegram_group_link", None),
+            telegram_group_link=data.telegram_group_link,
         )
 
         self.db.add(club)

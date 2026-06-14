@@ -79,15 +79,18 @@ async def test_create_club_writes_club_created_audit_log(monkeypatch):
             price_total=Decimal("1000"),
             max_members=4,
             payment_details="+7 777 000 00 00",
+            telegram_group_link="https://t.me/test_group",
         ),
         user_id=user_id,
     )
 
+    club = next(obj for obj in session.added if isinstance(obj, Club))
     audit_log = next(
         obj for obj in session.added
         if isinstance(obj, AuditLog) and obj.event_type == "club_created"
     )
     assert result is list_item
+    assert club.telegram_group_link == "https://t.me/test_group"
     assert audit_log.actor_id == user_id
     assert audit_log.to_status == "open"
     assert session.committed is True
