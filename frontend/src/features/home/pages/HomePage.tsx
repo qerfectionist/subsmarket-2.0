@@ -84,7 +84,7 @@ export function HomePage() {
                 </Box>
 
                 <Card sx={{ bgcolor: '#fff', color: '#111', borderRadius: '28px', border: '0', mb: 1.4 }}>
-                    <CardActionArea component={Link} to="/subscriptions" sx={{ p: 1.2 }}>
+                    <Box sx={{ p: 1.2 }}>
                         <Box
                             sx={{
                                 height: 50,
@@ -101,7 +101,7 @@ export function HomePage() {
                                 Найти YouTube, Beeline, GPT...
                             </Typography>
                         </Box>
-                    </CardActionArea>
+                    </Box>
                 </Card>
 
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 1.6 }}>
